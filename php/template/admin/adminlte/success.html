@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{$site.title} - {:lang('Operation completed')}</title>
+
+    <link rel="Shortcut Icon" href="{$site.favicon}" type="image/x-icon" />
+
+    <link rel="stylesheet" href="/static/libs/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="__static__/css/adminlte.css">
+    <link rel="stylesheet" href="/static/libs/bootstrap-table-master/bootstrap-table.min.css">
+    <link rel="stylesheet" href="__static__/css/common.css?v={:env('APP_DEBUG')?time():config('site.version')}">
+
+    <style>
+        html,body {
+            width: 100%;
+            height: 100%;
+            background: #f2f3f5;
+            font-size: 14px;
+        }
+        .success-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+        .success-panel .icon {
+            font-size: 64px;
+            color: #18a058;
+            text-align: center;
+        }
+        .success-panel .title {
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .success-panel .info {
+            padding: 24px 40px;
+            text-align: left;
+            background-color: #efeff5;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            min-width: 300px;
+        }
+        .success-panel .btn-list {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .jump-a {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-panel">
+        <div class="card">
+            <div class="card-body">
+                <div class="icon"><span><i class="fas fa-check-circle"></i></span></div>
+                <div class="title">{:lang('Operation completed')}</div>
+                <div class="info">{$msg}</div>
+                <div class="jump-a">{:lang('The page will automatically jump after %s seconds',['<b id="wait">'.$wait.'</b>'])}</div>
+                <div class="btn-list">
+                    <a href="#!" onclick="history.back(-1);" class="btn btn-default mr-2">{:lang('return to previous page')}</a>
+                    <a href="{$url}" class="btn btn-primary">{:lang('Jump now')}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        (function () {
+            var wait = document.getElementById('wait');
+            var interval = setInterval(function () {
+                var time = --wait.innerHTML;
+                if (time <= 0) {
+                    location.href = history.length <= 1 ? "/" : "{$url}";
+                    clearInterval(interval);
+                }
+            }, 1000);
+        })();
+    </script>
+</body>
+</html>

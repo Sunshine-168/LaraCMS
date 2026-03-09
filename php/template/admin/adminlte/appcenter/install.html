@@ -1,0 +1,254 @@
+<style>
+    .table tr td,.table tr th {
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card shadow-none">
+        <div class="card-body">
+            <input type="hidden" class="type" value="{$info['type']??''}">
+            {php}$check = false;{/php}
+            {if empty($info['addon']) && empty($info['database']) && empty($info['dir']) && empty($info['demodata']) && !isset($addonInfo)}
+            <table class="table table-bordered table-hover table-striped">
+                <tbody>
+                <tr>
+                    <td><span class="text-success"><i class="fa fa-check-circle" aria-hidden="true"></i></span> {:__('Test passed')}</td>
+                </tr>
+                </tbody>
+            </table>
+            {/if}
+            {if isset($addonInfo)}
+            <div class="row">
+                <div class="col-md-12">
+                    <p><b>{:__('Version update')}</b></p>
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>{:__('Installed version')}</th>
+                            <th>{:__('Upgrade to version')}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{$addonInfo['version']}</td>
+                            <td>{$info['version']}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {/if}
+            {if isset($info['addon']) && !empty($info['addon']) && is_array($info['addon'])}
+            <div class="row">
+                <div class="col-md-12">
+                    <p><b>{:__('Dependent plugin')}</b></p>
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>{:__('Addon')}</th>
+                            <th>{:__('Addon title')}</th>
+                            <th>{:__('Installed version')}</th>
+                            <th>{:__('Required version')}</th>
+                            <th>{:__('Test results')}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {php}$applist = [];{/php}
+                            {volist name="info['addon']" id="vo"}
+                            {php}$applist[] = $vo['name'];{/php}
+                            <tr>
+                                <td>{$vo['name']}</td>
+                                <td class="version-{$vo['name']}"></td>
+                                <td>{$vo['version']}</td>
+                                <td>{$vo['need_ver']}</td>
+                                <td>
+                                    {if $vo['status']==1}
+                                        {if (version_compare($vo['version'],$vo['need_ver'],'>='))}
+                                        <span class="text-success"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
+                                        {else }
+                                        {php}$check = true;{/php}
+                                        <span class="text-warning"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {:__('Version too low')}</span>
+                                        {/if}
+                                    {elseif $vo['status']==-1}
+                                    {php}$check = true;{/php}
+                                    <span class="text-warning"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {:__('Disabled')}</span>
+                                    {else /}
+                                    {php}$check = true;{/php}
+                                    <span class="text-danger"><i class="fas fa-times-circle" aria-hidden="true"></i> {:__('Not Installed')}</span>
+                                    {/if}
+                                </td>
+                            </tr>
+                            {/volist}
+                            <input type="hidden" class="applist" value="{php}echo implode(',', $applist);{/php}">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {/if}
+            {if isset($info['database']) && !empty($info['database']) && is_array($info['database'])}
+            <div class="row">
+                <div class="col-md-12">
+                    <p><b>{:__('Database table detection')}</b></p>
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>{:__('Database Table')}</th>
+                                <th>{:__('Test results')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="info['database']" id="vo"}
+                        <tr>
+                            <td>{$vo['table']}</td>
+                            <td>
+                                {if $vo['status']==1}
+                                <span class="text-success"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
+                                {else /}
+                                <span class="text-warning"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {:__('%s existed',[''])}</span>
+                                {/if}
+                            </td>
+                        </tr>
+                        {/volist}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {/if}
+            {if isset($info['dir']) && !empty($info['dir']) && is_array($info['dir'])}
+            <div class="row">
+                <div class="col-md-12">
+                    <p><b>{:__('Directory file permissions')}</b></p>
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>{:__('Directory file listing')}</th>
+                            <th>{:__('Test results')}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="info['dir']" id="vo"}
+                        {if $vo['status']!=1}
+                        <tr>
+                            <td>{$vo['path']}</td>
+                            <td>
+                                {if $vo['status']==1}
+                                <span class="text-success"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
+                                {elseif ($vo['status']==-1)}
+
+                                    {if isset($update) && $update==1}
+                                        <span class="text-warning"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {:__('Upgrade will overwrite')}</span>
+                                    {else /}
+                                        {php}$check = true;{/php}
+                                        <span class="text-danger"><i class="fas fa-times-circle" aria-hidden="true"></i> {:__('%s existed',[''])}</span>
+                                    {/if}
+
+                                {else /}
+                                {php}$check = true;{/php}
+                                <span class="text-danger"><i class="fas fa-times-circle" aria-hidden="true"></i> {:__('%s no permission to write',[''])}</span>
+                                {/if}
+                            </td>
+                        </tr>
+                        {/if}
+                        {/volist}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <label class="form-check-label"><input class="form-check-input J-force" type="checkbox" name="force" value="1">
+                            {:__('Force install')}</label>
+                    </div>
+                </div>
+            </div>
+            {/if}
+            {if isset($info['demodata']) && $info['demodata']==1}
+            <div class="row">
+                <div class="col-md-12">
+                    <p><b>{:__('Demo data')}</b></p>
+                    <div class="form-check">
+                        <label class="form-check-label"><input class="form-check-input" type="checkbox" name="demodata" value="1">{:__('Import demo data')}</label>
+                        <p class="text-danger mt-2">{:__('Note: This operation will overwrite the data, please do not operate in the online project!')}</p>
+                    </div>
+                </div>
+            </div>
+            {/if}
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    {if isset($update) && $update==1}
+                    <button type="submit" class="btn btn-primary btn-submit {if $check}disabled{/if}" {if $check}disabled{/if}>{:__('Confirm upgrade')}</button>
+                    {else /}
+                    <button type="submit" class="btn btn-primary btn-submit {if $check}disabled{/if}" {if $check}disabled{/if}>{:__('Confirm install')}</button>
+                    {/if}
+                    <a class="btn btn-default ml-2" href="#" onclick="window.location.reload();">{:__('Refresh')}</a>
+                    <button type="reset" class="btn btn-default btn-cancel ml-2">{:__('Cancel')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin'], function (admin) {
+        $('.frm-operate').submit(function (e) {
+            var data = $('.frm-operate').serialize();
+            hkcms.api.ajax({ url:'', data:data, 'type':'POST'},'',function (data,all) {
+                layer.msg(all.msg, {time:2000, icon:1}, function () {
+                    var index = parent.layer.getFrameIndex(window.name);
+                    if (index) {
+                        var page_callback = parent.$("#layui-layer" + index).data("page");
+                        parent.layer.close(index);
+                        if (page_callback) {
+                            page_callback();
+                        }
+                    }
+                    var type = $('.type').val();
+                    if (type && type=='addon') {
+                        parent.getMenuList();
+                    }
+                });
+            });
+            return false;
+        });
+
+        $('.J-force').change(function (e) {
+            var val = $('.J-force:checked').val();
+            if (val) {
+                $('.btn-submit').removeClass('disabled');
+                $('.btn-submit').attr('disabled',false);
+            } else {
+                $('.btn-submit').addClass('disabled');
+                $('.btn-submit').attr('disabled',true);
+            }
+        })
+
+        $('.btn-cancel').click(function (e) {
+            parent.layer.close(parent.layer.getFrameIndex(window.name));
+        });
+
+        $(function () {
+            var applist = $('.applist').val();
+            if (applist) {
+                hkcms.api.ajax({
+                    type: 'post',
+                    url:'{:url("/Appcenter/check")}',
+                    data: {type: 'addon',module: 'index',applist:applist}
+                }, '', function (data) {
+                    if (data) {
+                        $.each(data, function (idx,vo) {
+                            // 版本升级检测
+                            $('.version-'+idx).html(vo.title);
+                        });
+                    }
+                })
+            }
+        })
+    })
+</script>
+{/block:script}
+

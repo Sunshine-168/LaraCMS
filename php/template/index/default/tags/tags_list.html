@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+{include file="common/menu"}
+
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            {// 在标签列表页有全局变量$Tags, $Tags.title是标题}
+                            <h1 class="banner-title">{$Tags.title}</h1>
+                            <nav aria-label="breadcrumb" class="mt-4"><a href="/" class="active_a">{:__('Home')}</a> / <span>{$Tags.title}</span></nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-lg-4">
+                    <div class="sidebar sidebar-left">
+                        <!--热门新闻 结束-->
+                        <div class="widget widget-tags">
+                            <h3 class="widget-title">{:__('Tags')} <span class="float-right" style="font-size: 12px;margin-top: 2px"><a href="{:url('/tags/index')}">{:__('Read More')}</a></span></h3>
+                            <ul class="list-unstyled">
+                                {// 获取标签列表}
+                                {hkcms:taglist tid="0" num="10" order="views desc"}
+                                <li><a href="{$item.url}">{$item.title}</a></li>
+                                {/hkcms:taglist}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-9 col-lg-8">
+                    <div class="content-inner-page">
+                        <div class="blog-item-list">
+                            {// 获取当前栏目的文档，page="1"开启分页功能，列表页无需写catid，order是排序,$Cate.num取得是后台栏目管理里设置的分页数}
+                            {hkcms:tagarclist tid="$Tags['id']" num="10" page="1"}
+                            <div class="blog-item">
+                                <div class="bi-pic"><img src="{$item.thumb|default=''}" alt="{$item.title}"></div>
+                                <div class="bi-text">
+                                    {// style字段是后台可设置加粗与颜色，$item.style}
+                                    <h4><a href="{$item.url}" style="{$item.style}">{hkcms:substr name="$item.title" len="70" dot="...." }</a></h4>
+                                    <ul>
+                                        <li><span><i class="fa fa-user-alt"></i> {$item.author|default=''}</span></li>
+                                        <li><span><i class="far fa-calendar"></i> {hkcms:date name="$item.publish_time" format="Y-m-d"}</span></li>
+                                        <li><span><i class="fa fa-eye"></i> {$item.views} {:__('View')}</span></li>
+                                    </ul>
+                                    <p class="desc">{$item.description|default=""}</p>
+                                    <a href="{$item.url}" class="read-more">{:__('Read More')} <span><i class="fa fa-arrow-right"></i></span></a>
+                                </div>
+                            </div>
+                            {/hkcms:tagarclist}
+                        </div>
+                        <div class="gap-40"></div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {hkcms:contentpage item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{include file="common/footer"}
+</div>
+</body>
+</html>

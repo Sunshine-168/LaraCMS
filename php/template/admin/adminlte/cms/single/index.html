@@ -1,0 +1,57 @@
+<form role="form" action="{:url('/cms.single/index',['category_id'=>$categoryInfo['id']])}" class="frm-operate" method="post">
+    <div class="card card-tabs">
+        <div class="card-header">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="pill" href="#tabs-for-base" role="tab">{:lang('base')}</a>
+                </li>
+                {volist name="fieldGroup" id="vo"}
+                {if ($vo!='常规')}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#tabs-for-{$i}" role="tab">{:lang($vo)}</a>
+                </li>
+                {/if}
+                {/volist}
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="tabs-for-base" role="tabpanel">
+                    <input type="hidden" name="row[category_id]" value="{$categoryInfo['id']}">
+                    <input type="hidden" id="model_id" value="{$categoryInfo['model_id']}">
+                    {if !empty($modelFieldArr['常规'])}{$modelFieldArr['常规']|raw}{/if}
+                </div>
+                {volist name="fieldGroup" id="vo"}
+                {if ($vo!='常规')}
+                <div class="tab-pane fade" id="tabs-for-{$i}" role="tabpanel">
+                    {if !empty($modelFieldArr[$vo])}{$modelFieldArr[$vo]|raw}{/if}
+                </div>
+                {/if}
+                {/volist}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin,Form) {
+        Form.api.init({
+            success:function (data,res) {
+                layer.msg(res.msg, {icon: 1, time: 2000}, function (e) {
+                    document.location.reload();
+                })
+                return false;
+            }
+        });
+    })
+</script>
+{/block:script}

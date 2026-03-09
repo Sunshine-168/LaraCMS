@@ -1,0 +1,47 @@
+{
+  "popup": {
+    "title": "全局弹出框",
+    "type": "radio",
+    "tips": "设置全局弹出框行为",
+    "rules": "",
+    "error_tips": "",
+    "options": {
+      "1": "默认",
+      "2": "全屏"
+    },
+    "value": "1"
+  },
+  "page": {
+    "title": "默认分页大小",
+    "type": "text",
+    "tips": "设置全局分页",
+    "rules": "required;",
+    "error_tips": "值必须",
+    "value": "10"
+  },
+  "c_popup": {
+    "title": "内容弹出框",
+    "type": "radio",
+    "tips": "设置内容管理弹出框默认展示",
+    "rules": "",
+    "error_tips": "",
+    "options": {
+      "1": "默认",
+      "2": "全屏",
+      "3": "新窗口"
+    },
+    "value": "1"
+  },
+  "c_sub": {
+    "title": "默认包含下级",
+    "type": "radio",
+    "tips": "设置内容管理弹上级菜单列表中是否默认包含下级",
+    "rules": "",
+    "error_tips": "",
+    "options": {
+      "1": "包含",
+      "2": "不包含"
+    },
+    "value": "1"
+  }
+}

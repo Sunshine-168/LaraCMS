@@ -1,0 +1,377 @@
+<style>
+    .content {
+        background-color: #ffffff;
+    }
+    .content-wrapper>.content {
+        padding: 0;
+    }
+    .basestyle {
+        color: #4e5969;
+    }
+    .column-title {
+        min-width: 250px;
+    }
+</style>
+<div id="toolbar" class="toolbar">
+    <button type="button" class="btn btn-primary btn-add " data-url="{:url('/cms.archives/add',['category_id'=>$category_id])}"><i class="fas fa-plus"></i> {:lang('Add')}</button>
+    <button type="button" class="btn btn-default btn-recycle" data-url="{:url('/cms.archives/recycle',['category_id'=>$category_id])}"><i class="fas fa-trash-restore"></i> {:lang('Recycle')}</button>
+    <div class="dropdown btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+        <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{:lang('Batch operation')}"><i class="fas fa-cog"></i> {:lang('More')}</a>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item btn-push" href="#"><i class="fas fa-copy"></i> {:lang('Batch copy')}</a>
+            <a class="dropdown-item btn-move" href="#"><i class="fas fa-arrow-right"></i> {:lang('Batch move')}</a>
+            <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.archives/del',['category_id'=>$category_id])}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item btn-addproperty" data-type="1" href="#"><i class="fas fa-plus"></i> {:lang('Add property')}</a>
+            <a class="dropdown-item btn-deleteproperty" data-type="2" href="#"><i class="fas fa-times-circle"></i> {:lang('Delete property')}</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item status" href="#" data-params="status=normal">{:lang('Set to normal')}</a>
+            <a class="dropdown-item status" href="#" data-params="status=reject">{:lang('Set as rejected')}</a>
+            <a class="dropdown-item status" href="#" data-params="status=audit">{:lang('Set Pending')}</a>
+            <a class="dropdown-item status" href="#" data-params="status=hidden">{:lang('Set to disabled')}</a>
+        </div>
+    </div>
+</div>
+
+<div class="filter-panel d-none">
+    <form action="" method="get" class="frm-filter">
+        <div class="row">
+            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label class="row-form-label">ID</label>
+                    <input type="text" class="form-control" name="id" placeholder="ID">
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label class="row-form-label">{:lang("Title")}</label>
+                    <input type="text" class="form-control" name="title" data-op="like %...%">
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label class="row-form-label">{:lang("Publisher")}</label>
+                    <input type="text"
+                           id="frm-admin_id"
+                           class="form-control selectpage"
+                           name="admin_id"
+                           data-multiple="true"
+                           data-op="IN"
+                           placeholder=""
+                           data-show-field="username"
+                           data-search-field="username"
+                           data-data="{:url('/auth.admin/index')}">
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label class="row-form-label">{:lang("Release time")}</label>
+                    <input type="text"
+                           class="form-control laydate"
+                           id="frm-publish_time"
+                           name="publish_time"
+                           data-type="datetime"
+                           data-range="true"
+                           data-op="BETWEEN TIME"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-primary mr-2" value="{:lang('Search')}">
+                    <input type="reset" class="btn btn-default" value="{:lang('Reset')}">
+                </div>
+            </div>
+        </div>
+    </form>
+    <hr>
+</div>
+
+<table id="table"
+       data-edit="{:url('/cms.archives/edit')}"
+       data-del="{:url('/cms.archives/del',['category_id'=>$category_id])}"
+       data-batches="{:url('/cms.archives/batches',['category_id'=>$category_id])}" data-popup="false"></table>
+
+<script type="text/html" id="tmp-property">
+    <div class="form-group row m-0 mt-2">
+        <label class="col-sm-4 row-form-label">{:lang('Flag')}: </label>
+        <div class="col-sm-8">
+            <div class="radio-group">
+                {volist name="flags" id="item"}
+                {if $item['status']=='normal'}
+                <div class="radio-item">
+                    <input id="row[name]-{$i}" class="J-flags" name="row[name][]" type="checkbox" value="{$item['name']}">
+                    <label for="row[name]-{$i}">{$item['title']}</label>
+                </div>
+                {/if}
+                {/volist}
+            </div>
+        </div>
+    </div>
+</script>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        var flagsJson = {$flagsJson|raw};
+        var modelField = {$modelField|raw};
+        var columnData = {$columnData|raw};
+
+        $(function () {
+            // 显示的字段
+            var columns = [
+                {
+                    field: 'state',
+                    checkbox: true,
+                    class: 'column-checked-state'
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter:Table.formatter.txtEditBtn,
+                    events:Table.events.txtEditBtn,
+                    sortable: true,
+                    class: 'column-weigh'
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    class: 'column-id'
+                },{
+                    field: 'category_title',
+                    title: '{:lang("Column")}',
+                    class: 'column-category_title'
+                },{
+                    field: 'category_ids',
+                    title: '{:lang("Sub column")}',
+                    class: 'column-category_ids'
+                },{
+                    field: 'username',
+                    title: '{:lang("Publisher")}',
+                    class: 'column-username'
+                }
+            ];
+            for (let key in modelField) {
+                if (modelField[key].field_name=='weigh' || modelField[key].field_name=='flags') {
+                    continue;
+                }
+                if (modelField[key].field_name == 'title') {
+                    columns.push({
+                        field: 'title',
+                        title: '{:lang("Title")}',
+                        align: 'left',
+                        class: "column-title",
+                        formatter: function (value,row,index) {
+                            var html = '';
+                            if (flagsJson && row['flags']) {
+                                var fg = row['flags'].split(',');
+                                $.each(fg, function (idx, vo) {
+                                    html += ' <span class="text-danger">['+flagsJson[vo]+']</span>';
+                                })
+                            }
+                            return '<a class="basestyle" href="'+row['url']+'" target="_blank" style="'+row['style']+'">'+value+html+'</a>';
+                        }
+                    });
+                    continue
+                }
+                if (modelField[key].field_name == 'status') {
+                    columns.push({
+                        field: 'status',
+                        title: '{:lang("Status")}',
+                        class: 'column-status',
+                        formatter: function (value,row,index) {
+                            if (value=='normal') {
+                                return lang(value);
+                            } else if (value=='reject') {
+                                return '<span class="text-danger">'+lang(value)+'</span>';
+                            } else if (value=='audit') {
+                                return '<span class="text-warning">'+lang(value)+'</span>';
+                            } else if (value=='hidden') {
+                                return '<span class="text-dark">'+lang(value)+'</span>';
+                            } else {
+                                return value;
+                            }
+                        }
+                    });
+                    continue
+                }
+                var langVal = Config.admin_lang_on == 1 ? lang(modelField[key].field_name.charAt(0).toUpperCase() + modelField[key].field_name.slice(1)) : modelField[key].field_title
+                var itemObj = {
+                    field: modelField[key].field_name,
+                    title: langVal, // 自定义字段需要添加后台语言包
+                    class: 'column-'+modelField[key].field_name
+                }
+                if (modelField[key].form_type=='image' || modelField[key].form_type=='downfile') { // 单图片
+                    itemObj.formatter = Table.formatter.image
+                    itemObj.events = Table.events.image
+                } else if (modelField[key].form_type=='editor') { // 编辑器
+                    itemObj.formatter = Table.formatter.editor
+                    itemObj.events = Table.events.editor
+                } else if (modelField[key].form_type=='radio') { // 单选
+                    itemObj.formatter = Table.formatter.radio
+                    itemObj.radioOption = modelField[key].data_list
+                } else if (modelField[key].form_type=='datetime') { // 时间
+                    itemObj.formatter = Table.formatter.datetime
+                    // itemObj.datetimeFormat = "" // 日期格式
+                } else if (modelField[key].form_type=='images' || modelField[key].form_type=='downfiles') { // 图集
+                    itemObj.formatter = Table.formatter.images
+                }
+                columns.push(itemObj);
+            }
+            columns.push({
+                field: 'operate',
+                title: '{:lang("Operate")}',
+                class: 'column-operate',
+                formatter: Table.formatter.operate,
+                events: Table.events.operate
+            })
+
+            // 显示隐藏列
+            if (columnData) {
+                for (var colKey in columns) {
+                    for (var kk in columnData) {
+                        if (columns[colKey].field==columnData[kk].field) {
+                            columns[colKey].visible = columnData[kk].checked==='true'
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var table = Table.init({
+                url: "{:url('/cms.archives/index',['model_id'=>$model_id,'category_id'=>$category_id,'issub'=>$Tpl['c_sub']])}",
+                sortName: 'weigh asc,publish_time desc',
+                customFilter: true,
+                addCallback: function(data) { // data属性字段值
+                    if (Tpl.c_popup==1) {
+                        hkcms.api.open(Util.setUrlParams({ url:data.url}),'{:lang("Add")}')
+                        return false;
+                    } else if (Tpl.c_popup==2) {
+                        hkcms.api.open(Util.setUrlParams({ url:data.url}),'{:lang("Add")}',{area:['100%','100%']})
+                        return false;
+                    } else {
+                        window.open(Util.setUrlParams({ url:data.url }))
+                        return false;
+                    }
+                },
+                editCallback: function(data, ids, row) {
+                    if (Tpl.c_popup==1) {
+                        hkcms.api.open(Util.setUrlParams({ url:data.url,query:{id:ids,category_id:row['category_id']}}), '{:lang("Edit")}');
+                        return false;
+                    } else if (Tpl.c_popup==2) {
+                        hkcms.api.open(Util.setUrlParams({ url:data.url,query:{id:ids,category_id:row['category_id']}}), '{:lang("Edit")}', {area:['100%','100%']});
+                        return false;
+                    } else {
+                        window.open(Util.setUrlParams({ url:data.url,query:{popup:1,id:ids,category_id:row['category_id']}}))
+                        return false;
+                    }
+                    return false;
+                },
+                recycleCallback: function(data, ids) {
+                    hkcms.api.open(Util.setUrlParams({ url:data.url, query:{popup:1}}),lang('Recycle'))
+                    return false;
+                },
+                onColumnSwitch: function (field, checked) { // 选择列事件（显示、隐藏列）
+                    // 获取隐藏的列、显示列
+                    var showCols= table.bootstrapTable('getVisibleColumns');
+                    var Hidecols= table.bootstrapTable('getHiddenColumns');
+                    var postData = [];
+                    if (showCols.length>0) {
+                        for (var key in showCols) {
+                            postData.push({
+                                field: showCols[key].field,
+                                checked: true
+                            })
+                        }
+                    }
+                    if (Hidecols.length>0) {
+                        for (var itemKey in Hidecols) {
+                            postData.push({
+                                field: Hidecols[itemKey].field,
+                                checked: false
+                            })
+                        }
+                    }
+                    // 记住选择的列
+                    $.post("{:url('/cms.archives/saveField',['model_id'=>$model_id,'category_id'=>$category_id])}",{column_data:postData},function (res) {
+
+                    });
+                },
+                columns: columns});
+
+            //table.bootstrapTable('hideColumn', 'thumb'); // 隐藏显示
+
+            // 复制
+            $('.btn-push').click(function (e) {
+                var ids = Table.api.getSelectionsId(table,true);
+                hkcms.api.open(Util.setUrlParams({ url:"{:url('/cms.archives/push',['model_id'=>$model_id,'category_id'=>$category_id])}&ids="+ids, query:{popup:1} }),"{:lang('Copy to')}")
+            })
+
+            $('.btn-move').click(function (e) {
+                var ids = Table.api.getSelectionsId(table,true);
+                hkcms.api.open(Util.setUrlParams({ url:"{:url('/cms.archives/move',['model_id'=>$model_id,'category_id'=>$category_id])}&ids="+ids, query:{popup:1} }),"{:lang('Move to')}")
+            });
+
+            // 增加是否显示下级
+            if (Tpl.c_sub==1) {
+                $('.fixed-table-toolbar .columns-right').find('button[name="toggle"]').before('<button class="btn btn-secondary btn-sub-toggle" type="button" aria-label="Toggle" title="切换为不显示下级"><i class="fas fa-arrow-down"></i> </button>');
+            } else {
+                $('.fixed-table-toolbar .columns-right').find('button[name="toggle"]').before('<button class="btn btn-secondary btn-sub-toggle" type="button" aria-label="Toggle" title="切换为显示下级"><i class="fas fa-arrow-right"></i> </button>');
+            }
+
+            // 下级显示、隐藏
+            $(document).on('click','.btn-sub-toggle',function (e) {
+                if ($(this).find('i').is('.fa-arrow-down')) { // 不显示上级
+                    // $(this).find('i').css('color','#777');
+                    $(this).find('i').removeClass('fa-arrow-down').addClass('fa-arrow-right');
+                    $(this).attr('title','切换为显示下级');
+                    table.bootstrapTable('refresh',{ url:"{:url('/cms.archives/index',['model_id'=>$model_id,'category_id'=>$category_id])}"+'&issub=2'});
+                } else {
+                    $(this).find('i').removeClass('fa-arrow-right').addClass('fa-arrow-down');
+                    // $(this).find('i').css('color','var(--teal)');
+                    $(this).attr('title','切换为不显示下级');
+                    table.bootstrapTable('refresh',{ url:"{:url('/cms.archives/index',['model_id'=>$model_id,'category_id'=>$category_id])}"+'&issub=1'});
+                }
+
+            });
+
+            // 新增、删属性
+            $(document).on('click', '.btn-addproperty,.btn-deleteproperty', function (e) {
+                var ids = Table.api.getSelectionsId(table,true);
+                var that = this;
+                layer.open({
+                    title: $(this).data('type')==1?"{:lang('Add property')}":"{:lang('Delete property')}",
+                    type: 1,
+                    btn: ["{:lang('Submit')}"],
+                    area: ['400px', '200px'],
+                    content: $('#tmp-property').html(),
+                    shade: 0,
+                    yes: function(index, layero) {
+                        var arr = [];
+                        $('.layui-layer-content .J-flags').each(function () {
+                            if ($(this).prop('checked')) {
+                                arr.push($(this).val());
+                            }
+                        })
+                        if (arr.length<=0) {
+                            layer.msg("{:lang('Please choose')}");
+                            return false;
+                        }
+
+                        var idx = layer.load(1);
+                        $.post("{:url('/cms.archives/property',['category_id'=>$category_id])}",{ids:ids,p:arr,type:$(that).data('type')},function (res) {
+                            layer.close(idx);
+                            if (res.code==200) {
+                                layer.msg(res.msg,{time:1000},function () {
+                                    layer.close(index);
+                                    table.bootstrapTable('refresh');
+                                });
+                            } else {
+                                layer.msg(res.msg);
+                            }
+                        });
+                    }
+                });
+            });
+        })
+    })
+</script>
+{/block:script}

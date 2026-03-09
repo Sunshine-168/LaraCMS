@@ -1,0 +1,217 @@
+<div class="card ">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar(['add'=>['model_id'=>$model_id]])}
+
+            <div class="dropdown btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-cog"></i> {:lang('More')}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    {if (has_rule('del'))}
+                    <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.ModelField/del',['model_id'=>$model_id])}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+                    {/if}
+
+                    {if (has_rule('batches'))}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item status" href="#" data-params="status=normal"><i class="fas fa-check-circle"></i> {:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden"><i class="fas fa-ban"></i> {:lang('Set to disabled')}</a>
+                    {/if}
+                </div>
+            </div>
+
+        </div>
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/cms.ModelField/edit',['model_id'=>$model_id])}{/if}"
+               data-del="{if has_rule('del')}{:url('/cms.ModelField/del',['model_id'=>$model_id])}{/if}"
+               data-batches="{if (has_rule('batches'))}{:url('/cms.ModelField/batches',['model_id'=>$model_id])}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.ModelField/index',['model_id'=>$model_id])}",
+                search: false,
+                pagination:false,
+                pageSize:100,
+                sortName: false,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                    formatter: function (value, row, index, field) {
+                        if (row['default_field']==1) {
+                            return {disabled:true};
+                        } else {
+                            return {disabled:false};
+                        }
+                    }
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter: Table.formatter.txtEditBtn,
+                    events: Table.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'field_name',
+                    title: '{:lang("Field")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'field_title',
+                    title: '{:lang("Title")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'form_type',
+                    title: '{:lang("Field type")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'length',
+                    title: '{:lang("Length")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'default_value',
+                    title: '{:lang("Defaults")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'data_list',
+                    title: '{:lang("Option list")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'iscore_text',
+                    title: '{:lang("Main table field")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'max_number',
+                    title: '{:lang("Greatest amount")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'decimals',
+                    title: '{:lang("Decimal places")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'rules',
+                    title: '{:lang("Rule")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'tips',
+                    title: '{:lang("Tips")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'field_group',
+                    title: '{:lang("Grouping")}',
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'error_tips',
+                    title: '{:lang("Error tips")}',
+                    visible: false,
+                    textLength: 10,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn,
+                },{
+                    field: 'extend',
+                    title: '{:lang("HTML attr")}',
+                    textLength: 10,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn,
+                    visible: false
+                },{
+                    field: 'default_field_text',
+                    title: '{:lang("Default field")}',
+                    visible: false,
+                    formatter: function (value, row, index, field) {
+                        return row['iscore']==1 && row['default_field']==1 ? "<span class='text-muted'>"+value+"</span>" : value;
+                    }
+                },{
+                    field: 'user_auth',
+                    title: '{:lang("Contribution allowed")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'admin_auth',
+                    title: '{:lang("Admin allowed")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'is_order',
+                    title: '{:lang("Sortable")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'is_filter',
+                    title: '{:lang("Screen")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: function (value, row, index, field) {
+                        if (row['iscore']!=1 || row['field_name']=='content' ||  (row['iscore']==1 && row['default_field']!=1)) {
+                            return Table.formatter.switchBtn.call(this, value, row, index, field);
+                        }
+                        return '-';
+                    },
+                    events: Table.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        let url = hkcms.api.setUrlParams({ url:'{:url("/cms.ModelField/fieldcategory")}?model_id='+row['model_id']+'&field_id='+row['id'], query:{popup:1} });
+                        let html = '';
+                        // if ($.inArray(row['field_name'],['publish_time','status'])>=0) {
+                        //     return '-';
+                        // }
+                        if ($.inArray(row['field_name'], ['content'])>=0 || row['default_field']==0) {
+                            html = '<a data-title="'+lang('Specify the column of the %s field',[row['field_title']])+'" data-toggle="open" data-url="'+url+'" href="#!" class="btn btn-primary btn-xs"><i class="fas fa-cog"></i> {:lang("Column")}</a>';
+                        }
+                        html += '<button type="button" class="btn btn-primary ml-1 btn-xs btn-row-edit"><i class="fas fa-pen"></i></button>';
+                        if (row['default_field']==0) {
+                            html += '<button type="button" class="btn btn-danger ml-1 btn-xs btn-row-del" title="{:lang("Delete")}"><i class="fas fa-trash-alt"></i></button>';
+                        }
+                        return html;
+                    },
+                    events: Table.events.operate
+                }]
+            });
+        })
+    })
+</script>
+{/block:script}

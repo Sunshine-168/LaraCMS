@@ -1,0 +1,188 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <!--筛选-->
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Title")}</label>
+                            <input type="text" class="form-control" name="title" placeholder="{:lang("Title")}" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang('Suffix')}</label>
+                            <select name="ext" class="form-control">
+                                <option value="">{:lang('All')}</option>
+                                {volist id="vo" name="ext"}
+                                <option value="{$vo}">{$vo}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang('Size')}</label>
+                            <input type="hidden" name="size" data-op="BETWEEN">
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="size_start" placeholder="{:lang('Unit byte')}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="size_end" placeholder="{:lang('Unit byte')}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default ml-2" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            {if has_rule('common/upload')}
+            <div class="file-upload-group">
+                <button type="button" class="btn btn-primary btn-uploads"
+                        data-multiple="true"
+                        data-mimetype="*">
+                    <i class="fas fa-arrow-alt-circle-up"></i> {:lang('Upload')}
+                </button>
+            </div>
+
+            <button type="button" class="btn btn-default btn-remote" data-toggle="tooltip"><i class="fas fa-download"></i> {:__('Remote download')}</button>
+            {/if}
+
+            {if has_rule('routine/attachment/water')}
+            <button type="button" class="btn btn-default btn-water" data-toggle="tooltip"><i class="fas fa-tint"></i> {:__('Watermark')}</button>
+            {/if}
+
+            {if has_rule('routine/attachment/thumb')}
+            <button type="button" class="btn btn-default btn-thumb" data-toggle="tooltip"><i class="far fa-image"></i> {:__('Thumbnail')}</button>
+            {/if}
+
+            <button type="button" class="btn btn-disabled btn-danger disabled btn-del " data-url="{:url('/routine.attachment/del')}"><i class="fas fa-trash-alt"></i>
+                {:lang('Delete')}</button>
+        </div>
+        <table id="table"
+               data-del="{if has_rule('del')}{:url('/routine.attachment/del')}{/if}"
+               data-edit="{if has_rule('edit')}{:url('/routine.attachment/edit')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            var table = Table.init({
+                url: "{:url('/routine.attachment/index')}",
+                showToggle: false,
+                search: false,
+                pagination: true,
+                customFilter: true,
+                pageSize: 10,
+                escape: false,
+                sortName: 'update_time',
+                sortOrder: 'desc',
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'user_id',
+                    title: '{:lang("User ID")}',
+                    visible: false
+                },{
+                    field: 'user_name',
+                    title: '{:lang("Username")}',
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                    formatter: function (value, row, index, field) {
+                        if (value.length>27) {
+                            return '<span title="'+value+'">'+(value.substring(0,27)+'...')+'</span>'
+                        }
+                        return value;
+                    }
+                },{
+                    field: 'cdn_url',
+                    title: '{:lang("Preview")}',
+                    formatter: Table.formatter.image,
+                    events: Table.events.image
+                },{
+                    field: 'path',
+                    title: '{:lang("Path")}',
+                    visible: false
+                },{
+                    field: 'size_text',
+                    title: '{:lang("Size (kb)")}',
+                },{
+                    field: 'storage',
+                    title: '{:lang("Storage")}',
+                },{
+                    field: 'ext',
+                    title: '{:lang("Suffix")}',
+                },{
+                    field: 'md5',
+                    title: 'md5',
+                    visible: false
+                },{
+                    field: 'mime_type',
+                    title: '{:lang("Mime type")}',
+                    visible: false
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                    visible: false
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: Table.formatter.operate,
+                    events: Table.events.operate
+                }]});
+
+            // 远程下载
+            $('.btn-remote').click(function (e) {
+                layer.prompt({title: '{:__("Please enter the remote attachment address")}', formType: 2}, function(url, index){
+                    var ind = layer.load(1);
+                    $.post('{:url("/routine.attachment/download")}',{ url:url },function (e) {
+                        layer.close(ind);
+                        if (e.code==200) {
+                            layer.msg(e.msg,{time:1000},function () {
+                                table.bootstrapTable('refresh');
+                                layer.close(index);
+                            })
+                        } else {
+                            layer.alert(e.msg);
+                        }
+                    });
+                });
+            });
+
+            // 水印
+            $('.btn-water').click(function (e) {
+                hkcms.api.open('{:url("/routine.attachment/water")}?popup=1',"{:__('Watermark')}");
+            });
+
+            // 缩略图
+            $('.btn-thumb').click(function (e) {
+                hkcms.api.open('{:url("/routine.attachment/thumb")}?popup=1',"{:__('Thumbnail')}");
+            });
+        })
+    })
+</script>
+{/block:script}

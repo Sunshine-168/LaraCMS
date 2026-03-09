@@ -1,0 +1,13 @@
+<div class=" card-tabs">
+    <div class="tab-content">
+        {volist name="col" id="vv"}
+        <div class="form-group row pl-3 pr-3 pt-1 pb-1 m-0" {if $key%2==0}style="background-color: #f9f9f9;"{/if}>
+            <label class="col-sm-3 col-12 col-form-label">{$colName[$vv]??''}：</label>
+            <div class="col-sm-9 col-12 d-flex align-items-center" >
+                {$info[$vv]??''}
+            </div>
+        </div>
+        {/volist}
+    </div>
+</div>
+

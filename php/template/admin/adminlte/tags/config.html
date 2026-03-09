@@ -1,0 +1,56 @@
+<form class="frm-operate">
+    <div class="card card-primary">
+        <div class="card-body">
+            <div class="form-group row">
+                <label for="frm-tags" class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:__('Home template')}</label>
+                <div class="col-sm-8">
+                    <input class="form-control" id="frm-tags" placeholder="{:__('Tag homepage template')}" data-rule="required" name="row[tags_index]" type="text" value="{$tags['tags_index']|default=''}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-tags_list" class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:__('List template')}</label>
+                <div class="col-sm-8">
+                    <input class="form-control" id="frm-tags_list" data-rule="required" placeholder="{:__('Tag list page template')}" name="row[tags_list]" type="text" value="{$tags['tags_list']|default=''}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-seo_title" class="col-sm-2 row-form-label">{:__('SEO title')}</label>
+                <div class="col-sm-8">
+                    <input class="form-control" id="frm-seo_title" placeholder="{:__('Apply to the homepage of the tag')}" name="row[tags_seo_title]" type="text" value="{$tags['tags_seo_title']|default=''}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-seo_keyword" class="col-sm-2 row-form-label">{:__('SEO keywords')}</label>
+                <div class="col-sm-8">
+                    <input class="form-control" id="frm-seo_keyword" placeholder="{:__('Apply to the homepage of the tag')}" name="row[tags_seo_keyword]" type="text" value="{$tags['tags_seo_keyword']|default=''}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-seo_desc" class="col-sm-2 row-form-label">{:__('SEO description')}</label>
+                <div class="col-sm-8">
+                    <input class="form-control" id="frm-seo_desc" placeholder="{:__('Apply to the homepage of the tag')}" name="row[tags_seo_desc]" type="text" value="{$tags['tags_seo_desc']|default=''}">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin,Form) {
+        Form.api.init({success:function (data,res) {
+                layer.msg(res.msg, {time:2000, icon:1}, function () {
+                    window.location.reload();
+                });
+                return false;
+            }});
+    })
+</script>
+{/block:script}

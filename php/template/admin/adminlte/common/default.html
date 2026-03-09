@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="csrf-token" content="{:token()}">
+
+    {include file="common/meta"}
+
+    <style>
+        html,body,.wrapper {
+            height: 100% !important;
+        }
+        .content {
+            min-height: 100%;
+            height: auto;
+            padding-bottom: 20px;
+            background-color: #f2f3f5;
+        }
+        .operatePage .card-footer {
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            z-index: 99;
+        }
+    </style>
+
+    {__STYLE__}
+
+</head>
+<body class="sidebar-mini layout-top-nav overlayScrollbars" >
+
+    {if empty($popup)}
+    <!-- 子页 -->
+    <div class="wrapper">
+        <div class="content">
+            <div class="container-fluid" style="padding-top: 16px">
+                {__CONTENT__}
+            </div>
+        </div>
+    </div>
+
+    {else /}
+    <div class="operatePage">
+        {__CONTENT__}
+    </div>
+    {/if}
+
+    {include file="common/script"}
+
+
+    {__SCRIPT__}
+    
+</body>
+</html>

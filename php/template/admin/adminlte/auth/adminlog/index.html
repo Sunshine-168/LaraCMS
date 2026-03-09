@@ -1,0 +1,114 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">用户</label>
+                            <input type="text"
+                                   id="frm-admin_id"
+                                   class="form-control selectpage"
+                                   name="admin_id"
+                                   data-multiple="true"
+                                   data-op="IN"
+                                   placeholder="用户登录名称"
+                                   data-show-field="username"
+                                   data-search-field="username"
+                                   data-data="{:url('/auth.admin/index')}">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">操作时间</label>
+                            <input type="text"
+                                   class="form-control laydate"
+                                   id="frm-publish_time"
+                                   name="create_time"
+                                   data-type="datetime"
+                                   data-range="true"
+                                   data-op="BETWEEN TIME"
+                                   autocomplete="off"
+                                   placeholder="操作时间">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary mr-2" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('refresh,del')}
+        </div>
+        <table id="table"
+               data-del="{if (has_rule('del'))}{:url('/auth.Adminlog/del')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin,Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/auth.Adminlog/index')}",
+                search: false,
+                customFilter: true,
+                escape: false,
+                sortName:'create_time',
+                sortOrder:'desc',
+                classes: 'table table-bordered table-hover',
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    visible: false,
+                },{
+                    field: 'username',
+                    title: '{:lang("Username")}',
+                },{
+                    field: 'nickname',
+                    title: '{:lang("Nickname")}',
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                },{
+                    field: 'url',
+                    title: 'url',
+                },{
+                    field: 'ip',
+                    title: 'IP',
+                },{
+                    field: 'content',
+                    title: '{:lang("Content")}',
+                    textLength: 20,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn,
+                    //visible: false
+                },{
+                    field: 'useragent',
+                    title: 'useragent',
+                    textLength: 20,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Operating time")}',
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: Table.formatter.operate,
+                    events: Table.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

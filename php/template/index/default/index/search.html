@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+
+    <style>
+        .filter {
+            margin: 0;
+            padding: 0;
+        }
+        .filter .float-right a {
+            margin-left: 4px;
+        }
+        .filter .float-left a {
+            margin-right: 4px;
+        }
+        .filter a.active {
+            color: #ffb600;
+        }
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            font-size: 18px;
+            color: #9199a1;
+            text-align: right;
+            position: absolute;
+            right: 14px;
+            bottom: 21px;
+            top: 4px;
+            cursor: pointer;
+        }
+        .search-input {
+            float: left;
+            width: 100%;
+            padding-right: 40px;
+            margin: 24px 0;
+            line-height: 36px;
+            background: #FFFFFF;
+            position: relative;
+        }
+        .search-input .form-control {
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{:lang('Site Search')}</h1>
+                            <form class="search-form" action="{:index_url('/search/index')}" method="get">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-6">
+                                        <div class="search-input">
+                                            <input class="form-control" placeholder="{:lang('Site Search')}" type="text" name="keyword" value="{$__param__['keyword']}" autocomplete="off">
+                                            <div class="search-icon"><i class="fa fa-search"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-lg-4">
+                    <div class="sidebar sidebar-left">
+                        <div class="widget">
+                            <h3 class="widget-title">{:__('Categories')}</h3>
+                            <ul class="nav service-menu">
+                                <!--__modelInfo__：模型列表，不需要可以删掉-->
+                                {hkcms:volist name="__modelInfo__"}
+                                <li class="{$item.currentstyle}"><a href="{$item.url}">{:__($item.alias)}</a></li>
+                                {/hkcms:volist}
+                            </ul>
+                        </div>
+
+                        <!--热门新闻-->
+                        <div class="widget recent-posts">
+                            <h3 class="widget-title">{:__('Hot news')}</h3>
+                            <ul class="list-unstyled">
+                                {// 设置缓存时间cache，按浏览量从高到低排序}
+                                {hkcms:content catid="9" order="views desc" num="5" cache="7200"}
+                                <li class="d-flex align-items-center">
+                                    <div class="posts-thumb">
+                                        {// fullurl 带域名的url地址}
+                                        <a href="{$item.fullurl}"><img loading="lazy" alt="{$item.title}" src="{$item.thumb|default=''}"></a>
+                                    </div>
+                                    <div class="post-info">
+                                        <h4 class="entry-title">
+                                            <a href="{$item.fullurl}">
+                                                <!--截取标题：保留28个字，后面拼接省略号....-->
+                                                {hkcms:substr name="$item.title" len="28" dot="...." }
+                                            </a>
+                                        </h4>
+                                    </div>
+                                </li>
+                                {/hkcms:content}
+                            </ul>
+                        </div>
+                        <!--热门新闻 结束-->
+                    </div>
+                </div>
+
+                <div class="col-xl-9 col-lg-8">
+                    <div class="content-inner-page">
+                        <div class="blog-item-list">
+                            <div class="clearfix filter">
+                                <div class="float-left">
+                                    {// 可用部分栏目来筛选结果,例如获取新闻中心的所有栏目}
+                                    <a href="{:url('/search/index',['keyword'=>$__param__['keyword']])}" class="{if empty($__param__['category_id'])}active{/if}">{:__('All')}</a>
+                                    {hkcms:channel name="9" type="son"}
+                                    <a href="{:url('/search/index', array_merge($__param__,['category_id'=>$item.id]))}" class="{if $__param__['category_id']==$item.id}active{/if}">{$item.title}</a>
+                                    {/hkcms:channel}
+                                </div>
+                                <div class="float-right">
+                                    {// 获取默认排序}
+                                    {hkcms:volist name="__order__"}
+                                    <a href="{$item.url}" class="{$item.currentstyle}">
+                                        {$item.title}
+                                    </a>
+                                    {/hkcms:volist}
+                                </div>
+                            </div>
+                            <hr>
+
+                            <!--__SDATA__：搜索结果变量，使用volist循环出来，-->
+                            {hkcms:volist name="__SDATA__"}
+                            <div class="blog-item">
+                                <div class="bi-text">
+                                    {// 字符高亮，这里用于搜索的字符高亮显示，更多参数前往手册了解}
+                                    <h4><a href="{$item.url}">{hkcms:color name="$item.title"}</a></h4>
+                                    <ul>
+                                        <li><span><i class="fa fa-user-alt"></i> {$item.author|default=''}</span></li>
+                                        <li><span><i class="far fa-calendar"></i> {hkcms:date name="$item.publish_time" format="Y-m-d"}</span></li>
+                                        <li><span><i class="fa fa-eye"></i> {$item.views|default=''} {:__('View')}</span></li>
+                                    </ul>
+                                    <p class="desc">{$item.description|default=""}</p>
+                                    <a href="{$item.url}" class="read-more">{:__('Read More')} <span><i class="fa fa-arrow-right"></i></span></a>
+                                </div>
+                            </div>
+                            {/hkcms:volist}
+                        </div>
+                        <div class="gap-40"></div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {hkcms:contentpage name="__SPAGE__" item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

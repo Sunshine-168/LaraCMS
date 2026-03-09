@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container" style="padding: 50px 0;">
+        <div class="container">
+            <div class="row">
+                <!--详情-->
+                <div class="col-xl-12 col-lg-12">
+                    <div class="post-content post-single">
+                        <div class="post-body">
+                            <div class="entry-header">
+                                {// $Info 里面包含副表、栏目信息、模型信息，存在于单页、内容页}
+                                <h2 class="entry-title">{$Info.title}</h2>
+                                <div class="post-meta">
+                                    <span class="post-author"><i class="far fa-user"></i> {$Info.author|default=""}</span>
+                                    <span class="post-author"><i class="far fa-map"></i> {$Info.address|default=""}</span>
+                                    <span class="post-meta-date"><i class="far fa-calendar"></i> {hkcms:date name="$Info.publish_time" format="Y-m-d"}</span>
+                                    <span class="post-comment"><i class="far fa-eye"></i> {$Info.views} {:__('View')}</span>
+                                </div>
+                            </div>
+                            <hr style="margin: 10px 0 30px 0">
+                            <ul>
+                                <li><span>{:__('Educational requirements')}：</span><span>{$Info.degree}</span></li>
+                                <li><span>{:__('Salary')}：</span><span>{$Info.salary}</span></li>
+                                <li><span>{:__('work nature')}：</span><span>{$Info.nature}</span></li>
+                                <li><span>{:__('work experience')}：</span><span>{$Info.exp}</span></li>
+                                <li><span>{:__('Recruitment number')}：</span><span>{$Info.number}</span></li>
+                            </ul>
+                            <div class="entry-content main-content">{$Info.content}</div>
+
+                            <!--标签与分享-->
+                            <div class="gap-40"></div>
+                            <div class="text-center"><a data-toggle="collapse" href="#collapseExample" class="btn btn-primary btn-apply">{:__('Apply Now')}</a></div>
+                            <div class="collapse" id="collapseExample" style="margin-top: 20px">
+                                <div class="card card-body">
+                                    {// 调用在线招聘留言表单 }
+                                    {hkcms:form catid="41"}
+                                    <input type="hidden" name="{$item.field.title|default=''}" value="{$Info.title}">
+                                    <div class="error-container"></div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>{:__('Name')}</label>
+                                                <input class="form-control form-control-name" name="{$item.field.name|default=''}" id="name" placeholder="" type="text" required="">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>{:__('Mail')}</label>
+                                                <input class="form-control form-control-email" name="{$item.field.email|default=''}" id="email" placeholder="" type="email" required="">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>{:__('Telephone')}</label>
+                                                <input class="form-control form-control-subject" name="{$item.field.phone|default=''}" id="subject" placeholder="" required="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{:__('Content')}</label>
+                                        <textarea class="form-control form-control-message" name="{$item.field.content|default=''}" id="message" placeholder="" rows="10" required=""></textarea>
+                                    </div>
+
+                                    {// 只有开启验证码才显示}
+                                    {if $item.captcha.status}
+                                    <div class="form-group">
+                                        <label>{:__('Verify code')}</label>
+                                        <div class="d-flex align-items-center">
+                                            {// 输入框，可以自己写个输入框来实现自定义，样式的调整：里面有两个class分别是：form-control(bootstrap class) form-captcha，按这两个class调整即可}
+                                            <div class="mr-3">{$item.captcha.input}</div>
+                                            {// 验证码btn，图文验证码时是图片，其他的则是发送按钮}
+                                            <div class="captcha" style="width: 138px">{$item.captcha.btn}</div>
+                                        </div>
+                                    </div>
+                                    {/if}
+
+                                    <div class="form-group">
+                                        <button class="btn btn-primary  blank" type="submit">{:__("Submit")}</button>
+                                    </div>
+                                    {/hkcms:form}
+                                </div>
+                            </div>
+                            <div class="gap-40"></div>
+                            <!--标签与分享结束-->
+
+                            <div class="bc-related-post">
+                                {hkcms:prenext type="pre" len="10" dot="..."}
+                                <a href="{$item.url}" class="previous-post"><i class="fa fa-angle-left"></i> {$item.title}</a>
+                                {else /}
+                                <a href="#!" class="previous-post"><i class="fa fa-angle-left"></i> {:__('No more')}</a>
+                                {/hkcms:prenext}
+                                {hkcms:prenext type="next" len="10" dot="..."}
+                                <a href="{$item.url}" class="next-post"> {$item.title} <i class="fa fa-angle-right"></i></a>
+                                {else /}
+                                <a href="#!" class="next-post">{:__('No more')} <i class="fa fa-angle-right"></i></a>
+                                {/hkcms:prenext}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--详情 结束-->
+            </div>
+        </div>
+    </section>
+
+    {include file="common/footer"}
+
+</div>
+</body>
+</html>

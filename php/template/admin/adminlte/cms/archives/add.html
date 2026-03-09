@@ -1,0 +1,240 @@
+{block:style}
+<link rel="stylesheet" href="__libs__/bootstrap-colorpicker/bootstrap-colorpicker.min.css?v={:time()}">
+<style>
+    .colorpicker-input-addon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        display: block;
+    }
+</style>
+{/block:style}
+
+<form role="form" action="" class="frm-operate" method="post" novalidate>
+    <div class="card card-tabs">
+        <div class="card-header">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="pill" href="#tabs-for-base" role="tab">{:__("Base")}</a>
+                </li>
+                {volist name="fieldGroup" id="vo"}
+                {if ($vo!='常规')}
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#tabs-for-{$i}" role="tab">{$vo}</a>
+                </li>
+                {/if}
+                {/volist}
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="tabs-for-base" role="tabpanel">
+                    <div class="form-group row">
+                        <label for="frm-category_id" class="col-sm-2 col-12 row-form-label">{:__("Column")}</label>
+                        <div class="col-sm-8 col-12">
+                            <div class="input-group">
+                                <select id="frm-category_id" class="form-control ">
+                                    {volist name="category_list" id="vo"}
+                                    <option value="{$vo.id}"
+                                            {if $vo['model_id']!=$categoryInfo['model_id']}disabled style="background-color:#f5f5f5;"{/if}
+                                    {if $vo['id'] == $categoryInfo['id']}selected{/if}
+                                    >{$vo.title|raw}</option>
+                                    {/volist}
+                                </select>
+                                <select class="form-control selectpicker border-left" data-none-selected-text="{:__("Sub column")}" id="category_ids" name="row[category_ids][]" multiple>
+                                    {volist name="category_list" id="vo"}
+                                    <option data-title="{$vo.raw_title}" value="{$vo.id}"
+                                            {if $vo['model_id']!=$categoryInfo['model_id'] || $vo['id'] == $categoryInfo['id']}disabled style="background-color:#f7f8fa;"{/if}
+                                    >{$vo.title|raw}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                            <div class="pt-1 pl-1 text-xs"><span class="text-muted category_ids"></span></div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="row[category_id]" value="{$categoryInfo['id']}">
+                    <input type="hidden" id="model_id" value="{$categoryInfo['model_id']}">
+                    <input type="hidden" name="row[style]" value="">
+
+                    {if !empty($modelFieldArr['常规'])}{$modelFieldArr['常规']|raw}{/if}
+
+                </div>
+                {volist name="fieldGroup" id="vo"}
+                {if ($vo!='常规')}
+                <div class="tab-pane fade" id="tabs-for-{$i}" role="tabpanel">
+                    {if !empty($modelFieldArr[$vo])}{$modelFieldArr[$vo]|raw}{/if}
+                </div>
+                {/if}
+                {/volist}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    {if $Tpl.c_popup!=3}<button type="submit" class="btn btn-default btn-submit btn-continue">{:__('Save and continue')}</button>{/if}
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.card -->
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form','selectpicker','__libs__/bootstrap-colorpicker/bootstrap-colorpicker.js'], function (admin, Form) {
+        var initData = '';
+        var bold = '';
+        var color = '';
+        $(function () {
+
+            var is_continue = false;
+            $('.btn-continue').click(function (e) {
+                is_continue = true;
+            })
+
+            // 颜色选择器
+            if ($('#frm-title').length) {
+                var obj = $('#frm-title').parent();
+                var html = $('#frm-title').prop('outerHTML');
+                $('#frm-title').remove();
+                obj.prepend('<div class="input-group">'+html+'<button type="button" class="btn btn-default rounded-0 border-left btn-bold">加粗</button>' +
+                    '<a class="btn btn-default border-left btn-color" href="#!" style="position: relative"><i class="fas fa-palette"></i>' +
+                    '<span class="colorpicker-input-addon"></span>' +
+                    '</a>' +
+                    '</div>');
+
+                require(['bootstrap-colorpicker'],function () {
+                    $('.btn-color').colorpicker({
+                        color: '#1d2129',
+                        extensions: [
+                            {
+                                name: 'swatches',
+                                options: {
+                                    colors: {
+                                        'white': '#ffffff',
+                                        'default': '#4E5969',
+                                        'secondary': '#6c757d',
+                                        'primary': '#007bff',
+                                        'success': '#28a745',
+                                        'info': '#17a2b8',
+                                        'warning': '#ffc107',
+                                        'danger': '#dc3545'
+                                    },
+                                    namesAsValues: true
+                                }
+                            }
+                        ],
+                        template: '<div class="colorpicker">' +
+                            '<div class="colorpicker-saturation"><i class="colorpicker-guide"></i></div>' +
+                            '<div class="colorpicker-hue"><i class="colorpicker-guide"></i></div>' +
+                            '<div class="colorpicker-alpha">' +
+                            '   <div class="colorpicker-alpha-color"></div>' +
+                            '   <i class="colorpicker-guide"></i>' +
+                            '</div>' +
+                            '<div class="colorpicker-bar" style="box-shadow:none">' +
+                            '    <input type="text" class="form-control form-control-sm color-io" style="margin-top: 10px" placeholder="#000000" value=""><div class="text-muted" style="padding: 8px 0">十六进制</div>' +
+                            '</div>' +
+                            '<hr style="margin: 4px 0 8px 0"></div>'
+                    }).on('colorpickerCreate', function (e) {
+                        $(document).on('change keyup','.color-io', function () {
+                            e.colorpicker.setValue($(this).val());
+                        })
+                    }).on('colorpickerChange', function (e) {
+                        var io = $('.color-io');
+                        if (!e.color || !e.color.isValid()) {
+                            $('#frm-title').css('color', '');
+                            color = '';
+                            $('input[name="row[style]"]').val(bold?'font-weight:'+bold:'');
+                            return;
+                        }
+                        if (e.value === io.val()) {
+                            $('#frm-title').css('color',e.color.string());
+                            color = e.color.string()+';';
+                            $('input[name="row[style]"]').val('color:'+color+(bold?'font-weight:'+bold:''));
+                            return;
+                        }
+                        color = e.color.string()+';';
+                        $('input[name="row[style]"]').val('color:'+color+(bold?'font-weight:'+bold:''));
+                        $('#frm-title').css('color',e.color.string());
+                        io.val(e.color.string());
+                    });
+                });
+
+            }
+
+            // 加粗
+            var isbold = 0;
+            $(document).on('click','.btn-bold',function (e) {
+                isbold = !isbold;
+                if (isbold) {
+                    bold = 'bold;';
+                    $('input[name="row[style]"]').val('font-weight:'+bold+(color?'color:'+color:''));
+                    $(this).css('fontWeight','bold');
+                    $(this).prev().css('fontWeight','bold');
+                } else {
+                    bold = '';
+                    $('input[name="row[style]"]').val(color?'color:'+color:'');
+                    $(this).css('fontWeight','normal');
+                    $(this).prev().css('fontWeight','normal');
+                }
+            });
+
+            Form.api.init({
+                success:function (data, res) {
+                    if (is_continue) { // 保存并新增
+                        layer.msg(res.msg, {time: 1000, icon:1}, function () {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            if (index) {
+                                var page_callback = parent.$("#layui-layer" + index).data("page");
+                                if (page_callback) {
+                                    page_callback();
+                                }
+                            }
+                            window.location.reload();
+                        });
+                        return false;
+                    }
+                    // 弹出框
+                    layer.msg(res.msg, {time: 1000, icon:1}, function () {
+                        if (Tpl.c_popup!=3) {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            var page_callback = parent.$("#layui-layer" + index).data("page");
+                            parent.layer.close(index);
+                            if (page_callback) {
+                                page_callback();
+                            }
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                    return false;
+                }
+            })
+            initData = JSON.stringify({ dataform: $(".frm-operate").serializeArray() });
+
+            // 栏目更改刷新
+            $('#frm-category_id').change(function (e) {
+                var jsonText = JSON.stringify({ dataform: $(".frm-operate").serializeArray() });
+                if(initData!=jsonText){
+                    var that = this;
+                    layer.confirm('{:lang("The page will reload, confirm?")}', {icon: 3}, function (index) {
+                        window.location.href = '{:url("/cms.archives/add",["popup"=>1])}&category_id='+$(that).val();
+                        layer.close(index);
+                    }, function (index) {
+                        $('#frm-category_id').val($('input[name="row[category_id]"]').val());
+                        layer.close(index);
+                    });
+                } else {
+                    window.location.href = '{:url("/cms.archives/add",["popup"=>1])}&category_id='+$(this).val();
+                }
+            });
+        })
+    })
+</script>
+{/block:script}

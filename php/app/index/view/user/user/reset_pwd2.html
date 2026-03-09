@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html style="font-size: 15px">
+<head>
+    <title>{$site.title} - {:lang('Member center')} - {:lang('Reset password')}</title>
+
+    {include file="user/common/head"}
+    <style>
+        .disabled {
+            color: #a7a7a7;
+            cursor: not-allowed;
+        }
+        .disabled:hover {
+            color: #a7a7a7;
+        }
+
+    </style>
+    <style>
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+{include file="user/common/menu"}
+
+<div class="login-page">
+    <div class="login-box">
+        <div class="card">
+            <div class="card-body login-card-body">
+                <form action="" method="post" class="frm-operate">
+                    <h3>{:lang('Reset password')}</h3>
+                    <p>{$temp_username}</p>
+
+                    {if $status==3}
+                    <div class="form-group">
+                        <div>
+                            <div class="input-group m-0">
+                                <input type="text" class="form-control" placeholder="{:lang('Phone verification code')}" name="code" data-rule="required ">
+                                <div class="input-group-append">
+                                    <div class="input-group-text"><a href="#" class="send_sms">{:lang('Get verification code')}</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {else if ($status==2)}
+                    <div class="form-group">
+                        <div>
+                            <div class="input-group m-0">
+                                <input type="text" class="form-control" placeholder="{:lang('Email verification code')}" name="code" data-rule="required">
+                                <div class="input-group-append">
+                                    <div class="input-group-text"><a href="#" class="send_email">{:lang('Get verification code')}</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/if}
+                    <div class="form-group">
+                        <lable>{:lang('New Password')}</lable>
+                        <div class="mt-1">
+                            <input type="password" class="form-control" name="password" data-rule="required ">
+                        </div>
+                    </div>
+                    <input type="hidden" name="status" value="2">
+                    <input type="hidden" name="type" value="{$status}">
+                    <div class="social-auth-links text-center mb-4">
+                        <input type="submit" class="btn btn-block btn-primary btn-submit" value="{:lang('Submit')}" />
+                    </div>
+                </form>
+
+                <p class="text-center"><a href="javascript:window.history.back();">{:lang('Go back to the previous step')}</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file="user/common/footer"}
+<script>
+    require(['jquery','bootstrap','layer','Form'], function ($,undefined,layer,Form) {
+        //  邮箱验证码
+        $('.send_email').click(function (e) {
+            e.preventDefault();
+            if ($('.send_email').is('.disabled')) {
+                return false;
+            }
+            var i = 60;
+            var val = '{$temp_username}';
+            if (val.length<=0) {
+                layer.msg("{:lang('Please fill in the email address')}");
+                return false;
+            }
+            if (!(new RegExp(/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/)).test(val)) {
+                layer.msg("{:lang('Incorrect email address format')}");
+                return false;
+            }
+            $('.send_email').addClass('disabled');
+            $.get("{:url('/user.user/sendems')}?email="+val+'&event=reset_pwd',function(data, status){
+                if (data.code==200) {
+                    layer.msg(data.msg);
+                    var myint = setInterval(function(){
+                        if (i==0) {
+                            $('.send_email').removeClass('disabled');
+                            $('.send_email').html('{:lang('Resend')}');
+                            clearInterval(myint);
+                            return false;
+                        }
+                        $('.send_email').html('{:lang('Resend')} '+(--i));
+                    }, 1000);
+                } else {
+                    $('.send_email').removeClass('disabled');
+                    layer.msg(data.msg);
+                }
+            });
+        });
+
+        // 短信验证码
+        $('.send_sms').click(function (e) {
+            e.preventDefault();
+            if ($('.send_sms').is('.disabled')) {
+                return false;
+            }
+            var i = 60;
+            var val = '{$temp_username}';
+            if (val.length<=0) {
+                layer.msg("{:lang('Please fill in your phone number')}");
+                return false;
+            }
+            if (!(new RegExp(/^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/)).test(val)) {
+                layer.msg("{:lang('Phone number format is not correct')}");
+                return false;
+            }
+            $('.send_sms').addClass('disabled');
+            $.get("{:url('/user.user/send')}?mobile="+val+'&event=reset_pwd',function(data, status){
+                if (data.code==200) {
+                    layer.msg(data.msg);
+                    var myint = setInterval(function(){
+                        if (i==0) {
+                            $('.send_sms').removeClass('disabled');
+                            $('.send_sms').html('{:lang('Resend')}');
+                            clearInterval(myint);
+                            return false;
+                        }
+                        $('.send_sms').html('{:lang('Resend')} '+(--i));
+                    }, 1000);
+                } else {
+                    $('.send_sms').removeClass('disabled');
+                    layer.msg(data.msg);
+                }
+            });
+        });
+
+        Form.api.init({success:function (data, response) {
+                layer.msg(response.msg,{time:1000},function (e) {
+                    window.location.href = response.url;
+                });
+            }});
+    })
+</script>
+
+</body>
+</html>

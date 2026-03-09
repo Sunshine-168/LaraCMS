@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+
+    <!--产品展示、获取所有-->
+    {hkcms:channel name="$Cate['id']" type="son" id="channel"}
+    <section class="project-area home-product" {if $key==0} style="padding-bottom: 0;" {else /} style="padding-bottom: 0;padding-top:20px" {/if}>
+        <div class="container">
+            <!--产品栏目-->
+            <div class="row">
+                <div class="col-lg-5">
+                    <div class="section-title">
+                        <!--获取产品栏目名称-->
+                        <h4>{$channel.title}</h4>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="property-controls">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li><a href="{$channel.url}">{:__('Read More')} <i class="far fa-hand-point-right"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!--产品栏目 结束-->
+
+            <div class="tab-content">
+                <!--获取全部产品的6条记录,order="字段名 desc,字段名 desc" asc是正序 desc是倒序 多个字段用逗号分隔-->
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="row property-filter tab-content">
+                        {hkcms:content catid="$channel.id" num="3" order="weigh desc,views desc"}
+                        <div class="col-lg-4 col-md-6 mix all">
+                            <div class="property-item">
+                                <div class="pi-pic set-bg" style="background-image: url('{$item.thumb|default=''}');">
+                                    <div class="label c-magenta">{$item.category.title}</div>
+                                </div>
+                                <div class="pi-text">
+                                    <a href="#!" class="heart-icon"><span class="fas fa-meteor"></span> {$item.views}</a>
+
+                                    {// if语句的使用，下面是判断价格大于0就显示价格，反之显示咨询 }
+                                    {if !empty($item.price) && $item.price>0}
+                                    <div class="pt-price text-danger">¥ {$item.price}</div>
+                                    {else /}
+                                    <div class="pt-price text-warning">{:__('Consult')}</div>
+                                    {/if}
+
+                                    {// $item.fullurl是包含域名的url地址 }
+                                    <h5><a href="{$item.fullurl}">{$item.title}</a></h5>
+                                    <div class="desc">{$item.description}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/hkcms:content}
+                    </div>
+                </div>
+                <!--获取全部产品 结束-->
+            </div>
+        </div><!--container 结束-->
+    </section>
+    <!--产品展示 结束-->
+    {/hkcms:channel}
+
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

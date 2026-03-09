@@ -1,0 +1,76 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('refresh,add,del')}
+        </div>
+        <table id="table"
+               data-edit="{if (has_rule('edit'))}{:url('/auth.group/edit')}{/if}"
+               data-del="{if (has_rule('del'))}{:url('/auth.group/del')}{/if}"
+               data-batches="{if (has_rule('batches'))}{:url('/auth.group/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin,Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/auth.Group/index')}",
+                showToggle: false,
+                search: false,
+                pagination: false,
+                escape: false,
+                sortName:false,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                    formatter: function (value, row, index, field) {
+                        if (row['parent_id']==0) {
+                            return {disabled:true};
+                        } else {
+                            return {disabled:false};
+                        }
+                    }
+                },{
+                    field: 'id',
+                    title: 'ID',
+                },{
+                    field: 'name',
+                    title: '{:lang("Name")}',
+                    align: 'left'
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: function (value, row, index, field) {
+                        if (row['rules']=='*') {
+                            return '{:lang("Normal")}';
+                        }
+                        return Table.formatter.switchBtn.call(this, value, row, index, field);
+                    },
+                    events: Table.events.switchBtn
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        if (row['rules']=='*') {
+                            return '';
+                        }
+                        return Table.formatter.operate.call(this, value, row, index);
+                    },
+                    events: Table.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

@@ -1,0 +1,263 @@
+<style>
+    .table-p {
+        width: 100%;
+        overflow:auto;
+    }
+    .table-p tr td,.table-p tr th {
+        text-align: center; vertical-align: middle;
+    }
+    .content {
+        background: #ffffff;
+    }
+    .pagination {
+        display: -ms-flexbox;
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: 0.25rem;
+    }
+    .pagination li a,.pagination li span {
+        position: relative;
+        display: block;
+        padding: 0.5rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+    }
+    .pagination li.active span {
+        z-index: 3;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+<div class="guestbook p-3">
+
+    <div class="filter-panel {if empty($param)}d-none{/if}">
+        <form action="" method="get" class="frm-filter">
+            <input type="hidden" name="category_id" value="{$category_id}">
+            <input type="hidden" name="model_id" value="{$model_id}">
+            <input type="hidden" name="popup" value="1">
+            <div class="row">
+                <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label class="row-form-label">ID</label>
+                        <div class="col-md-8 col-sm-8 col-xs-6">
+                            <input type="text" class="form-control" name="id" placeholder="ID" value="{$param['id']|default=''}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label class="row-form-label">{:lang("Check")}</label>
+                        <div class="col-md-8 col-sm-8 col-xs-6">
+                            <select name="is_read" class="form-control">
+                                <option value="">{:lang('All')}</option>
+                                <option value="-1" {if !empty($param['is_read']) && $param['is_read']==-1}selected{/if}>{:lang('Unread')}</option>
+                                <option value="1" {if !empty($param['is_read']) && $param['is_read']==1}selected{/if}>{:lang('Have read')}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="form-group">
+                        <label class="row-form-label">{:lang("Create time")}</label>
+                        <div class="col-md-8 col-sm-8 col-xs-6">
+                            <input type="text"
+                                   class="form-control laydate"
+                                   id="frm-create_time"
+                                   name="create_time"
+                                   data-type="datetime"
+                                   data-range="true"
+                                   data-op="BETWEEN TIME"
+                                   value="{$param['create_time']|default=''}"
+                                   autocomplete="off"
+                                   placeholder="{:lang("Create time")}">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                    <div class="form-group text-center">
+                        <input type="submit" class="btn btn-primary mr-2" value="{:lang('Search')}">
+                        <input type="reset" class="btn btn-default" value="{:lang('Reset')}">
+                    </div>
+                </div>
+            </div>
+        </form>
+        <hr>
+    </div>
+
+    <div class="row pb-3">
+        <div class="col-md-12 d-flex justify-content-between">
+            <div>
+                <a href="{:url('/cms.Guestbook/export',['category_id'=>$category_id])}" class="btn btn-primary btn-export" target="_blank"><i class="fas fa-reply"></i> {:lang('Export')}</a>
+                <button type="button" class="btn btn-disabled btn-danger disabled btn-del" data-url="{:url('/cms.Guestbook/del',['category_id'=>$category_id])}"><i class="fas fa-trash-alt"></i>
+                    {:lang("Delete")}</button>
+            </div>
+            <div class="">
+                <div class="float-right search columns-right btn-group">
+                    <div class="input-group"><button class="btn btn-default btn-filter" type="button" name="search" title="筛选"><i class="fa fa-search"></i> </button></div>
+                    <a type="button" class="btn btn-secondary btn-refresh ml-2" href="?category_id={$category_id}&model_id={$model_id}&popup=1"><i class="fas fa-redo-alt"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-p fixed-table-container">
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="">
+            <tr>
+                <th class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; "
+                    data-field="state">
+                    <div class="th-inner "><label style="margin-bottom: 0"><input name="btSelectAll" class="btSelectAll" type="checkbox"><span></span></label></div>
+                    <div class="fht-cell"></div>
+                </th>
+                {volist name="col" id="vo"}
+                <th style="min-width: 100px">
+                    {$colName[$vo]}
+                </th>
+                {/volist}
+
+                <th style="min-width: 80px">
+                    {:lang("Check")}
+                </th>
+                <th style="min-width: 80px">
+                    {:lang("Operate")}
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {volist name="data['data']" id="vo"}
+            <tr>
+                <td class="bs-checkbox " style="text-align: center; vertical-align: middle; width: 36px; "><label>
+                    <input data-index="0" name="btSelectItem" class="btSelectItem" data-id="{$vo['id']}" type="checkbox">
+                    <span></span>
+                </label>
+                </td>
+                {volist name="col" id="vv"}
+                <td>
+                    {if $vv=='category_tilte'}
+                    {$vo['category']['title']}
+                    {else /}
+                    {$vo[$vv]}
+                    {/if}
+                </td>
+                {/volist}
+                <td class="isread_status">
+                    {if isset($vo['is_read'])}
+                        {if $vo['is_read']==1}<span class="text-primary">{:lang('Have read')}</span>{else /}<span class="text-danger">{:lang('Unread')}</span>{/if}
+                    {else /}
+                    <!--兼容旧版-->
+                    -
+                    {/if}
+                </td>
+                <td>
+                    <button type="button" class="btn btn-primary btn-xs btn-row-view" data-id="{$vo['id']}" data-url="{:url('/cms.Guestbook/view',['category_id'=>$category_id,'popup'=>1])}" title="{:lang('View')}"><i class="fas fa-eye"></i></button>
+                    <button type="button" class="btn btn-danger btn-xs btn-row-del" data-id="{$vo['id']}" data-url="{:url('/cms.Guestbook/del',['category_id'=>$category_id])}" title="{:lang('Delete')}"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page d-flex justify-content-center mt-5">
+        {$page|raw}
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','laydate'], function (admin, Laydate) {
+        $('.btSelectAll').change(function (e) {
+            if ($('.btSelectAll').prop("checked")) {
+                $('.btSelectItem').prop('checked',true)
+                $('.btn-del').removeClass('disabled');
+            } else {
+                $('.btSelectItem').prop('checked',false)
+                $('.btn-del').addClass('disabled');
+            }
+        });
+        $('.btSelectItem').change(function (e) {
+            if ($('.btSelectItem').is(':checked')) {
+                $('.btn-del').removeClass('disabled');
+            } else {
+                $('.btn-del').addClass('disabled');
+            }
+        })
+
+        // 留言删除
+        $('.guestbook').on('click','.btn-del',function (e) {
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+
+            var idsArr = [];
+            $.each($('.btSelectItem:checked'), function (key, value) {
+                idsArr.push($(this).data('id'));
+            });
+
+            var ids = idsArr.join(',');
+            var url = Util.setUrlParams({ url:$(this).data('url'), query:{ ids:ids }});
+
+            //询问框
+            Layer.confirm(lang('Confirm operation?'), {
+                btn: [lang('Confirm'),lang('Cancel')] //按钮
+            }, function(){
+                Util.ajax({ url:url },'',function (data,res) {
+                    Layer.msg(res.msg,{time:1000, icon:1},function (e) {
+                        window.location.reload();
+                    });
+                });
+            });
+        });
+
+        // 单条记录删除
+        $('.guestbook').on('click','.btn-row-del',function (e) {
+            var ids = $(this).data('id');
+            var url = Util.setUrlParams({ url:$(this).data('url'), query:{ ids:ids }});
+
+            //询问框
+            Layer.confirm(lang('Confirm operation?'), {
+                btn: [lang('Confirm'),lang('Cancel')], //按钮
+                icon: 3
+            }, function(){
+                hkcms.api.ajax({ url:url },'',function (data,res) {
+                    Layer.msg(res.msg,{time:1000, icon:1},function (e) {
+                        window.location.reload();
+                    });
+                });
+            });
+        });
+
+        // 查看
+        $('.guestbook').on('click','.btn-row-view',function (e) {
+            var ids = $(this).data('id');
+            var url = Util.setUrlParams({ url:$(this).data('url'), query:{ id:ids }});
+
+            hkcms.api.open(url,'{:lang("view")}');
+            $(this).parent().parent().find('.isread_status').html('<span class="text-primary">{:lang('Have read')}</span>');
+        });
+        $('.btn-filter').click(function (e) {
+            if ($('.filter-panel').is('.d-none')) {
+                $('.filter-panel').removeClass('d-none');
+            } else {
+                $('.filter-panel').addClass('d-none');
+            }
+        });
+
+        $('.frm-filter').find('.laydate').each(function (idx,vo) {
+            let obj = {
+                elem: vo,
+                type: 'datetime',
+                trigger: 'click',
+                value: ''
+            };
+            obj = $.extend(obj, $(this).data());
+            Laydate.render(obj);
+        });
+    })
+</script>
+{/block:script}

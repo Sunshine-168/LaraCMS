@@ -1,0 +1,109 @@
+<header id="header" class="header-two" >
+    <div class="site-navigation ">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <nav class="navbar navbar-expand-lg navbar-light p-0">
+                        <div class="logo">
+                            <a class="d-block" href="/" title="{$site.title}"><img loading="lazy" src="{$site.logo}" alt="{$site.title}"></a>
+                        </div>
+
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div id="navbar-collapse" class="collapse navbar-collapse">
+                            <ul class="nav navbar-nav mr-auto align-items-center">
+                                {// 获取顶级导航栏的栏目，ismenu="1"表示导航栏，在栏目管理可以控制导航显示}
+                                {hkcms:channel type="top" ismenu="1"}
+                                    {// 使用$item.has_child字段来判断是否有下级}
+                                    {if $item.has_child}
+                                    <!--有下级的栏目-->
+                                    <li class="nav-item dropdown {$item.currentstyle}">
+                                        <a class="nav-link dropdown-toggle" href="{$item.url}" target="{$item.target}">{$item.title} <i class="fa fa-angle-down"></i></a>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <!--获取下级栏目-->
+                                            {// id="son"表示里面的变量名采用$son命名,在标签嵌套中这样使用不会影响上级的变量}
+                                            {hkcms:channel name="$item['id']" id="son" type="son" ismenu="1"}
+                                                {// 使用$son.has_child字段来判断是否有下级、当前二级栏目，多级嵌套时注意id变量}
+                                                {if $son.has_child}
+                                                <li class="dropdown-submenu {$son.currentstyle}">
+                                                    <a class="dropdown-toggle"  href="{$son.url}" target="{$son.target}">{$son.title}</a>
+                                                    <ul class="dropdown-menu">
+                                                        <!--获取下级栏目，第3级-->
+                                                        {hkcms:channel name="$son['id']" id="son2" type="son" ismenu="1"}
+                                                        <li class="{$son2.currentstyle}"><a href="{$son2.url}" target="{$son2.target}">{$son2.title}</a></li>
+                                                        {/hkcms:channel}
+                                                    </ul>
+                                                </li>
+                                                {else /}
+                                                <!--没有下级栏目-->
+                                                <li class="{$son.currentstyle}"><a href="{$son.url}" target="{$item.target}">{$son.title}</a></li>
+                                                {/if}
+                                            {/hkcms:channel}
+                                        </ul>
+                                    </li>
+                                    {else /}
+                                    <!--这里是没有下级的栏目-->
+                                    <li class="nav-item {$item.currentstyle}">
+                                        {// currentstyle表示当前选中栏目的class样式、默认是active}
+                                        <a class="nav-link" href="{$item.url}" target="{$item.target}">{$item.title}</a>
+                                    </li>
+                                    {/if}
+                                {/hkcms:channel}
+                            </ul>
+
+                            <ul class="nav navbar-nav ml-auto align-items-center">
+                                <!--开启多语言后显示-->
+                                <li class="nav-item dropdown">
+                                    <!--获取当前语言-->
+                                    {hkcms:language currentstyle="active"}
+                                    {if $currentstyle}
+                                    <!--$item.key是语言标识-->
+                                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" title="{$item.key}"><i class="fa fa-language"></i> {$item.value} <i class="fa fa-angle-down"></i></a>
+                                    {/if}
+                                    {/hkcms:language}
+
+
+                                    <!--获取语言列表-->
+                                    <ul class="dropdown-menu" role="menu">
+                                        {hkcms:language currentstyle="active"}
+                                        {// currentstyle表示当前选中栏目的class样式、默认是active，如果不是这个class就在上面使用currentstyle属性，只有当前语言才会有，target_html表示是否新窗口打开}
+                                        <li class="{$currentstyle}"><a href="{$item.url}" {$item.target_html} title="{$item.key}">{$item.value}</a></li>
+                                        {/hkcms:language}
+                                    </ul>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a href="" class="nav-link navbar-pc">&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                    <!--手机端-->
+                                    <div class="navbar-mobile">
+                                        <form class="search-form" action="{:index_url('/search/index')}" method="get">
+                                            <input type="text" class="form-control search-field" name="keyword" placeholder="{:__('Enter a keyword and press Enter to search')}">
+                                        </form>
+                                    </div>
+                                    <!--PC端-->
+                                    <div class="navbar-pc">
+                                        <div class="nav-search">
+                                            <span id="search"><i class="fa fa-search"></i></span>
+                                        </div>
+                                        <div class="search-block" style="display: none;">
+                                            {// 输入关键词跳搜索页，地址为：index_url('/search/index')，文档地址： https://www.kancloud.cn/hkcms/hkcms_tp6/2511010 }
+                                            <form class="search-form" action="{:index_url('/search/index')}" method="get">
+                                                <label for="search-field" class="w-100 mb-0">
+                                                    <!--name固定为keyword-->
+                                                    <input type="text" class="form-control" name="keyword" id="search-field" placeholder="{:__('Enter a keyword and press Enter to search')}">
+                                                </label>
+                                                <span class="search-close">×</span>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

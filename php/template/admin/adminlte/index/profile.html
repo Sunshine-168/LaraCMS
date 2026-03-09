@@ -1,0 +1,84 @@
+{block:style}
+<style>
+    .profile-user-img {
+        height: 100px;
+        overflow: hidden;
+        padding:0;
+        position: relative;
+        margin: 0;
+    }
+    .edit-avatar {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        text-align: center;
+        background-color: rgba(0,0,0,.3);
+        font-size: 12px;
+        padding: 3px;
+        display: block;
+    }
+</style>
+{/block:style}
+
+<div class="row justify-content-md-center">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body box-profile">
+                <form role="form" action="" class="frm-operate" method="post">
+                    <div class="d-flex justify-content-center">
+                        <div class="profile-user-img img-fluid img-circle">
+                            <img src="{:empty($userinfo['avatar'])?$User['avatar']:$userinfo['avatar']}" style="width: 100%;height:100%;object-fit:cover;">
+                            <input type="hidden" class="form-control txt-files" id="frm-image" name="avatar" value="{$userinfo['avatar']}">
+                            <a href="#" class="edit-avatar text-white btn-imgUpload"
+                               data-mimetype="image/*"
+                               data-multiple="false"
+                               data-field="frm-image">{:__('Edit avatar')}</a>
+                        </div>
+                    </div>
+                    <h3 class="profile-username text-center">{$userinfo.nickname}</h3>
+
+                    <p class="text-muted text-center">{$User.group_names}</p>
+                    <hr>
+                    <div class="form-group">
+                        <label class="col-form-label">{:__('Username')}</label>
+                        <input type="text" class="form-control" value="{$userinfo.username}" disabled="disabled" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">{:__('Nickname')}</label>
+                        <input type="text" class="form-control" name="nickname" value="{$userinfo.nickname}" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">{:__('Email')}</label>
+                        <input type="text" class="form-control" name="email" value="{$userinfo.email}" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">{:__('Password')}</label>
+                        <input type="text" class="form-control" name="password" placeholder="{:__('Do not modify the password, no need to fill in')}" autocomplete="off">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary btn-submit" style="margin-right: 8px">{:__('Submit')}</button>
+                        <button type="reset" class="btn btn-secondary">{:__('Reset')}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{block:script}
+<script>
+    require(['admin','form'], function (admin,Form) {
+        Form.api.init({success:function (data,res) {
+            layer.msg(res.msg, {time:2000, icon:1}, function () {
+                window.location.reload();
+            });
+            return false;
+        }});
+        $('#frm-image').change(function (e) {
+            var val = $(this).val();
+            $('.profile-user-img img').attr('src',val);
+        });
+    })
+</script>
+{/block:script}

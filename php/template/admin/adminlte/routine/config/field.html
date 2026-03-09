@@ -1,0 +1,360 @@
+{volist name="data" id="vo" key="key"}
+{if (!empty($vo['setting']))}
+{php}$vo['setting'] = json_decode($vo['setting'], true);{/php}
+{/if}
+{if in_array($vo['type'], ['text', 'number'])}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 row-form-label">{:lang($vo['title'])}：</label>
+    {if ($vo.name=='chunk_size' || $vo.name=='file_size')}
+    <div class="col-sm-6 d-flex">
+        {:build_input($vo['type'], 'row['.$vo['name'].']', $vo['value'], extend_options([
+        'class'=>'form-control col-sm-3',
+        'id'=>'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips']
+        ], $vo['extend']))}
+        <div class="input-group-append">
+            <span class="input-group-text">MB</span>
+        </div>
+    </div>
+    {elseif ($vo.name=='mobile_domain') }
+    <div class="col-sm-6 d-flex">
+        {php}$preg = '/^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1 -9]?\d))))$/';{/php}
+        {if preg_match($preg, request()->host()) || request()->host()=='localhost'}
+        <div style="height: 100%;line-height: 33px;">当前地址不支持绑定手机域名</div>
+        {else /}
+
+        {:build_input($vo['type'], 'row['.$vo['name'].']', $vo['value'], extend_options([
+        'class'=>'form-control',
+        'id'=>'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips']
+        ], $vo['extend']))}
+        <div class="input-group-append">
+            <span class="input-group-text">.{:request()->rootDomain()}</span>
+        </div>
+        {/if}
+    </div>
+    {else /}
+    <div class="col-sm-6">
+        {if $vo.name=='cloud_password'}{php}$vo['type'] = 'password';$vo['value'] = $vo['value']?'--password--':'';{/php}{/if}
+        {:build_input($vo['type'], 'row['.$vo['name'].']', $vo['value'], extend_options([
+        'class'=>'form-control',
+        'id'=>'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips']
+        ], $vo['extend']))}
+    </div>
+    {/if}
+
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">
+        {if ($vo.name=='cloud_username' || $vo.name=='cloud_password')}
+        <a href="{:config('cms.app_url')}/index/user/register.html" class="text-primary" target="_blank">前往注册</a>
+        {else /}
+        {php}echo "{\$site.".$vo['name']."}"; {/php}
+        {/if}
+    </div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif in_array($vo['type'],['textarea','editor']) /}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12">
+        {:build_textarea('row['.$vo['name'].']', $vo['value'], extend_options([
+        'class'=>'form-control '.($vo['type']=='editor'?'editor':''),
+        'id' => 'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips'],
+        'rows'=>3
+        ], $vo['extend']))}
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif in_array($vo['type'],['selectpage']) /}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 col-12 row-form-label">{:__($vo['title'])}：</label>
+    <div class="col-sm-6 col-12">
+        <?php $vo['extend'] = extend_options([
+            'id'=>'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips']
+        ], $vo['extend']); ?>
+
+        <?php $vo['extend'] = array_merge($vo['extend'], [
+            'class'=>'form-control selectpage',
+        'data-data'=>$vo['data_list']['type']=='url'?url($vo['data_list']['url']):url('/common/getSelectpage',['t'=>isset($t)?$t:4,'id'=>$vo['id']]),
+        'data-params'=>!empty($vo['data_list']['param'])?json_encode($vo['data_list']['param']):'',
+        'data-multiple'=>!empty($vo['data_list']['multiple'])?'true':'false',
+        'data-pagination'=>!empty($vo['data_list']['pagination'])?'false':'true',
+        'data-select-only'=>!empty($vo['data_list']['select-only'])?'true':'false',
+        'data-and-or'=>!empty($vo['data_list']['and-or'])?$vo['data_list']['and-or']:'and',
+        'data-order-by'=>!empty($vo['data_list']['order-by'])?json_encode(explode(',',$vo['data_list']['order-by'])):''
+        ]);?>
+
+        {if $vo['data_list']['type']=='url'}
+        <?php $vo['extend'] = array_merge($vo['extend'], [
+            'data-show-field'=>!empty($vo['url_data_list']['url-show-field'])?$vo['data_list']['url-show-field']:'title',
+        'data-search-field'=>!empty($vo['data_list']['url-search-field'])?$vo['data_list']['url-search-field']:'title',
+        'data-key-field'=>!empty($vo['data_list']['url-key-field'])?$vo['data_list']['url-key-field']:'id',
+        ]);?>
+        {else /}
+        <?php $vo['extend'] = array_merge($vo['extend'], [
+            'data-show-field'=>!empty($vo['data_list']['show-field'])?$vo['data_list']['show-field']:'title',
+        'data-search-field'=>!empty($vo['data_list']['search-field'])?$vo['data_list']['search-field']:'title',
+        'data-key-field'=>!empty($vo['data_list']['key-field'])?$vo['data_list']['key-field']:'id',
+        ]);?>
+        {/if}
+
+        {:build_input('text', 'row['.$vo['name'].']', $vo['value'], $vo['extend'])}
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif ($vo['type']=='radio')}
+    {if !empty($vo['data_list'])}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+        <div class="col-sm-6 col-12">
+            <div class="radio-group">
+                {volist name="vo['data_list']" id="item"}
+                <div class="radio-item"><input id="row[{$vo['name']}]-{$i}"
+                       {if isset($vo['value'])&&$vo['value']==$key}checked="checked"{/if}
+                name="row[{$vo['name']}]" type="radio" value="{$key}"
+                {if $i==1}data-rule="{:str_replace([',','required'],[';','checked'],$vo['rules'])}" data-msg="{$vo['error_tips']}"{/if} >
+                <label for="row[{$vo['name']}]-{$i}">{$item}</label></div>
+                {/volist}
+            </div>
+        </div>
+        <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+
+        {if $vo.name=='url_file'}
+        <div class="col-sm-2 d-flex align-items-center"><a href="https://www.kancloud.cn/hkcms/hkcms_tp6/2252604" class="text-primary" target="_blank">{:lang('Help')}</a></div>
+        {else /}
+        <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+        {/if}
+
+        {if $vo['is_default']==0}
+        <div class="col-sm-1 d-flex align-items-center">
+            <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+        </div>
+        {/if}
+    </div>
+    {/if}
+{elseif $vo['type']=='checkbox' /}
+{if !empty($vo['data_list'])}
+<div class="form-group row">
+    <label class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12">
+        <div class="radio-group">
+            {php}$haystack = explode('|', $vo['value']);{/php}
+            {volist name="vo['data_list']" id="item"}
+            <div class="radio-item"><input id="row[{$vo['name']}]-{$i}"
+                   {if in_array($key,$haystack)}checked{/if}
+            name="row[{$vo['name']}][]" type="checkbox" value="{$key}"
+            {if $i==1}data-rule="{:str_replace([',','required'],[';','checked'],$vo['rules'])}" data-msg="{$vo['error_tips']}"{/if} >
+            <label for="row[{$vo['name']}]-{$i}">{$item}</label></div>
+            {/volist}
+        </div>
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{/if}
+{elseif in_array($vo['type'], ['select', 'selects']) /}
+<div class="form-group row">
+    <label class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12">
+        {php}$haystack = explode('|', $vo['value']);{/php}
+        <select {:extend_options([
+        'class'=>'form-control',
+        'id' => 'frm-'.$vo['name'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips'],
+        ], $vo['extend'], true)}
+        name="row[{$vo['name']}]{if $vo['type']=='selects'}[]{/if}"
+        {if $vo['type']=='selects'}multiple{/if}>
+        {volist name="vo['data_list']" id="item"}
+        <option value="{$key}" {if in_array($key, $haystack)}selected{/if}>{$item}</option>
+        {/volist}
+        </select>
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif in_array($vo['type'], ['image','images']) /}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12 fileGroup">
+        <div class="file-btn">
+            {php}$ext = !empty($vo['setting']['ext'])?'.'.str_replace('|',',.',$vo['setting']['ext']):"image/*";{/php}
+            {php}$filesize = !empty($vo['setting']['filesize'])?$vo['setting']['filesize']:site('file_size');{/php}
+            <input type="text"
+                   class="form-control txt-files"
+                   id="frm-{$vo['name']}"
+                   name="row[{$vo['name']}]"
+                   placeholder="{$vo['tips']}"
+                   value="{$vo['value']}" data-rule="{:str_replace(',',';',$vo['rules'])}" data-msg="{$vo['error_tips']}">
+            <button type="button"
+                   {if $vo['type']=='images'}data-file-num="{$vo['max_number']}"{/if}
+            {:extend_options(['class'=>'btn btn-default btn-imgUpload','data-mimetype'=>$ext,'data-size'=>$filesize,'data-multiple'=>$vo['type']=='images'?true:false,'data-field'=>"frm-".$vo['name']], $vo['extend'], true)}><i class="fas fa-upload"></i> {:__('Upload')}</button>
+            <button type="button"
+                   {if $vo['type']=='images'}data-file-num="{$vo['max_number']}"{/if}
+            {:extend_options(['class'=>'btn btn-default btn-imgSelect','data-mimetype'=>$ext,'data-size'=>$filesize,'data-multiple'=>$vo['type']=='images'?true:false,'data-field'=>"frm-".$vo['name']], $vo['extend'], true)}><i class="fas fa-images"></i> {:__('Select')}</button>
+        </div>
+        <div class="file-preview row mt-2"></div>
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif in_array($vo['type'], ['date', 'datetime']) /}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12">
+        {:build_input('text', 'row['.$vo['name'].']', $vo['value'], extend_options([
+        'class'=>'form-control laydate',
+        'id'=>'frm-'.$vo['name'],
+        'placeholder'=>$vo['tips'],
+        'data-rule'=>str_replace(',',';',$vo['rules']),
+        'data-msg'=>$vo['error_tips'],
+        'data-type'=>$vo['type']
+        ], $vo['extend']))}
+
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif in_array($vo['type'], ['downfile','downfiles']) /}
+<div class="form-group row">
+    <label for="frm-{$vo['name']}" class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12 fileGroup">
+        {php}$ext = !empty($vo['setting']['ext'])?'.'.str_replace('|',',.',$vo['setting']['ext']):"*";{/php}
+        {php}$filesize = !empty($vo['setting']['filesize'])?$vo['setting']['filesize']:site('file_size');{/php}
+        <div class="file-btn">
+            <input type="text" class="form-control txt-files" id="frm-{$vo['name']}" name="row[{$vo['name']}]" placeholder="{$vo['tips']}" value="{$vo['value']}" data-rule="{:str_replace(',',';',$vo['rules'])}" data-msg="{$vo['error_tips']}">
+            <button type="button"
+                   {if $vo['type']=='downfiles'}data-file-num="{$vo['max_number']}"{/if}
+            {:extend_options(['class'=>'btn btn-default btn-imgUpload','data-mimetype'=>$ext,'data-size'=>$filesize,'data-multiple'=>$vo['type']=='images'?true:false,'data-field'=>"frm-".$vo['name']], $vo['extend'], true)}><i class="fas fa-upload"></i> {:__('Upload')}</button>
+            <button type="button"
+                   {if $vo['type']=='downfiles'}data-file-num="{$vo['max_number']}"{/if}
+        {:extend_options(['class'=>'btn btn-default btn-imgSelect','data-mimetype'=>$ext,'data-size'=>$filesize,'data-multiple'=>$vo['type']=='images'?true:false,'data-field'=>"frm-".$vo['name']], $vo['extend'], true)}><i class="fas fa-images"></i> {:__('Select')}</button>
+        </div>
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{elseif $vo['type']=='array' /}
+<div class="form-group row keyvalue">
+    <script type="text/html" class="keyvalue-template">
+        <div class="row pt-2">
+            <div class="col-sm-5">
+                <input type="text" value="" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>str_replace(',',';',$vo['rules']), 'data-msg'=>$vo['error_tips']], $vo['extend'], true)}>
+            </div>
+            <div class="col-sm-5">
+                <input type="text" value="" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>str_replace(',',';',$vo['rules']), 'data-msg'=>$vo['error_tips']], $vo['extend'], true)}>
+            </div>
+            <div class="col-sm-2 d-flex align-items-center">
+                <a href="#" class="btn btn-default btn-xs btn-keyvalue-row-del" title="删除"><i class="fas fa-times"></i></a>
+                <a href="javascript:;" class="btn btn-default btn-xs  ml-1" title="拖动进行排序"><i class="fas fa-arrows-alt"></i></a>
+            </div>
+        </div>
+    </script>
+
+    <label class="col-sm-2 col-12 row-form-label">{:lang($vo['title'])}：</label>
+    <div class="col-sm-6 col-12" style="padding-top: calc(.375rem + 1px);padding-bottom: calc(.375rem + 1px);">
+        <div class="row">
+            <div class="col-sm-5">{$vo['data_list']['key']}</div>
+            <div class="col-sm-5">{$vo['data_list']['value']}</div>
+        </div>
+
+        <textarea name="row[{$vo['name']}]" class="key-value-textarea d-none">{$vo['value']}</textarea>
+
+        <div class="keyvalue-item">
+            {volist name="vo['value_array']" id="item"}
+            <div class="row pt-2">
+                <div class="col-sm-5">
+                    <input type="text" value="{$key}" name="keyvalue{$i}" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>str_replace(',',';',$vo['rules']), 'data-msg'=>$vo['error_tips']], $vo['extend'], true)}>
+                </div>
+                <div class="col-sm-5">
+                    <input type="text" value="{$item}" name="keyvalue{$i}" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>str_replace(',',';',$vo['rules']), 'data-msg'=>$vo['error_tips']], $vo['extend'], true)}>
+                </div>
+                <div class="col-sm-2 d-flex align-items-center">
+                    <a href="#" class="btn btn-default btn-xs btn-keyvalue-row-del" title="删除"><i class="fas fa-times"></i></a>
+                    <a href="javascript:;" class="btn btn-default btn-xs ml-1" title="拖动进行排序"><i class="fas fa-arrows-alt"></i></a>
+                </div>
+            </div>
+            {/volist}
+        </div>
+
+        <div class="row pt-3">
+            <div class="col-sm-12">
+                <a href="#" class="btn btn-sm btn-default btn-keyvalue-row-add"><i class="fas fa-plus"></i> {:lang('Append')}</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-1 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    {if $vo['name']=='url_rewrite'}
+    <div class="col-sm-2 d-flex align-items-center"><a href="https://www.kancloud.cn/hkcms/hkcms_tp6/2349546" class="text-primary" target="_blank">{:lang('Help')}</a></div>
+    {else /}
+    <div class="col-sm-2 d-flex align-items-center">{php}echo "{\$site.".$vo['name']."}"; {/php}</div>
+    {/if}
+
+    {if $vo['is_default']==0}
+    <div class="col-sm-1 d-flex align-items-center">
+        <button type="button" class="btn btn-default btn-xs btn-row-del" data-id="{$vo.id}" title="{:lang('Delete')}"><i class="fas fa-times"></i></button>
+    </div>
+    {/if}
+</div>
+{/if}
+{/volist}

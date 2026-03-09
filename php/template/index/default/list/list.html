@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            {// $Cate 存在于栏目首页、栏目列表页，里面是栏目的信息}
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-lg-4">
+                    <div class="sidebar sidebar-left">
+                        <div class="widget">
+                            {// $Cate变量每个栏目页面都有，里面的字段是栏目管理里面的字段}
+                            {if $Cate.parent_id}
+                            <h3 class="widget-title">{hkcms:channel name="$Cate['parent_id']"}{$item.title}{/hkcms:channel}</h3>
+                            {else /}
+                            <h3 class="widget-title">{$Cate.title}</h3>
+                            {/if}
+                            <ul class="nav service-menu">
+                                {if $Cate.parent_id}
+                                {// 如果当前栏目为子级则获取同级栏目}
+                                {hkcms:channel name="$Cate['id']" type="peer" ismenu="1" currentstyle="active"}
+                                <li class="{$item.currentstyle}"><a href="{$item.url}" title="{$item.title}">{$item.title}</a></li>
+                                {/hkcms:channel}
+                                {else /}
+                                {// 一级栏目时则显示下级栏目}
+                                {hkcms:channel name="$Cate['id']" type="son" ismenu="1"}
+                                <!--currentstyle 是选中高亮的class。默认是active-->
+                                <li class="{$item.currentstyle}"><a href="{$item.url}" title="{$item.title}">{$item.title}</a></li>
+                                {/hkcms:channel}
+                                {/if}
+                            </ul>
+                        </div><!-- 栏目列表 end -->
+
+                        <!--热门新闻-->
+                        <div class="widget recent-posts">
+                            <h3 class="widget-title">{:__('Hot news')}</h3>
+                            <ul class="list-unstyled">
+                                {// model=1表示获取新闻模型的数据。order按浏览量从高到低排序}
+                                {hkcms:content catid="9" order="views desc" num="5"}
+                                <li class="d-flex align-items-center">
+                                    <div class="posts-thumb">
+                                        {// fullurl 带域名的url地址}
+                                        <a href="{$item.fullurl}"><img loading="lazy" alt="{$item.title}" src="{$item.thumb|default=''}"></a>
+                                    </div>
+                                    <div class="post-info">
+                                        <h4 class="entry-title">
+                                            <a href="{$item.fullurl}">
+                                                <!--截取标题：保留28个字，后面拼接省略号....-->
+                                                {hkcms:substr name="$item.title" len="28" dot="...." }
+                                            </a>
+                                        </h4>
+                                    </div>
+                                </li>
+                                {/hkcms:content}
+                            </ul>
+                        </div>
+                        <!--热门新闻 结束-->
+                        <div class="widget widget-tags">
+                            <h3 class="widget-title">{:__('Tags')} <span class="float-right" style="font-size: 12px;margin-top: 2px"><a href="{:url('/tags/index')}">{:__('Read More')}</a></span></h3>
+                            <ul class="list-unstyled">
+                                {hkcms:taglist tid="0" num="10" order="views desc"}
+                                <li><a href="{$item.url}">{$item.title}</a></li>
+                                {/hkcms:taglist}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-9 col-lg-8">
+                    <div class="content-inner-page">
+                        <div class="blog-item-list">
+                            {// 获取当前栏目的文档，page="1"开启分页功能，列表页无需写catid，order是排序,$Cate.num取得是后台栏目管理里设置的分页数}
+                            {hkcms:content order="weigh desc,publish_time desc" num="$Cate.num" page="1"}
+                            <div class="blog-item {if $key==0}large-blog{/if}">
+                                <div class="bi-pic"><img src="{$item.thumb|default=''}" alt="{$item.title}"></div>
+                                <div class="bi-text">
+                                    {// style字段是后台可设置加粗与颜色，$item.style}
+                                    <h4><a href="{$item.url}" style="{$item.style}">{hkcms:substr name="$item.title" len="70" dot="...." }</a></h4>
+                                    <ul>
+                                        <li><span><i class="fa fa-user-alt"></i> {$item.author|default=''}</span></li>
+                                        <li><span><i class="far fa-calendar"></i> {hkcms:date name="$item.publish_time" format="Y-m-d"}</span></li>
+                                        <li><span><i class="fa fa-eye"></i> {$item.views} {:__('View')}</span></li>
+                                    </ul>
+                                    <p class="desc">{$item.description|default=""}</p>
+                                    <a href="{$item.url}" class="read-more">{:__('Read More')} <span><i class="fa fa-arrow-right"></i></span></a>
+                                </div>
+                            </div>
+                            {/hkcms:content}
+                        </div>
+                        <div class="gap-40"></div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {hkcms:contentpage item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

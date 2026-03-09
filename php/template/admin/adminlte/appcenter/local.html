@@ -1,0 +1,176 @@
+<input type="hidden" value="{$applist}" class="applist">
+{if ($type=='template')}
+    <div class="row">
+        {volist name="data" id="v"}
+        <div class="col-sm-6 col-md-4 col-lg-3 col-xl-3">
+            <div class="card card-border card-shadow">
+                {if isset($site[$module.'_theme']) && $site[$module.'_theme']==$v['name']}
+                <div class="ribbon-wrapper">
+                    <div class="ribbon bg-success">{:__("Current")}</div>
+                </div>
+                {/if}
+                <div class="img-thumb img-{$v['name']}">
+                    <a href="#" class="btn-show-desc" data-toggle="tooltip" style="display: block" data-title="{:__('Click me to go to details')}">
+                        <img src="{$v.image|default=''}" class="card-img-top">
+                    </a>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title" data-title="{$v.title}" data-toggle="tooltip">{$v.title}</h5>
+                    <p class="d-flex align-items-center justify-content-between card-info" style="width: 100%">
+                        {if isset($v.price) && $v.price>0}
+                        <span>{$v.price}</span>
+                        {elseif isset($v.price) && $v.price==0}
+                        <span>{:__('Free')}</span>
+                        {else /}
+                        <span>-</span>
+                        {/if}
+                        <a href="#!" data-trigger="hover" data-toggle="tooltip" target="_blank" data-title="{:__("Click here to go to the author's homepage")}" class="user-{$v['name']}"><i class="fas fa-user-alt"></i> {$v.author}</a>
+                    </p>
+
+                    <p class="card-text" data-title="{$v.description}" data-toggle="tooltip">{$v.description}</p>
+                    <hr style="margin: 8px 0 8px 0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="footer-fa">
+                            {if !isset($v['db_install'])}
+                                <div class="btn-group">
+                                    {if !(isset($site[$module.'_theme']) && $site[$module.'_theme']==$v['name'])}
+                                    <a href="{:url('/Appcenter/setTheme',['name'=>$v['name'],'module'=>$module])}" class="btn btn-primary btn-xs btn-theme" data-name="{$v['name']}">{:__("Set as theme")}</a>
+                                    {else /}
+                                        {if $module=='admin'}
+                                        <a class="btn btn-primary btn-xs" href="#!" onclick="cmsOpen('{:url('/appcenter/setConfig',['name'=>$v['name'],'type'=>'template','popup'=>1,'module'=>$module])}')"><i class="fas fa-cogs"></i> {:__("Config")}</a>
+                                        {else /}
+                                        <a class="btn btn-primary btn-xs" onclick="cmsOpen('{:url('/appcenter/editTheme',['name'=>$v['name'],'type'=>'template','popup'=>1,'module'=>$module,'t'=>'tpl'])}','{$v.title}');return false;" href="#">{:__("Manager")}</a>
+                                        {/if}
+                                    {/if}
+
+                                    {if !(isset($site[$module.'_theme']) && $site[$module.'_theme']==$v['name'])}
+                                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-xs" data-toggle="dropdown" aria-expanded="false" title="{:__('More actions')}">
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#!" onclick="cmsOpen('{:url('/appcenter/editTheme',['name'=>$v['name'],'type'=>'template','popup'=>1,'module'=>$module,'t'=>'tpl'])}','{$v.title}')"><i class="fa fa-folder"></i> {:__("Manager")}</a>
+                                            {if $v['config']}
+                                            <a class="dropdown-item" href="#!" onclick="cmsOpen('{:url('/appcenter/setConfig',['name'=>$v['name'],'type'=>'template','popup'=>1,'module'=>$module])}')"><i class="fas fa-cogs"></i> {:__("Config")}</a>
+                                            {/if}
+                                            <a href="{:url('/appcenter/pack',['type'=>'template','module'=>$module,'name'=>$v['name']])}"  target="_blank" class="dropdown-item"><i class="fa fa-file-export"></i> {:__('Export')}</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a href="#" class="dropdown-item btn-uninstall" data-type="template" data-module="{$module}" data-name="{$v['name']}" title="{:__("Uninstall")}"><i class="fas fa-trash-alt"></i> {:__("Uninstall")}</a>
+                                        </div>
+                                    {else /}
+
+                                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split btn-xs" data-toggle="dropdown" aria-expanded="false" title="{:__('More actions')}">
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            {if $v['config'] && $module!='admin'}
+                                            <a class="dropdown-item" href="#!" onclick="cmsOpen('{:url('/appcenter/setConfig',['name'=>$v['name'],'type'=>'template','popup'=>1,'module'=>$module])}')"><i class="fas fa-cogs"></i> {:__("Config")}</a>
+                                            {/if}
+                                            <a href="{:url('/appcenter/pack',['type'=>'template','module'=>$module,'name'=>$v['name']])}" class="dropdown-item" target="_blank"><i class="fa fa-file-export"></i> {:__('Export')}</a>
+                                            {if $module!='admin'}
+                                            <a href="#!" data-name="{$v['name']}" class="dropdown-item btn-exp"><i class="far fa-file-archive"></i> {:__('Export all')}</a>
+                                            {/if}
+                                        </div>
+                                    {/if}
+                                </div>
+                            {else /}
+                            <a href="#" class="btn btn-primary btn-xs btn-install-db" data-name="{$v.name}" data-type="template" data-module="{$module}">{:__('Install')}</a>
+                            {/if}
+                        </div>
+                        <div class="footer-fa version-{$v['name']}">
+                            <div class="btn-group">
+                                <button class="btn btn-xs btn-default" data-trigger="hover" data-toggle="tooltip" data-title="{:__('Current release')}"><span><i class="fas fa-info-circle"></i> {$v.version}</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/volist}
+    </div>
+{else /}
+<table class="table table-bordered table-hover addon-table">
+    <thead>
+        <tr>
+            <th style="text-align: left">
+                <div class="th-inner ">{:__("Title")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:lang("Cover")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th style="text-align: left">
+                <div class="th-inner ">{:__("Introduce")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:__("Author")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:__("Price")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:__("Version")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:__("Status")}</div>
+                <div class="fht-cell"></div>
+            </th>
+            <th>
+                <div class="th-inner ">{:__("Operate")}</div>
+                <div class="fht-cell"></div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    {volist name="data" id="v"}
+    <tr>
+        <td class="img-{$v['name']}" style="text-align: left">
+            <a href="#!" class="btn-show-desc"style="color: #4E5969" data-trigger="hover" data-toggle="tooltip" data-title="{:__('Click me to go to details')}">
+                {$v.title|default=''}
+            </a>
+        </td>
+        <td class="img-{$v['name']}">
+            <img src="{$v.image|default='/static/common/image/nopic.jpg'}" layer-src="{$v.image|default='/static/common/image/nopic.jpg'}" style="width: 40px;height: 40px;cursor: pointer">
+        </td>
+        <td style="text-align: left">{$v.description|default=''}</td>
+        <td><a href="#!" class="user-{$v['name']}" target="_blank" data-trigger="hover" data-toggle="tooltip" data-title="{:__("Click here to go to the author's homepage")}" style="color: #4E5969">{$v.author|default=''}</a></td>
+        <td width="72">{:isset($v['price'])?$v['price']<=0?'<span>'.__("Free").'</span>':'<span class="text-danger">'.$v['price'].'</span>':'-'}</td>
+        <td class="version-{$v['name']}">
+            <div class="btn-group">
+                <button class="btn btn-xs btn-default" data-trigger="hover" data-toggle="tooltip" data-title="{:__('Current release')}"><span><i class="fas fa-info-circle"></i> {$v.version}</span></button>
+            </div>
+        </td>
+        <td>
+            {if !isset($v['db_install'])}
+            <div class="custom-control custom-switch custom-control-sm" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="启用、禁用切换">
+            <input type="checkbox" class="custom-control-input" data-name="{$v.name|default=''}" id="customSwitch{$v.name}" {$v.status==1?'checked':''} value="{$v.status}">
+            <label class="custom-control-label" for="customSwitch{$v.name}"><div class="custom-control-label-dot"></div></label>
+            </div>
+            {/if}
+        </td>
+        <td>
+            {if !isset($v['db_install'])}
+                {if isset($v['config'])&&$v['config']&&$v['status']==1}
+                <a href="#!" onclick="cmsOpen('{:url('/appcenter/setConfig',['name'=>$v['name'],'type'=>$v['type'],'popup'=>1])}')" class="btn btn-primary btn-xs"><i class="fas fa-cogs"></i>
+                    {:__("Config")}</a>
+                {/if}
+                <a href="#" class="btn btn-danger btn-xs btn-uninstall" data-name="{$v.name}" data-type="{$v['type']}"><i class="fas fa-trash-alt"></i>
+                    {:__("Uninstall")}</a>
+                <a href="{:url('/appcenter/pack',['type'=>$v['type'],'name'=>$v['name']])}" target="_blank" class="btn btn-primary btn-xs"><i class="fas fa-file-archive"></i>
+                    {:__("Pack")}</a>
+            {else /}
+            <a href="#" class="btn btn-primary btn-xs btn-install-db" data-name="{$v.name}" data-type="{$v['type']}">{:__('Install')}</a>
+            {/if}
+        </td>
+    </tr>
+    {/volist}
+    {if empty($data)}
+    <tr><td colspan="8">{:__("No data")}</td></tr>
+    {/if}
+    </tbody>
+</table>
+{/if}

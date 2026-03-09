@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="project-area" class="project-area solid-bg">
+
+        <div class="container">
+            <div class="row home-news">
+                {// 获取新闻中心所有栏目}
+                {hkcms:channel name="$Cate['id']" type="son" id="channel" mod="2"}
+                {// 上面给了参数mod="2" 表示每到2的时候，重新计数，（1,2,1,2），这样就可以实现下方奇数的情况下加边框线。}
+                <div class="col-md-6" {if $mod==1}style="border-right: 1px solid #EEEEEE;"{/if}>
+                    <h3><span>{$channel.title}</span> <em><a href="{$channel.url}" title="{$channel.title}">{:__('Read More')}</a></em></h3>
+                    <ul>
+                    {hkcms:content catid="$channel['id']" order="weigh desc,publish_time desc" num="$Cate['num']" key="ii"}
+                        <!--设置第一张图片放大-->
+                        {if $ii==1}
+                        <li>
+                            <div class="imggroup">
+                                <div class="imggroup-img">
+                                    <a href="{$item.url}"><img src="{$item.thumb}" alt="{$item.title}"></a>
+                                </div>
+                                <div class="imggroup-text">
+                                    <p class="title">
+                                        <!-- substr 标签，用于文字截取，len=字数，dot截取后后面加...-->
+                                        <a href="{$item.url}">{hkcms:substr name="$item.title" len="24" dot="..." }</a>
+                                    </p>
+                                    <p class="desc">{$item.description}</p>
+                                </div>
+                            </div>
+                        </li>
+                        {else /}
+                        <li class="item text-truncate ">
+                            {// 使用if语句，给前三行加上底色，$ii是上面key="ii"指定的循环变量，默认是$i，从1开始每次+1}
+                            {if $ii<=3}
+                            <a href="{$item.url}"><span class="badge badge-warning"><em>{$ii}</em></span> {$item.title}</a>
+                            {else /}
+                            <a href="{$item.url}"><span class="badge"><em>{$ii}</em></span> {$item.title}</a>
+                            {/if}
+                            {//api="human" 将采用日期语义化显示，另外还支持限制范围比如说：lt="2592000" 表示超过6个月的时间按format里面的格式输出}
+                            <span class="date"><abbr title="{hkcms:date name="$item.publish_time" format="Y-m-d"}">{hkcms:date name="$item.publish_time" format="Y-m-d" api="human"}</abbr></span>
+                        </li>
+                        {/if}
+                    {/hkcms:content}
+                    </ul>
+                </div>
+                {/hkcms:channel}
+            </div>
+        </div>
+    </section>
+
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

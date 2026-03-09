@@ -1,0 +1,113 @@
+<div class="p-3">
+    <div id="toolbar" class="toolbar">
+        {:build_toolbar(['refresh','add'=>['source'=>$source,'source_id'=>$source_id],'del'])}
+        {if (has_rule('batches'))}
+        <div class="dropdown ml-1 btn-toggle">
+            <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-cog"></i> {:lang('More')}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item status" href="#" data-params="status=normal">{:lang('Set to enable')}</a>
+                <a class="dropdown-item status" href="#" data-params="status=hidden">{:lang('Set to disabled')}</a>
+            </div>
+        </div>
+        {/if}
+    </div>
+    <table id="table"
+           data-edit="{if has_rule('edit')}{:url('/cms.fields/edit')}{/if}"
+           data-del="{if has_rule('del')}{:url('/cms.fields/del')}{/if}"
+           data-batches="{if (has_rule('batches'))}{:url('/cms.fields/batches')}{/if}"
+    ></table>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.fields/index',['source'=>$source,'source_id'=>$source_id])}",
+                search: false,
+                pagination:false,
+                pageSize:100,
+                sortName: 'weigh',
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter: Table.formatter.txtEditBtn,
+                    events: Table.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    visible: false,
+                },{
+                    field: 'field_name',
+                    title: '{:lang("Field")}',
+                },{
+                    field: 'field_title',
+                    title: '{:lang("Title")}'
+                },{
+                    field: 'form_type',
+                    title: '{:lang("Type")}'
+                },{
+                    field: 'length',
+                    title: '{:lang("Length")}'
+                },{
+                    field: 'default_value',
+                    title: '{:lang("Default")}'
+                },{
+                    field: 'data_list',
+                    title: '{:lang("Option list")}',
+                    visible: false
+                },{
+                    field: 'max_number',
+                    title: '{:lang("Greatest amount")}',
+                    visible: false
+                },{
+                    field: 'decimals',
+                    title: '{:lang("Decimal places")}',
+                    visible: false
+                },{
+                    field: 'rules',
+                    title: '{:lang("Rule")}',
+                    visible: false
+                },{
+                    field: 'tips',
+                    title: '{:lang("Tips")}',
+                    visible: false
+                },{
+                    field: 'field_group',
+                    title: '{:lang("Grouping")}',
+                    visible: false
+                },{
+                    field: 'error_tips',
+                    title: '{:lang("Error tips")}',
+                    visible: false,
+                    textLength: 10,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn,
+                },{
+                    field: 'extend',
+                    title: '{:lang("HTML attr")}',
+                    textLength: 10,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn,
+                    visible: false
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: Table.formatter.operate,
+                    events: Table.events.operate
+                }]
+            });
+        })
+    })
+</script>
+{/block:script}

@@ -1,0 +1,50 @@
+<div class="card shadow-none">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {if has_rule('cms/category/restore')}
+            <button type="button" class="btn btn-primary btn-disabled disabled btn-restore" data-url="{:url('/cms.category/restore')}"><i class="fas fa-undo"></i> {:lang('Restore')}</button>
+            <button type="button" class="btn btn-primary btn-restoreAll" data-url="{:url('/cms.category/restore')}"><i class="fas fa-undo"></i> {:lang('Restore all')}</button>
+            {/if}
+            {if has_rule('cms/category/destroy')}
+            <button type="button" class="btn btn-danger btn-destroy btn-disabled disabled" data-url="{:url('/cms.category/destroy')}"><i class="fas fa-times-circle"></i> {:lang('Destroy')}</button>
+            <button type="button" class="btn btn-danger btn-destroyAll" data-url="{:url('/cms.category/destroy')}"><i class="fas fa-times-circle"></i> {:lang('Destroy all')}</button>
+            {/if}
+        </div>
+        <table id="table"></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.category/recycle')}",
+                pagination: true,
+                sortName: 'delete_time',
+                contentLangSw: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID',
+                },{
+                    field: 'name',
+                    title: '{:lang("Directory name")}',
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                    align: 'left'
+                },{
+                    field: 'type_text',
+                    title: '{:lang("Column type")}',
+                },{
+                    field: 'model_name',
+                    title: '{:lang("Owning model")}',
+                }]
+            });
+        })
+    })
+</script>
+{/block:script}

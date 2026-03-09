@@ -1,0 +1,149 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Username")}</label>
+                            <input type="text" class="form-control" name="username" placeholder="" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Nickname")}</label>
+                            <input type="text" class="form-control" name="nickname" placeholder="" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Email")}</label>
+                            <input type="text" class="form-control" name="email" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Login time")}</label>
+                            <input type="text"
+                                   class="form-control laydate"
+                                   id="frm-publish_time"
+                                   name="logintime"
+                                   data-type="datetime"
+                                   data-range="true"
+                                   data-op="BETWEEN TIME"
+                                   autocomplete="off"
+                                   placeholder="{:lang("Login time")}">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Login ip")}</label>
+                            <input type="text" class="form-control" name="loginip" data-op="=">
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default ml-2" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar()}
+        </div>
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/auth.Admin/edit')}{/if}"
+               data-del="{if has_rule('del')}{:url('/auth.Admin/del')}{/if}"
+               data-batches="{if has_rule('batches')}{:url('/auth.Admin/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin,Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/auth.Admin/index')}",
+                search: false,
+                escape: false,
+                sortName:'id',
+                customFilter: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                    formatter: function (value, row, index, field) {
+                        if (row['id']=='{$User["id"]}') {
+                            return {disabled:true};
+                        } else {
+                            return {disabled:false};
+                        }
+                    }
+                },{
+                    field: 'id',
+                    title: 'ID'
+                },{
+                    field: 'username',
+                    title: '{:lang("Username")}',
+                },{
+                    field: 'nickname',
+                    title: '{:lang("Nickname")}',
+                },{
+                    field: 'avatar',
+                    title: '{:lang("Avatar")}',
+                    formatter: function (value,row) {
+                        return '<a href="'+value+'" target="_blank"><img src="'+value+'" style="width: 35px;height:35px;object-fit: cover;cursor: pointer" data-toggle="tooltip" title="'+lang('Click to open')+'" style=""></a>';
+                    }
+                },{
+                    field: 'group_names',
+                    title: '{:lang("Owned role")}',
+                },{
+                    field: 'email',
+                    title: '{:lang("Email")}',
+                    visible: false,
+                },{
+                    field: 'logintime',
+                    title: '{:lang("Login time")}',
+                },{
+                    field: 'loginip',
+                    title: '{:lang("Login ip")}',
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: function (value, row, index, field) {
+                        if (row['id']=='{$User["id"]}') {
+                            return '{:lang("Normal")}';
+                        }
+                        return Table.formatter.switchBtn.call(this, value, row, index, field);
+                    },
+                    events: Table.events.switchBtn
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                    visible: false
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:__("Operate")}',
+                    formatter: function (value, row, index) {
+                        if (row['id']=='{$User["id"]}') {
+                            return '';
+                        }
+                        return Table.formatter.operate.call(this, value, row, index);
+                    },
+                    events: Table.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

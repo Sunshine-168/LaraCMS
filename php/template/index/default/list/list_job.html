@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            {// $Cate 存在于栏目首页、栏目列表页，里面是栏目的信息}
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <!--数据筛选-->
+    <section class="project-area home-product" style="padding: 20px">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="filter m-0">
+                        {// 筛选，multiple="1" 表示多选，在字段管理里面可以设置字段筛选。}
+                        {hkcms:filter }
+                        <div class="option clearfix">
+                            {// 注意这里的语言包，即使是中文字符我们在en.json里面一样可以配置中英对照，若有其他语言也是一样的写法}
+                            <div class="option-title">{:__($item['title'])}：</div>
+                            <ul class="clearfix">
+                                {// 循环输出筛选选项}
+                                {hkcms:volist name="item.option" id="vo"}
+                                <li><a class="{$vo.currentstyle}" href="{$vo.url}">{:__($vo.title)}</a></li>
+                                {/hkcms:volist}
+                            </ul>
+                        </div>
+                        {/hkcms:filter}
+
+                        {// 排序，在字段管理里面可以设置字段排序。}
+                        <div class="option clearfix">
+                            <div class="option-title">{:__('Weigh')}：</div>
+                            <ul class="clearfix">
+                                {hkcms:order currentstyle="active"}
+                                <li>
+                                    <a href="{$item.url}" class="{$item.currentstyle}">
+                                        {if $key==0}
+                                        {:__($item.title)}
+                                        {elseif ($item.order=='asc')}
+                                        <i class="fas fa-long-arrow-alt-down"></i> {:__($item.title)}
+                                        {else /}
+                                        <i class="fas fa-long-arrow-alt-up"></i> {:__($item.title)}
+                                        {/if}
+                                    </a>
+                                </li>
+                                {/hkcms:order}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--数据筛选 结束-->
+        </div>
+        <!--container 结束-->
+    </section>
+
+    <!--招聘-->
+    <section class="project-area home-product solid-bg" style="padding: 20px">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="general-btn" style="margin-top: 10px">
+                        {// 获取招聘列表}
+                        {hkcms:content order="weigh desc,publish_time desc" num="$Cate['num']" page="1"}
+                        <div class="job-item p-4 mb-4">
+                            <div class="row g-4">
+                                <div class="col-sm-12 col-md-8 d-flex align-items-center">
+                                    <div class="text-start ps-4">
+                                        <h5 class="mb-3" style="font-size: 15px"><a href="{$item.url}" title="{$item.title}">{$item.title}</a><span class="text-danger ml-2">{$item.salary|default=''}</span></h5>
+                                        <span class="text-truncate mr-3" style="font-size: 13px"><i class="fa fa-map-marker-alt mr-2"></i>{$item.address|default=''}</span>
+                                        <span class="text-truncate mr-3" style="font-size: 13px"><i class="far fa-clock mr-2"></i>{$item.nature|default=''}</span>
+                                        <span class="text-truncate mr-0" style="font-size: 13px"><i class="far fa-bookmark mr-2"></i>{$item.degree|default=''}，{$item.exp|default=''}</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
+                                    <div class="d-flex mb-3">
+                                        <a class="btn btn-primary" href="{$item.url}">{:__('Apply Now')}</a>
+                                    </div>
+                                    <small class="text-truncate"><i class="far fa-calendar-alt mr-2"></i>{hkcms:date name="$item.publish_time" format="Y-m-d"}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {/hkcms:content}
+                    </div>
+                </div>
+            </div>
+            <div class="gap-40"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    {hkcms:contentpage item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                </div>
+            </div>
+        </div><!--container 结束-->
+    </section>
+    <!--招聘 结束-->
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

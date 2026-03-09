@@ -1,0 +1,33 @@
+{block:style}
+<style>
+    .col-form-label {
+        text-align: right;
+    }
+</style>
+{/block:style}
+<form class="frm-operate">
+
+    <div class="card card-primary card-tabs">
+        <div class="card-body">
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                {$html|raw}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin,Form) {
+        Form.api.init();
+    })
+</script>
+{/block:script}

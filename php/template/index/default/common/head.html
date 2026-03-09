@@ -1,0 +1,22 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+{// 自动生成标题、关键字、描述。}
+{hkcms:seo /}
+
+{if $site.favicon}
+<link rel="Shortcut Icon" href="{$site.favicon}?v={$site.dev=='enable'?time():$site.version}" type="image/x-icon" />
+{/if}
+
+{// 使用已有的CSS库、__libs__表示路径在：\public\static\libs。__static__表示在当前模板静态目录下，例如默认模板在public\static\module\index\default}
+<link rel="stylesheet" href="__libs__/fontawesome-free/css/all.min.css" />
+<link rel="stylesheet" href="__libs__/bootstrap/css/bootstrap.min.css" />
+<!--轮播图-->
+<link rel="stylesheet" href="__static__/css/swiper.min.css">
+
+<!--演示：开发者模式下一直刷新浏览器缓存，$site.dev=='enable'表示开发者模式，$site.version是版本号，非开发者模式下更改版本号刷新浏览器缓存。-->
+<link rel="stylesheet" href="__static__/css/style.css?v={$site.dev=='enable'?time():$site.version}" />
+
+{// 事件头部定义(标签位)，部分插件所需}
+{:hook("indexHead")}

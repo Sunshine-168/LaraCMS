@@ -1,0 +1,19 @@
+{
+  "Base": "常规",
+  "The page will reload, confirm?": "页面将重新加载，确认吗？",
+  "Are you sure to destroy the selected item? Document data will be included": "确认销毁选中项吗？将包括文档数据",
+  "Are you sure to restore everything?": "确认还原全部吗？",
+  "Are you sure to restore the selected items?": "确认还原选中项吗？",
+  "Set Pending":"设为待审核",
+  "Set as rejected": "设为拒绝",
+  "Set to normal": "设为正常",
+  "Save and continue": "保存并新增",
+  "Push": "推送",
+  "Copy to": "复制到",
+  "Batch copy": "批量复制",
+  "Batch move": "批量移动",
+  "Move to": "移动到",
+  "Delete property": "删除属性",
+  "Add property": "新增属性",
+  "Please choose":"请选择"
+}

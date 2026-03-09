@@ -1,0 +1,53 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('refresh,add,del')}
+        </div>
+        <table id="table"
+               data-edit="{if (has_rule('edit'))}{:url('/user.group/edit')}{/if}"
+               data-del="{if (has_rule('del'))}{:url('/user.group/del')}{/if}"
+               data-batches="{if (has_rule('batches'))}{:url('/user.group/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (undefined,cmsTable) {
+        $(function () {
+            cmsTable.init({
+                url: "{:url('/user.Group/index')}",
+                showToggle: false,
+                search: false,
+                pagination: false,
+                escape: false,
+                sortName:false,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID',
+                },{
+                    field: 'name',
+                    title: '{:lang("Name")}',
+                    align: 'left'
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                    align: 'left'
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: cmsTable.formatter.switchBtn,
+                    events: cmsTable.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: cmsTable.formatter.operate,
+                    events: cmsTable.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

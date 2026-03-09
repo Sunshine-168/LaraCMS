@@ -1,0 +1,50 @@
+<div class="card card-primary shadow-none">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            <button type="button" class="btn btn-primary btn-restoreAll" data-url="{:url('/cms.archives/restore',['category_id'=>$category_id])}"><i class="fas fa-undo"></i> {:lang('Restore all')}</button>
+            <button type="button" class="btn btn-danger btn-destroyAll" data-url="{:url('/cms.archives/destroy',['category_id'=>$category_id])}"><i class="fas fa-times-circle"></i> {:lang('Destroy all')}</button>
+            <button type="button" class="btn btn-primary btn-disabled disabled btn-restore" data-url="{:url('/cms.archives/restore',['category_id'=>$category_id])}"><i class="fas fa-undo"></i> {:lang('Restore')}</button>
+            <button type="button" class="btn btn-danger btn-destroy btn-disabled disabled" data-url="{:url('/cms.archives/destroy',['category_id'=>$category_id])}"><i class="fas fa-times-circle"></i> {:lang('Destroy')}</button>
+        </div>
+        <table id="table"></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.archives/recycle',['category_id'=>$category_id])}",
+                pagination: true,
+                sortName: 'delete_time',
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID'
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}'
+                },{
+                    field: 'category_title',
+                    title: '{:lang("Column")}'
+                },{
+                    field: 'views',
+                    title: '{:lang("Click volume")}'
+                },{
+                    field: 'username',
+                    title: '{:lang("Publisher")}'
+                },{
+                    field: 'publish_time_text',
+                    title: '{:lang("Release time")}'
+                },{
+                    field: 'delete_time_text',
+                    title: '{:lang("Delete time")}'
+                }]
+            });
+        })
+    })
+</script>
+{/block:script}

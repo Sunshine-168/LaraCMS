@@ -1,0 +1,436 @@
+<style>
+    .type-table {display: none;}
+    .settings-item .row {
+        margin: 0 0 8px 0;
+    }
+    .settings-item .row .row-form-label {
+        padding-right: 0;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card card-primary">
+        <div class="card-body">
+            <input type="hidden" name="row[source]" value="{$row['source']}">
+            <input type="hidden" name="row[source_id]" value="{$row['source_id']}">
+            <div class="form-group row align-items-center">
+                <label class="col-sm-2 row-form-label">{:lang('Type')}: </label>
+                <div class="col-sm-8">
+                    <input type="hidden" name="row[form_type]" value="{$row['form_type']}">
+                    <span>{:config('base.form_type')[$row['form_type']]}</span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-field_name" class="col-sm-2 row-form-label">{:lang("Field")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-field_name" name="row[field_name]" placeholder="{:lang('Starts with a letter, only supports letters, numbers, underscores')}" value="{$row['field_name']}" data-rule="required">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="frm-field_title" class="col-sm-2 row-form-label">{:lang("Title")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-field_title" name="row[field_title]" placeholder="" value="{$row['field_title']}" data-rule="required">
+                </div>
+            </div>
+
+            <!--动态下拉配置-->
+            {if $row['form_type']=='selectpage'}
+            <div id="selectpage-setting">
+                <div class="form-group row">
+                    <label class="col-sm-2 row-form-label">{:lang("Config")}: </label>
+                    <div class="col-sm-8">
+                        <div class="border rounded settings-item">
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:lang("Data source")}: </label>
+                                <div class="col-sm-10">
+                                    <div class="radio-group">
+                                        <div class="radio-item"><input type="radio" id="frm-data_list_type1" name="row[data_list][type]" value="url" {if $row['data_list']['type']=='url'}checked{/if}><label for="frm-data_list_type1">URL</label></div>
+                                        <div class="radio-item"><input type="radio" id="frm-data_list_type2" name="row[data_list][type]" value="table" {if $row['data_list']['type']=='table'}checked{/if}><label for="frm-data_list_type2">{:__("Association Table")}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="type-url">
+                                <div class="row">
+                                    <label for="frm-selectpage-url" class="col-sm-2 row-form-label">{:lang("URL")}: </label>
+                                    <div class="col-sm-10">
+                                        <input id="frm-selectpage-url" type="text" class="form-control" name="row[data_list][url]" value="{$row['data_list']['url']}">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="frm-selectpage-show-field" class="col-sm-2 row-form-label">{:lang("Show fields")}: </label>
+                                    <div class="col-sm-4">
+                                        <input id="frm-selectpage-show-field" type="text" class="form-control" name="row[data_list][url-show-field]" value="{$row['data_list']['url-show-field']}" placeholder="{:__('Default')}：title">
+                                    </div>
+                                    <label for="frm-selectpage-key-field" class="col-sm-2 row-form-label">{:lang("Storage field")}: </label>
+                                    <div class="col-sm-4">
+                                        <input id="frm-selectpage-key-field" type="text" class="form-control" name="row[data_list][url-key-field]" value="{$row['data_list']['url-key-field']}" placeholder="{:__('Default')}：id">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="frm-selectpage-search-field" class="col-sm-2 row-form-label">{:lang("Search field")}: </label>
+                                    <div class="col-sm-10"><input id="frm-selectpage-search-field" type="text" class="form-control" name="row[data_list][url-search-field]" value="{$row['data_list']['url-search-field']}" placeholder="{:__('Default')}：title"></div>
+                                </div>
+                            </section>
+
+                            <section class="type-table">
+                                <div class="row">
+                                    <label class="col-sm-2 row-form-label">{:lang("Datasheet")}: </label>
+                                    <div class="col-sm-10">
+                                        <select id="J-selectpage-table" class="form-control" name="row[data_list][table]">
+                                            <option value="">{:lang('Please choose')}</option>
+                                            {volist name="table" id="vo"}
+                                            <option value="{$vo}" {if $row['data_list']['table']==$vo}selected{/if}>{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <label class="col-md-2 row-form-label">{:lang("Show fields")}: </label>
+                                    <div class="col-md-4">
+                                        <select class="form-control J-field" name="row[data_list][show-field]">
+                                            {if empty($field)}
+                                            <option value="">{:lang('Please choose')}</option>
+                                            {/if}
+                                            {php}$is_delete_time = 0;{/php}
+                                            {volist name="field" id="vo"}
+                                            {if $vo=='delete_time'}{php}$is_delete_time=1;{/php}{/if}
+                                            <option  {if $row['data_list']['show-field']==$vo}selected{/if} value="{$vo}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+
+                                        <input type="hidden" name="row[data_list][delete_time]" value="{$row['data_list']['delete_time']??$is_delete_time}">
+                                    </div>
+                                    <label class="col-md-2 row-form-label">{:lang("Storage field")}: </label>
+                                    <div class="col-md-4">
+                                        <select class="form-control J-field" name="row[data_list][key-field]">
+                                            {if empty($field)}
+                                            <option value="">{:lang('Please choose')}</option>
+                                            {/if}
+                                            {volist name="field" id="vo"}
+                                            <option  {if $row['data_list']['key-field']==$vo}selected{/if} value="{$vo}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-2 row-form-label" for="frm-search-field">{:lang("Search field")}: </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control selectpicker J-field" id="frm-search-field" data-max-options="3" name="row[data_list][search-field][]" multiple>
+                                            {php}$row['data_list']['search-field'] = !empty($row['data_list']['search-field'])?explode(',',$row['data_list']['search-field']):[];{/php}
+                                            {volist name="field" id="vo"}
+                                            <option  {if in_array($vo,$row['data_list']['search-field'])}selected{/if} value="{$vo}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:lang("Query method")}: </label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="row[data_list][and-or]" value="{$row['data_list']['and-or']}" placeholder="{:__('Default')}：and">
+                                </div>
+                                <label class="col-sm-2 row-form-label">{:lang("Weigh")}: </label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="row[data_list][order-by]" value="{$row['data_list']['order-by']}" placeholder="id desc">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:lang("Additional conditions")}: </label>
+                                <div class="col-sm-10">
+                                    <div class="row">
+                                        <div class="col-sm-5 row-form-label" style="text-align: left">{:lang('Field')}</div>
+                                        <div class="col-sm-5 row-form-label" style="text-align: left">{:lang('Value')}</div>
+                                    </div>
+                                    <div class="" id="J-groups" data-num="{if !empty($row['data_list']['param']['custom'])}{:count($row['data_list']['param']['custom'])}{/if}">
+                                        {if !empty($row['data_list']['param'])}
+                                        {volist name="row['data_list']['param']" id="vo" key="kk"}
+                                        {volist name="vo" id="vv"}
+                                        <div class="row del{$i} mb-1">
+                                            <div class="col-sm-5">
+                                                <input type="text" class="form-control" value="{$key}" name="row[data_list][param][]">
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input type="text" class="form-control" value="{$vv}" name="row[data_list][param][]">
+                                            </div>
+                                            <div class="col-sm-2  d-flex align-items-center">
+                                                <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del{$i}"><i class="fas fa-times"></i></a>
+                                            </div>
+                                        </div>
+                                        {/volist}
+                                        {/volist}
+                                        {/if}
+                                    </div>
+                                    <div class="row pt-1">
+                                        <div class="col-sm-12">
+                                            <a href="#" class="btn btn-xs btn-default btn-groups"><i class="fas fa-plus"></i> {:lang('Append')}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:lang("More options")}: </label>
+                                <div class="col-sm-10 d-flex">
+                                    <label class="row-form-label d-flex align-items-center mr-1">
+                                        <input type="checkbox" name="row[data_list][multiple]" value="1" {if isset($row['data_list']['multiple'])&&$row['data_list']['multiple']==1}checked{/if}><span class="ml-1">{:__("Enable multiple selection")}</span>
+                                    </label>
+                                    <label class="row-form-label d-flex align-items-center mr-1">
+                                        <input type="checkbox" name="row[data_list][pagination]" value="1" {if isset($row['data_list']['pagination'])&&$row['data_list']['pagination']==1}checked{/if}><span class="ml-1">{:__("Turn off pagination")}</span>
+                                    </label>
+                                    <label class="row-form-label d-flex align-items-center mr-1">
+                                        <input type="checkbox" name="row[data_list][select-only]" value="1" {if isset($row['data_list']['select-only'])&&$row['data_list']['select-only']==1}checked{/if}><span class="ml-1">{:__("Select mode only")}</span>
+                                    </label>
+                                    <label class="row-form-label d-flex align-items-center mr-1">
+                                        <input type="checkbox" name="row[data_list][enable-lang]" value="1" {if isset($row['data_list']['enable-lang'])&&$row['data_list']['enable-lang']==1}checked{/if}><span class="ml-1">{:__("Multilingual filter")}</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/if}
+            <!--动态下拉配置结束-->
+
+            <div class="form-group row">
+                <label for="frm-length" class="col-sm-2 row-form-label">{:lang("Length")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-length" name="row[length]" value="{$row['length']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-default_value" class="col-sm-2 row-form-label">{:__("Default value")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-default_value" name="row[default_value]" value="{$row['default_value']}">
+                </div>
+            </div>
+
+            <div id="other-option">
+                {if in_array($row['form_type'], ['radio','checkbox','select','selects'])}
+                <div class="form-group row" id="data_list">
+                    <label for="frm-data_list" class="col-sm-2 row-form-label">{:lang("Option list")}: </label>
+                    <div class="col-sm-8">
+                        <textarea class="form-control" id="frm-data_list" name="row[data_list]" rows="3" placeholder="" data-rule="required">{$row['data_list']}</textarea>
+                    </div>
+                </div>
+                {elseif in_array($row['form_type'], ['image','downfile'])}
+                <div class="form-group row">
+                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Limit suffix")}: </label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="row[setting][ext]" value="{$row.setting.ext|default=""}" placeholder="{:lang('Limit the upload format,when empty,the attachment configuration will be used. Multiple suffixes are separated by |')} (png|jpg|zip)">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Limit size")}: </label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" name="row[setting][filesize]" value="{$row.setting.filesize|default=""}" placeholder="{:lang("When empty, the content of the attachment configuration will be used")}">
+                        <div class="pt-1 pl-1"><span class="text-muted">{:lang('Unit:Byte')}(b)</span></div>
+                    </div>
+                </div>
+                {elseif in_array($row['form_type'], ['images','downfiles'])}
+                <div class="form-group row">
+                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Limit suffix")}: </label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="row[setting][ext]" value="{$row.setting.ext|default=""}" placeholder="{:lang('Limit the upload format,when empty,the attachment configuration will be used. Multiple suffixes are separated by |')} (png|jpg|zip)">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Limit size")}: </label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" name="row[setting][filesize]" value="{$row.setting.filesize|default=""}" placeholder="{:lang("When empty, the content of the attachment configuration will be used")}">
+                        <div class="pt-1 pl-1"><span class="text-muted">{:lang('Unit:Byte')}(b)</span></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="frm-max_number" class="col-sm-2 row-form-label">{:lang("Greatest amount")}: </label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" id="frm-max_number" name="row[max_number]" value="{$row['max_number']}" data-rule="required|digits">
+                    </div>
+                </div>
+                {elseif 'array'==$row['form_type']}
+                <div class="form-group row">
+                    <label for="frm-key_name_alias" class="col-sm-2 row-form-label">{:lang("Key name alias")}: </label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="frm-key_name_alias" name="row[key_name_alias]" value="{$row['data_list']['key']}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="frm-key_value_alias" class="col-sm-2 row-form-label">{:lang("Key value name")}: </label>
+                    <div class="col-sm-8">
+                        <input name="row[data_list]" value="" type="hidden" />
+                        <input type="text" class="form-control" id="frm-key_value_alias" name="row[key_value_alias]" value="{$row['data_list']['value']}">
+                    </div>
+                </div>
+                {elseif 'number'==$row['form_type']}
+                <div class="form-group row">
+                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Decimal places")}: </label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" id="frm-decimals" name="row[decimals]" value="{$row['decimals']}" data-rule="required|digits">
+                    </div>
+                </div>
+                {/if}
+            </div>
+
+            <div class="form-group row">
+                <label for="frm-tips" class="col-sm-2 row-form-label">{:lang("Rule")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" id="frm-rules"
+                           class="form-control selectpage"
+                           name="row[rules]"
+                            value="{$row['rules']}"
+                           data-select-only="false"
+                           data-key-field="name"
+                           data-pagination="false"
+                           data-show-field="title"
+                           data-multiple="true"
+                           data-data="{:url('/cms.model_field/getRules')}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-tips" class="col-sm-2 row-form-label">{:lang("Tips")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-tips" name="row[tips]" value="{$row['tips']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-error_tips" class="col-sm-2 row-form-label">{:lang("Error tips")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-error_tips" name="row[error_tips]" value="{$row['error_tips']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-extend" class="col-sm-2 row-form-label">{:lang("HTML attr")}: </label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" id="frm-extend" name="row[extend]" rows="3" placeholder="{:lang('Add or overlay HTML attributes, and separate multiple attributes with English commas.')}{:lang('Example:')}data-title=&quot;ceshi&quot;,class=&quot;form-control selectpage&quot;">{$row['extend']}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-weigh" class="col-sm-2 row-form-label">{:lang("Weigh")}: </label>
+                <div class="col-sm-8">
+                    <input type="number" class="form-control" id="frm-weigh" name="row[weigh]" placeholder="{:lang("Weigh")}" value="{$row['weigh']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 row-form-label">{:lang("Status")}: </label>
+                <div class="col-sm-8">
+                    {:build_radios('row[status]',['normal'=>lang("Normal"),'hidden'=>lang("Hidden")], $row['status'])}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin, Form) {
+        $(function () {
+            Form.api.init();
+            $(document).on('change', '#frm-form_type', function (e) {
+                if ($.inArray($(this).val(),['radio','checkbox','select','selects'])>-1) {
+                    $('#other-option').html('<div class="form-group row" id="data_list">\n' +
+                        '                    <label for="frm-data_list" class="col-sm-2 row-form-label">{:lang("Option list")}: </label>\n' +
+                        '                    <div class="col-sm-10">\n' +
+                        '                    <textarea class="form-control" id="frm-data_list" name="row[data_list]" rows="3" placeholder="" data-rule="required">key1|标题\n' +
+                        'key2|标题</textarea>\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else if ($.inArray($(this).val(), ['images','downfiles'])>-1) {
+                    $('#other-option').html('<div class="form-group row" id="max_number">\n' +
+                        '                    <label for="frm-max_number" class="col-sm-2 row-form-label">{:lang("Greatest amount")}: </label>\n' +
+                        '                    <div class="col-sm-10">\n' +
+                        '                        <input type="number" class="form-control" id="frm-max_number" name="row[max_number]" value="" data-rule="required|digits">\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else if ($(this).val()=='array') {
+                    $('#frm-length').val('');
+                    $('#other-option').html('<div class="form-group row">\n' +
+                        '                <label for="frm-key_name_alias" class="col-sm-2 row-form-label">{:lang("Key name alias")}: </label>\n' +
+                        '                <div class="col-sm-8">\n' +
+                        '                    <input type="text" class="form-control" id="frm-key_name_alias" name="row[key_name_alias]" value="{:lang('Key name')}">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '            <div class="form-group row">\n' +
+                    '                <label for="frm-key_value_alias" class="col-sm-2 row-form-label">{:lang("Key value name")}: </label>\n' +
+                    '                <div class="col-sm-8">\n' +
+                    '                    <input name="row[data_list]" value="" type="hidden" /><input type="text" class="form-control" id="frm-key_value_alias" name="row[key_value_alias]" value="{:lang('Key value')}">\n' +
+                    '                </div>\n' +
+                    '            </div>');
+                } else if ($(this).val()=='number') {
+                    $('#frm-length').val('');
+                    $('#other-option').html('<div class="form-group row">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:lang("Decimal places")}: </label>\n' +
+                        '                    <div class="col-sm-10">\n' +
+                        '                        <input type="number" class="form-control" id="frm-decimals" name="row[decimals]" value="0" data-rule="required|digits">\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else {
+                    $('#other-option').html('');
+                }
+            });
+
+            // 动态下拉配置删除
+            $(document).on('click','.btn-groups-del',function (e) {
+                $($(this).data('class')).remove();
+                e.preventDefault();
+            });
+            var item = parseInt($('#J-groups').data('num'))+1;
+            $(document).on('click','.btn-groups',function (e) {
+                $('#J-groups').append('<div class="row mb-1 del'+item+'"><div class="col-sm-5">\n' +
+                    '      <input type="text" class="form-control" value="" name="row[data_list][param][]">\n' +
+                    '  </div>\n' +
+                    '  <div class="col-sm-5">\n' +
+                    '      <input type="text" class="form-control" value="" name="row[data_list][param][]">\n' +
+                    '  </div>\n' +
+                    '  <div class="col-sm-2  d-flex align-items-center">\n' +
+                    '      <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del'+item+'"><i class="fas fa-times"></i></a>\n' +
+                    '  </div></div>');
+                item++;
+                e.preventDefault();
+            });
+            // 数据源值改变
+            $(document).on('change', 'input[name="row[data_list][type]"]', function (e) {
+                var val = $(this).val();
+                if (val=='table') {
+                    $('.type-url').hide();
+                    $('.type-table').show();
+                } else {
+                    $('.type-url').show();
+                    $('.type-table').hide();
+                }
+            });
+            // 数据表更换事件
+            $(document).on('change', '#J-selectpage-table', function (e) {
+                var val = $(this).val();
+                $.get('{:url("/cms.model_field/getFields")}'+'?t='+val,function (data) {
+                    if (data.code==200) {
+                        var html = '';
+                        var is_delete_time = 0;
+                        $.each(data.data.field, function (idx, val) {
+                            if (val=='delete_time') {
+                                is_delete_time = 1;
+                            }
+                            html += '<option value="'+val+'">'+val+'</option>';
+                        })
+                        $('select.J-field').html(html);
+                        $('input[name="row[data_list][delete_time]"]').val(is_delete_time);
+                        $('.selectpicker').selectpicker('refresh');
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                })
+            });
+            $(document).find('input[name="row[data_list][type]"]:checked').trigger('change');
+        })
+    })
+</script>
+{/block:script}

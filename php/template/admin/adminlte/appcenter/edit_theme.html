@@ -1,0 +1,357 @@
+{block:style}
+<link rel="stylesheet" href="__libs__/codemirror/lib/codemirror.css">
+<style>
+    .operatePage,.card-tabs {
+        height: 100%;
+    }
+    .J-jstree {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        overflow-y: auto;
+    }
+    .table tr th,.table tr td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .jstree-default .jstree-anchor {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+</style>
+{/block:style}
+
+<div class="card card-tabs m-0">
+    <div class="card-header">
+        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {if $type=='tpl' || empty($type)}active{/if}" href="{:url('/appcenter/editTheme',['name'=>$name,'t'=>'tpl','popup'=>1])}">{:__('Template file')}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {if $type=='static'}active{/if}" href="{:url('/appcenter/editTheme',['name'=>$name,'t'=>'static','popup'=>1])}">{:__('Static file')}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {if $type=='lang'}active{/if}" href="{:url('/appcenter/editTheme',['name'=>$name,'t'=>'lang','popup'=>1])}">{:__('Language')}</a>
+            </li>
+            {if get_addons_config('template',$name,'index')}
+            <li class="nav-item">
+                <a class="nav-link" href="#!" data-toggle="open" data-title="{:__('Theme configuration')}" data-url="{:url('/appcenter/setConfig',['name'=>$name,'type'=>'template','module'=>'index'])}" >{:__('Theme configuration')}</a>
+            </li>
+            {/if}
+        </ul>
+    </div>
+    <div class="card-body config-row">
+        <div class="tab-content" id="custom-tabs-three-tabContent" style="height: 100%;">
+            {if $type=='tpl' || $type=='static'}
+            <div class="tab-pane fade active show fileman" id="pane-group-tab" role="tabpanel" style="height: 100%;">
+                <div class="row" style="height: 100%;overflow:hidden;">
+                    <div class="col-md-3" style="height: 100%;">
+                        <div><span><i class="fas fa-folder"></i> {$name}</span> <a href="#" class="btn btn-xs btn-primary float-right btn-add">{:__('Create file')}</a></div>
+                        <div class="J-jstree"></div>
+                    </div>
+                    <div class="col-md-9" style="height: 100%">
+                        <form role="form" action="" class="frm-operate" method="post" style="height: 100%">
+                            <input type="hidden" name="name" value="{$name}">
+                            <input type="hidden" name="t" value="{$type}">
+                            <input type="hidden" name="old" value="" id="old">
+                            <input type="hidden" name="old_path" value="" id="old_path">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <div class="form-group mb-2">
+                                        <label for="path">{:__("Directory")}: </label>
+                                        <input type="text" class="form-control" id="path" required name="path">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group mb-2">
+                                        <label for="filename">{:__("Filename")}: </label>
+                                        <input type="text" class="form-control" id="filename" required name="filename" placeholder="支持html,json,ini后缀的文件">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group mb-2">
+                                        <label for="filename">&nbsp;</label>
+                                        <div class="mt-1">
+                                            <input type="button" class="btn btn-danger btn-sm btn-delete" value="{:__('Delete')}">
+                                            <input type="submit" class="btn btn-primary btn-sm ml-2 btn-savefile" value="{:__('Save')}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="m-0 text-muted">{:__('Path')}：<span class="real"></span></p>
+                            <div class="row" style="height: calc(100% - 100px)">
+                                <div class="col-md-12">
+                                    <textarea id="textarea1" class="d-none" name="content">{:__('Please click the file list on the left or click the Create File button to create a new file')}</textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {else /}
+            <div class="tab-pane fade active show" id="pane-group-tab" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12" style="margin-bottom: 20px">
+                        <div style="width: 100%;display: flex;align-items: center">
+                            <div class="d-flex align-items-center">
+                                <label for="lang-list" class="m-0">{:__('language pack')}：</label>
+                                <select class="form-control form-control-sm" id="lang-list" style="width: 150px">
+                                    {volist name="langs" id="vo"}
+                                    <option value="{$vo}" {if $curLf==$vo}selected{/if}>{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                            <div><a href="#" class="btn btn-primary btn-sm ml-3 btn-save">{:__('Save')}</a></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <form action="" method="post" class="frm-operate">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>{:__('Key name')}</th>
+                                    <th>{:__('Value')}</th>
+                                    <th>{:__("Template call")}</th>
+                                    <th>{:__("Operate")}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {volist name="langArr" id="vo"}
+                                <tr>
+                                    <td class="lang-key">
+                                        <textarea class="form-control" name="row[]" required>{$key}</textarea>
+                                    </td>
+                                    <td>
+                                        <textarea class="form-control" name="row[]" required>{$vo}</textarea>
+                                    </td>
+                                    <td><a href="#" class="btn btn-info btn-copy btn-xs">{:__('Copy')}</a></td>
+                                    <td>
+                                        <input type="button" class="btn btn-danger btn-xs btn-delete-row" value="{:__('Delete')}">
+                                    </td>
+                                </tr>
+                                {/volist}
+                                </tbody>
+                            </table>
+                            <p align="center">
+                                <a href="#" class="btn btn-info btn-sm btn-add-row">{:__('Append')}</a>
+                                <a href="#" class="btn btn-primary btn-sm ml-3 btn-save">{:__('Save')}</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {/if}
+        </div>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','jstree','layer','__libs__/codemirror/lib/codemirror.js','__libs__/codemirror/mode/htmlmixed/htmlmixed.js'], function (admin, undefined, undefined, CodeMirror) {
+        $(function (e) {
+            if ($('.fileman').length==1) {
+                var editor;
+                var curSelect;
+                var JstreeNode;
+                Util.ajax({
+                    url:'{:url("/appcenter/getThemeFiles")}?name={$name}&t={$type}'
+                },'',function (data) {
+
+                    $('.J-jstree').jstree("destroy");
+                    $('.J-jstree').jstree({ "core":{"data":data,"multiple":false},"state":{"opened":true}}).on('loaded.jstree', function(e, data){
+                        // var inst = data.instance;
+                        // inst.select_node(checked);
+                    });
+
+                    // 文件选择
+                    $('.J-jstree').on('changed.jstree', function (e, data) {
+                        isadd = true;
+                        var arr = data.instance.get_node(data.selected[0]);
+                        if (!arr || arr.data.isdir) { // 跳过目录选择
+                            return false;
+                        }
+                        JstreeNode = data;
+                        $('#filename').val(arr.data.org_text);
+                        $('#old').val(arr.data.org_text);
+                        curSelect = arr;
+                        // 拼接目录
+                        var pare = arr.parents[0];
+                        var parentDir = [];
+                        while (pare!='#') {
+                            var tmp = data.instance.get_node(pare)
+                            parentDir.push(tmp.data.org_text);
+                            pare = tmp.parents[0];
+                        }
+                        parentDir = parentDir ? parentDir.reverse() : parentDir;
+                        $('#path').val('/'+parentDir.join('/'));
+                        $('#old_path').val('/'+parentDir.join('/'));
+                        $('.real').html('{$template}'+(parentDir.length?parentDir.join('/')+'/':'')+arr.data.org_text);
+
+                        hkcms.api.ajax({
+                            type: 'post',
+                            url:'{:url("/appcenter/getThemeFiles")}?name={$name}&t={$type}',
+                            data:{fn:arr.data.org_text,dir:parentDir}
+                        },'',function (data,res) {
+                            editor.toTextArea();
+                            $('#textarea1').val(data.content);
+                            editor = CodeMirror.fromTextArea(document.getElementById('textarea1'), {
+                                lineNumbers: true,
+                                mode: 'htmlmixed',
+                                lineWrapping: true, //代码折叠
+                            });
+                            $('.CodeMirror').css('height',$('.frm-operate').height()-90+'px');
+                        });
+                    });
+
+                    editor = CodeMirror.fromTextArea(document.getElementById('textarea1'), {
+                        lineNumbers: true,
+                        mode: 'htmlmixed',
+                        lineWrapping: true, //代码折叠
+                    });
+                    $('.CodeMirror').css('height',$('.frm-operate').height()-90+'px');
+                });
+
+                $(window).resize(function () {
+                    $('.CodeMirror').css('height',$('.frm-operate').height()-90+'px');
+                });
+
+                // 新建文件
+                var isadd = true;
+                $('.btn-add').click(function (e) {
+                    editor.toTextArea();
+                    $('#textarea1').val('新的文件');
+                    editor = CodeMirror.fromTextArea(document.getElementById('textarea1'), {
+                        lineNumbers: true,
+                        mode: 'htmlmixed',
+                        lineWrapping: true, //代码折叠
+                    });
+                    $('.CodeMirror').css('height',$('.frm-operate').height()-90+'px');
+                    $('.J-jstree').jstree('deselect_all');
+                    $('#path').val('/');
+                    $('#old_path').val('');
+                    $('#filename').val('{$type=="tpl"?"newfile.html":"new.js"}');
+                    $('#old').val('');
+                    $('.real').html('');
+                    isadd = false;
+                    curSelect = null;
+                })
+
+                // 删除文件
+                $('.btn-delete').click(function (e) {
+                    if (!curSelect) {
+                        layer.msg("请选择文件");
+                        return false;
+                    }
+                    layer.confirm("确认删除吗？",{
+                        btn: ['{:__("Confirm")}', '{:__("Cancel")}']
+                    }, function (index) {
+                        // 拼接目录
+                        var pare = curSelect.parents[0];
+                        var parentDir = [];
+                        while (pare!='#') {
+                            var tmp = JstreeNode.instance.get_node(pare)
+                            parentDir.push(tmp.data.org_text);
+                            pare = tmp.parents[0];
+                        }
+                        parentDir = parentDir ? parentDir.reverse() : parentDir;
+                        Util.ajax({
+                            type: "post",
+                            url: "{:url('/appcenter/delThemeFiles',['t'=>$type,'name'=>$name])}",
+                            data: {dir:parentDir,file:curSelect.data.org_text}
+                        },'',function (data,res) {
+                            layer.msg(res.msg,{time:1000},function () {
+                                window.location.reload();
+                            })
+                        })
+                    });
+                })
+
+                // 保存文件
+                $('.btn-savefile').click(function (e) {
+                    if (!curSelect && isadd) {
+                        layer.msg("请选择文件");
+                        return false;
+                    }
+                    if ($('#path').val().length==0) {
+                        layer.msg("请填写路径");
+                        return false;
+                    }
+                    if ($('#filename').val().length==0) {
+                        layer.msg("请填写文件名");
+                        return false;
+                    }
+
+                    editor.save();
+                    Util.ajax({
+                        type: "post",
+                        url: "{:url('/appcenter/editTheme')}",
+                        data: $('.frm-operate').serializeArray()
+                    },'',function (data,res) {
+                        layer.msg(res.msg,{time:1000},function () {
+                            if (!isadd) { // 新增刷新
+                                window.location.reload();
+                            }
+                        })
+                    })
+                    return false;
+                })
+            } else {
+                // 删除行
+                $(document).on('click','.btn-delete-row',function (e) {
+                    $(this).parent().parent().remove();
+                });
+                // 新增行
+                $('.btn-add-row').click(function (e) {
+                    $('.table tbody').append('<tr>\n' +
+                        '     <td class="lang-key">\n' +
+                        '         <textarea class="form-control" name="row[]" required></textarea>\n' +
+                        '     </td>\n' +
+                        '     <td>\n' +
+                        '         <textarea class="form-control" name="row[]" required></textarea>\n' +
+                        '     </td><td><a href="#" class="btn btn-info btn-copy btn-xs">{:__('Copy')}</a></td>\n' +
+                        '     <td>\n' +
+                        '         <input type="button" class="btn btn-danger btn-xs btn-delete-row" value="{:__('Delete')}">\n' +
+                        '     </td>\n' +
+                        '</tr>');
+
+                    e.preventDefault();
+                });
+                // 新建文件
+                $('.btn-add').click(function (e) {
+                    Util.ajax({
+                        type:'post',
+                        url:"{:url('/appcenter/addLang',['name'=>$name])}",
+                    },'',function (data,res) {
+                        layer.msg(res.msg,{time:1000},function () {
+                            window.location.reload();
+                        })
+                    });
+                })
+                // 保存
+                $('.btn-save').click(function (e) {
+                    e.preventDefault();
+                    Util.ajax({
+                        type:'post',
+                        url:"{:url('/appcenter/editLang',['name'=>$name])}&file="+$('#lang-list').val(),
+                        data:$('.frm-operate').serializeArray()
+                    },'',function (data,res) {
+                        layer.msg(res.msg,{time:1000},function () {
+                            window.location.reload();
+                        })
+                    });
+                })
+                // 语言包切换
+                $('#lang-list').change(function (e) {
+                    window.location.href = "{:url('/appcenter/editTheme',['name'=>$name,'t'=>'lang','popup'=>1])}&lf="+$(this).val();;
+                });
+                // 复制
+                $(document).on('click','.btn-copy',function (e) {
+                    e.preventDefault();
+                    layer.alert("{:__('For more label calls, please go to the manual to learn')}：<br/>{"+":__('"+$(this).parent().parent().find('.lang-key textarea').val()+"')}");
+                });
+            }
+        })
+    })
+</script>
+{/block:script}

@@ -1,0 +1,21 @@
+{
+  "Sub-columns": "子栏目",
+  "Base": "常规",
+  "Current": "当前",
+  "Only for query, will not affect edit mode": "仅用于查询，不会影响到编辑模式",
+  "Link address or jump to other columns, valid when no model is selected": "链接地址或跳转到其他栏目,不选模型时有效",
+  "Select column": "选择栏目",
+  "Selected": "已选择",
+  "Support batch, separated by English symbol `|`, newline, for example": "支持批量，用英文符号“|”分隔、换行，例如",
+  "Leave blank, the default pinyin + random number, when adding in batches, leave this item blank": "留空则默认拼音+随机数，以批量方式添加时，该项留空",
+  "Name used for address bar access, supports letters, numbers, -, _": "用于地址栏访问的名称，支持字母,数字,-,_",
+  "Please select a model": "请选择模型",
+  "Please select the section homepage": "请选择栏目首页",
+  "Please select a list template": "请选择列表模板",
+  "Please select a content template": "请选择内容模板",
+  "Please select a page template": "请选择页面模板",
+  "Select all": "选中全部",
+  "Expand All": "展开全部",
+  "Tip: Applicable to list pages, requires template support": "提示：适用于列表页，需要模板支持",
+  "Are you sure to move to the recycle bin? Will include sub-sections and document data.": "确认移到回收站？将包括子栏目及文档数据。"
+}

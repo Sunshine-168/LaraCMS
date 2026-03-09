@@ -1,0 +1,181 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Nickname")}</label>
+                            <input type="text" class="form-control" name="nickname" placeholder="" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Username")}</label>
+                            <input type="text" class="form-control" name="username" placeholder="{:lang("Username")}" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Email")}</label>
+                            <input type="email" class="form-control" name="email" placeholder="" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Mobile")}</label>
+                            <input type="text" class="form-control" name="mobile" placeholder="" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Login time")}</label>
+                            <input type="text"
+                                   class="form-control laydate"
+                                   id="frm-publish_time"
+                                   name="logintime"
+                                   data-type="datetime"
+                                   data-range="true"
+                                   data-op="BETWEEN TIME"
+                                   autocomplete="off"
+                                   placeholder="{:lang("Login time")}">
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default ml-2" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            <a class="btn btn-default" href="/u" target="_blank"><i class="fa fa-external-link-alt"></i> {:__('Member Center')}</a>
+            {:build_toolbar('refresh,del')}
+            {if (has_rule('batches'))}
+            <div class="dropdown ml-1 btn-toggle">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-"></i> {:lang('Setting')}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="dropdown-item status" href="#" data-params="status=normal">{:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden">{:lang('Set to disabled')}</a>
+                </div>
+            </div>
+            {/if}
+        </div>
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/user.User/edit')}{/if}"
+               data-del="{if has_rule('del')}{:url('/user.User/del')}{/if}"
+               data-batches="{if has_rule('batches')}{:url('/user.User/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (undefined,cmsTable) {
+        $(function () {
+            cmsTable.init({
+                url: "{:url('/user.User/index')}",
+                search: false,
+                escape: false,
+                sortName:'update_time',
+                customFilter: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID'
+                },{
+                    field: 'group_names',
+                    title: '{:lang("Member group")}'
+                },{
+                    field: 'username',
+                    title: '{:lang("Username")}',
+                },{
+                    field: 'nickname',
+                    title: '{:lang("Nickname")}',
+                },{
+                    field: 'email',
+                    title: '{:lang("Email")}',
+                },{
+                    field: 'mobile',
+                    title: '{:lang("Mobile")}',
+                },{
+                    field: 'money',
+                    title: '{:lang("Money")}',
+                },{
+                    field: 'score',
+                    title: '{:lang("Score")}',
+                },{
+                    field: 'level',
+                    title: '{:lang("Level")}',
+                    visible: false
+                },{
+                    field: 'exp',
+                    title: '{:lang("Exp")}',
+                    visible: false
+                },{
+                    field: 'avatar',
+                    title: '{:lang("Avatar")}',
+                    formatter: cmsTable.formatter.image
+                },{
+                    field: 'gender',
+                    title: '{:lang("Gender")}',
+                    formatter: function (value, row) {
+                        if (value==1) {
+                            return lang('男');
+                        } else if (value==2) {
+                            return lang('女');
+                        } else {
+                            return lang('保密');
+                        }
+                    }
+                },{
+                    field: 'birthday',
+                    title: '{:lang("Birthday")}',
+                    visible: false
+                },{
+                    field: 'introduction',
+                    title: '{:lang("Introduction")}',
+                    visible: false
+                },{
+                    field: 'latest_time',
+                    title: '{:lang("Latest time")}',
+                    visible: false
+                },{
+                    field: 'login_time',
+                    title: '{:lang("Login time")}',
+                },{
+                    field: 'login_ip',
+                    title: '{:lang("Login ip")}',
+                    visible: false
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: cmsTable.formatter.switchBtn,
+                    events: cmsTable.events.switchBtn
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}'
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: cmsTable.formatter.operate,
+                    events: cmsTable.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

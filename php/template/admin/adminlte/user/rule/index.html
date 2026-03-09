@@ -1,0 +1,153 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('refresh,add,del')}
+            {if (has_rule('batches'))}
+            <div class="dropdown ml-1 btn-toggle">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-"></i> {:lang('Setting')}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="dropdown-item status" href="#" data-params="status=normal">{:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden">{:lang('Set to disabled')}</a>
+                </div>
+            </div>
+            {/if}
+        </div>
+        <table id="table"
+               data-edit="{if (has_rule('edit'))}{:url('/user.Rule/edit')}{/if}"
+               data-del="{if (has_rule('del'))}{:url('/user.Rule/del')}{/if}"
+               data-batches="{if (has_rule('batches'))}{:url('/user.Rule/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin,cmsTable) {
+        $(function () {
+            cmsTable.init({
+                url: "{:url('/user.Rule/index')}",
+                showToggle: false,
+                search: false,
+                pagination: false,
+                escape: false,
+                sortName: 'weigh',
+                classes:'table table-bordered table-hover',
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter: cmsTable.formatter.txtEditBtn,
+                    events: cmsTable.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: '{:lang("ID")}',
+                },{
+                    field: 'title_lan',
+                    title: '<i class="fas fa-angle-down open-all-sub active"></i> {:lang("Title")}',
+                    align: 'left',
+                    formatter: function (value, row, index) {
+                        if (row.haschild == 0) {
+                            return '<span class="open-sub" data-id="'+row['id']+'" data-pid="'+row['parent_id']+'" data-haschild="'+row['haschild']+'">'+ value +'</span>';
+                        } else {
+                            return '<span class="open-sub active" data-id="'+row['id']+'" data-pid="'+row['parent_id']+'" data-haschild="'+row['haschild']+'"><i class="fas fa-angle-down"></i>'+ value +'</span>';
+                        }
+                    },
+                },{
+                    field: 'name',
+                    title: '{:lang("Rule")}',
+                },{
+                    field: 'route',
+                    title: '{:lang("Routing")}',
+                },{
+                    field: 'icon',
+                    title: '{:lang("Icon")}',
+                    formatter: function (value, row, index) {
+                        return '<span><i class="'+ value +'"></i></span>';
+                    },
+                },{
+                    field: 'type',
+                    title: '{:lang("Menu")}',
+                    formatter: function (value, row, index, field) {
+                        var table = this.table;
+                        var checked = 1;
+                        if (!value || value===0 || value=='hidden') {
+                            checked = 0;
+                        }
+                        if (value==1 || value==0) {
+                            if (table.data('batches')) {
+                                return '<div class="custom-control custom-switch custom-control-sm" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="{:lang("Click to switch")}">\n' +
+                                    '<input type="checkbox" class="custom-control-input" id="switch'+field+'_'+index+'" data-field="'+field+'" '+(checked===1?'checked':'')+' >\n' +
+                                    '<label class="custom-control-label" for="switch'+field+'_'+index+'"><div class="custom-control-label-dot"></div></label>\n' +
+                                    '</div>'
+                            } else {
+                                return '<div class="custom-control custom-switch custom-control-sm" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="{:lang("No permission to operate")}">\n' +
+                                    '<input type="checkbox" class="custom-control-input" disabled id="switch'+field+'_'+index+'" data-field="'+field+'" '+(checked===1?'checked':'')+' >\n' +
+                                    '<label class="custom-control-label" for="switch'+field+'_'+index+'"><div class="custom-control-label-dot"></div></label>\n' +
+                                    '</div>'
+                            }
+                            return '-';
+                        }
+                    },
+                    events: cmsTable.events.switchBtn
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: cmsTable.formatter.switchBtn,
+                    events: cmsTable.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        let url = Util.setUrlParams({ url:'{:url("/user.rule/add")}?parent_id='+row['id'], query:{popup:1} });
+                        let html = '<a href="javascript:cmsOpen(\''+url+'\',\'{:lang('Add')}\')" class="btn btn-primary btn-xs text-white"><i class="fas fa-plus"></i></a>&nbsp';
+                        return html+cmsTable.formatter.operate.call(this, value, row, index)
+                    },
+                    events: cmsTable.events.operate
+                }]});
+            //当内容渲染完成后
+            $('#table').on('post-body.bs.table', function (e, settings, json, xhr) {
+                //控制tr背景颜色，展开收缩效果
+                $(".open-sub[data-pid!='0']").closest("tr").addClass('hkcms-tr-b');
+                $(".open-sub").click(function (e) {
+                    e.stopPropagation();
+                    if ($(this).is('.active')) {
+                        sub_hide($(this).data('id'));
+                        $(this).removeClass('active').find('.fas').removeClass('fa-angle-down').addClass('fa-angle-right');
+                    } else {
+                        $('span[data-pid="'+$(this).data('id')+'"]').closest("tr").show();
+                        $(this).addClass('active').find('.fas').removeClass('fa-angle-right').addClass('fa-angle-down');
+                        $('span[data-pid="'+$(this).data('id')+'"]').removeClass('active').find('.fas').removeClass('fa-angle-down').addClass('fa-angle-right');
+                    }
+                })
+                $(".open-all-sub").click(function(e){
+                    if ($(this).is('.active')) {
+                        $(this).removeClass('active fa-angle-down').addClass('fa-angle-right');
+                        $('.open-sub[data-pid!="0"]').closest("tr").hide();
+                        $('.open-sub[data-haschild="1"]').removeClass('active');
+                        $(this).parents('table').find('.fas').removeClass('fa-angle-down').addClass('fa-angle-right');
+                    } else {
+                        $(this).removeClass('fa-angle-right').addClass('active fa-angle-down');
+                        $('.open-sub[data-pid!="0"]').closest("tr").show();
+                        $('.open-sub[data-haschild="1"]').addClass('active');
+                        $(this).parents('table').find('.fas').removeClass('fa-angle-right').addClass('fa-angle-down');
+                    }
+                })
+            });
+            function sub_hide(id){
+                $('span[data-pid="'+id+'"]').each(function (index,value) {
+                    if ($(this).data('haschild') == 1) {
+                        sub_hide($(this).data('id'));
+                        $('.open-sub[data-id="'+id+'"]').removeClass('active').find('.fa-minus').addClass('fa-plus').removeClass('fa-minus')
+                    }
+                })
+                $('span[data-pid="'+id+'"]').closest("tr").hide();
+            }
+        })
+    })
+
+</script>
+{/block:script}

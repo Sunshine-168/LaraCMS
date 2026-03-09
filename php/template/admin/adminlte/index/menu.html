@@ -1,0 +1,83 @@
+{volist name="menu" id="item" key="k"}
+    {if $item['type']==2}
+        <li class="nav-header">{:__($item.title)}</li>
+        {if !empty($item['child'])}
+            {volist name="item['child']" id="son" key="kk"}
+                {if !empty($son['child'])}
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon {$son.icon}"></i>
+                        <p>{:__($son.title)}<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        {volist name="son['child']" id="s" key="kkk"}
+                        <li class="nav-item">
+                            <a href="{:url('/'.(!empty($s['route'])?$s['route']:$s['name']))}" class="nav-link">
+                                <i class="nav-icon {$s.icon}"></i>
+                                <p>{:__($s.title)}</p>
+                            </a>
+                        </li>
+                        {/volist}
+                    </ul>
+                </li>
+                {else /}
+                <li class="nav-item">
+                    <a href="{:url('/'.(!empty($son['route'])?$son['route']:$son['name']))}" class="nav-link" title="{:__($son.title)}">
+                        <i class="nav-icon {$son.icon}"></i>
+                        <p>{:__($son.title)}</p>
+                    </a>
+                </li>
+                {/if}
+            {/volist}
+        {/if}
+    {else /}
+        {if !empty($item['child'])}
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon {$item.icon}"></i>
+                <p>{:__($item.title)}<i class="right fas fa-angle-left"></i></p>
+            </a>
+            <ul class="nav nav-treeview">
+                {volist name="item['child']" id="son" key="kk"}
+                {if !empty($son['child'])}
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon {$son.icon}"></i>
+                        <p>{:__($son.title)}<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        {volist name="son['child']" id="s" key="kkk"}
+                        <li class="nav-item">
+                            <a href="{:url('/'.(!empty($s['route'])?$s['route']:$s['name']))}" class="nav-link">
+                                <i class="nav-icon {$s.icon}"></i>
+                                <p>{:__($s.title)}</p>
+                            </a>
+                        </li>
+                        {/volist}
+                    </ul>
+                </li>
+                {else /}
+                <li class="nav-item">
+                    <a href="{:url('/'.(!empty($son['route'])?$son['route']:$son['name']))}" class="nav-link">
+                        <i class="nav-icon {$son.icon}"></i>
+                        <p>{:__($son.title)}</p>
+                    </a>
+                </li>
+                {/if}
+                {/volist}
+            </ul>
+        </li>
+        {else /}
+            {if $item['type']==2}
+            <li class="nav-header">{:__($item.title)}</li>
+            {else /}
+            <li class="nav-item">
+                <a href="{:url('/'.(!empty($item['route'])?$item['route']:$item['name']))}" class="nav-link" title="{:__($item.title)}">
+                    <i class="nav-icon {$item.icon}"></i>
+                    <p>{:__($item.title)}</p>
+                </a>
+            </li>
+            {/if}
+        {/if}
+    {/if}
+{/volist}

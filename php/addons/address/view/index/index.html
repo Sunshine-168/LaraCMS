@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>位置选取</title>
+
+    <link rel="stylesheet" href="__libs__/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="__libs__/bootstrap/css/bootstrap.min.css">
+    <style>
+        html,body {
+            font-size: 14px;
+            height: 100%;
+        }
+        .search-label {
+            width: 60px;
+            margin: 0;
+        }
+        #map {
+            height: 490px;
+        }
+        .tangram-suggestion-main {
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid pt-1">
+        {if $config.base.map_ak=='uUvLWdeGhSwc2OLw2NPkkGrBWYf0lgG8'}
+        <div class="alert alert-warning" role="alert">当前您使用的是默认密钥，若无法正常访问，请前往地图平台申请一个。详情：<a target="_blank" href="https://www.hkcms.cn/mall/addon/5.html">https://www.hkcms.cn/mall/addon/5.html</a></div>
+        {/if}
+        {if empty($config.base.map_ak)}
+        <div class="alert alert-danger" role="alert">您没有配置地图密钥，请前往地图平台申请一个。详情：<a target="_blank" href="https://www.hkcms.cn/mall/addon/5.html">https://www.hkcms.cn/mall/addon/5.html</a></div>
+        {/if}
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="d-flex align-items-center">
+                    <label for="gps-search" class="search-label">搜索：</label>
+                    <input type="search" class="form-control" id="gps-search" placeholder="输入关键字，或点击地图选取坐标">
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="d-flex">
+                    <div class="d-flex align-items-center px-1">
+                        <label for="gps-search" class="search-label">经度：</label>
+                        <input type="text" class="form-control" id="gps-lng">
+                    </div>
+                    <div class="d-flex align-items-center px-1">
+                        <label for="gps-search" class="search-label">纬度：</label>
+                        <input type="text" class="form-control" id="gps-lat">
+                    </div>
+                    <button type="button" class="btn btn-primary btn-address" style="width: 75px">确定</button>
+                </div>
+                <p></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+
+    <script src="__libs__/jquery/jquery.min.js"></script>
+    {if $config.base.map_type==1}
+    <script src="//api.map.baidu.com/api?type=webgl&v=1.0&ak={$config.base.map_ak|default=''}"></script>
+    <script>
+        var map;
+        var geoc;
+        var title = '';
+        var address = '';
+        var lnglat = '';
+
+        /**
+         * 添加标记
+         * @param point
+         */
+        function addOverlay(point)
+        {
+            // 清除所有标记
+            map.clearOverlays();
+
+            // 创建点标记
+            var marker = new BMapGL.Marker(point);
+            lnglat = {lng: point.lng, lat: point.lat};
+
+            // 添加标记
+            map.addOverlay(marker);
+
+            // 经纬度解析
+            geoc.getLocation(point, function(rs){
+                if (rs.surroundingPois.length>0) {
+                    title = rs.surroundingPois[0].title;
+                }
+                address = rs.address;
+
+                var opts = {
+                    width: 200,
+                    height: 80,
+                    title: title
+                };
+                var infoWindow = new BMapGL.InfoWindow('地址：'+address, opts);
+                map.openInfoWindow(infoWindow, point);
+
+                // 给到文本框
+                $('#gps-lng').val(point.lng);
+                $('#gps-lat').val(point.lat);
+            })
+        }
+
+        $(function () {
+            // 百度地图
+            map = new BMapGL.Map('map'); // 创建Map实例
+            var point = new BMapGL.Point(116.404, 39.915);
+            map.centerAndZoom(point, 12); // 初始化地图,设置中心点坐标和地图级别
+            map.enableScrollWheelZoom(true); // 开启鼠标滚轮缩放
+            // 创建城市选择控件
+            var cityControl = new BMapGL.CityListControl({
+                // 控件的停靠位置（可选，默认左上角）
+                anchor: BMAP_ANCHOR_TOP_RIGHT,
+                // 控件基于停靠位置的偏移量（可选）
+                offset: new BMapGL.Size(10, 5)
+            });
+            // 将控件添加到地图上
+            map.addControl(cityControl);
+
+            // 地址解析对象
+            geoc = new BMapGL.Geocoder();
+
+            // 地图点击事件
+            map.addEventListener('click', function (e) {
+                addOverlay(e.latlng);
+            });
+
+            addOverlay(point);
+
+            // 检索
+            var ac = new BMapGL.Autocomplete({"input": "gps-search", "location": map});
+
+            ac.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
+                var str = "";
+                var _value = e.fromitem.value;
+                var value = "";
+                if (e.fromitem.index > -1) {
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+                value = "";
+                if (e.toitem.index > -1) {
+                    _value = e.toitem.value;
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+                document.getElementById('searchResultPanel').innerHTML = str;
+            });
+
+            var myValue;
+            ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+                var _value = e.item.value;
+                myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                document.getElementById('searchResultPanel').innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+
+                setPlace();
+            });
+
+            function setPlace(){
+                map.clearOverlays();    //清除地图上所有覆盖物
+                function myFun(){
+                    var pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+                    map.centerAndZoom(pp, 18);
+                    addOverlay(pp);
+                }
+                var local = new BMapGL.LocalSearch(map, { //智能搜索
+                    onSearchComplete: myFun
+                });
+                local.search(myValue);
+            }
+
+            // 回调数据
+            $('.btn-address').click(function (e) {
+                let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+
+                // 判断是否有回调
+                var toCallback = parent.$("#layui-layer" + index).data("callback");
+                if (toCallback && typeof toCallback === "function") {
+                    if (false===toCallback({title:title,address:address,lnglat:lnglat})) {
+                        return false;
+                    }
+                } else {
+                    console.log("错误：没有回调可用！")
+                    return false;
+                }
+                parent.layer.close(index);
+            });
+        })
+    </script>
+    {else /}
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key={$config.base.map_ak|default=''}&plugin=AMap.Geocoder,AMap.AutoComplete"></script>
+    <script src="//webapi.amap.com/ui/1.1/main.js?v=1.1.1"></script>
+    <script>
+        var map;
+        var title = '';
+        var address = '';
+        var lnglat = '';
+        var geocoder;
+
+        /**
+         * 添加标记
+         * @param point
+         */
+        function addOverlay(point)
+        {
+            map.clearMap();
+
+            // 标记
+            var marker = new AMap.Marker({position: point});
+            map.add(marker);
+
+            lnglat = {lng: point.lng, lat: point.lat};
+
+            // 解析
+            geocoder.getAddress(point, function(status, result) {
+                if (status === 'complete'&&result.regeocode) {
+                    title = result.regeocode.addressComponent.building||'';
+                    address = result.regeocode.addressComponent.province+result.regeocode.addressComponent.city
+                        +result.regeocode.addressComponent.district+result.regeocode.addressComponent.township+result.regeocode.addressComponent.streetNumber;
+
+                    // 开启信息窗口
+                    var info = [];
+                    info.push("<div style=\"padding:7px 0px 0px 0px;\"><h4>"+title+"</h4>");
+                    info.push("<p class='input-item'>地址:"+address+"</p></div>");
+                    var infoWindow = new AMap.InfoWindow({
+                        anchor: 'top-left',
+                        content: info.join("")
+                    });
+                    infoWindow.open(map, point);
+
+                    // 给到文本框
+                    $('#gps-lng').val(point.lng);
+                    $('#gps-lat').val(point.lat);
+                }else{
+                    alert('根据经纬度查询地址失败')
+                }
+            });
+        }
+
+        function poiPickerReady(poiPicker) {
+            window.poiPicker = poiPicker;
+
+            var marker = new AMap.Marker();
+            var infoWindow = new AMap.InfoWindow({
+                offset: new AMap.Pixel(0, -20)
+            });
+
+            //选取了某个POI
+            poiPicker.on('poiPicked', function(poiResult) {
+                addOverlay(poiResult.item.location);
+            });
+        }
+
+        $(function () {
+            map = new AMap.Map('map', {
+                resizeEnable: true,
+                zoom:12,
+                center: [116.397428, 39.90923]
+            });
+
+            geocoder = new AMap.Geocoder();
+
+            // 输入提示
+            AMapUI.loadUI(['misc/PoiPicker'], function(PoiPicker) {
+                var poiPicker = new PoiPicker({
+                    input: 'gps-search'
+                });
+                //初始化poiPicker
+                poiPickerReady(poiPicker);
+            });
+
+            map.on('click', function(e) {
+                addOverlay(e.lnglat);
+            });
+
+            // 回调数据
+            $('.btn-address').click(function (e) {
+                let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+
+                // 判断是否有回调
+                var toCallback = parent.$("#layui-layer" + index).data("callback");
+                if (toCallback && typeof toCallback === "function") {
+                    if (false===toCallback({title:title,address:address,lnglat:lnglat})) {
+                        return false;
+                    }
+                } else {
+                    console.log("错误：没有回调可用！")
+                    return false;
+                }
+                parent.layer.close(index);
+            });
+        })
+    </script>
+    {/if}
+</body>
+</html>

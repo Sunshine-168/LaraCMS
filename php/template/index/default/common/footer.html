@@ -1,0 +1,92 @@
+<footer id="footer" class="footer bg-overlay">
+    <div class="footer-main">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-lg-4 col-md-6 footer-widget footer-about">
+                    <img loading="lazy" class="footer-logo" src="{$site.logo}" alt="{$site.title}">
+                    <p>{$site.description}</p>
+                    <div class="footer-social">
+                        <ul>
+                            {// $Tpl模板配置演示，参考：https://www.kancloud.cn/hkcms/hkcms_tp6/2252631}
+                            <li><a href="http://wpa.qq.com/msgrd?v=3&uin={$Tpl.qq|default=''}&site=qq&menu=yes" target="_blank" aria-label="QQ"><i class="fab fa-qq"></i></a></li>
+                            <li><a href="#!" class="social-img" data-url="{$Tpl.wx|default=''}" aria-label="微信"><i class="fab fa-weixin"></i></a></li>
+                            <li><a href="tel:{$Tpl.phone|default=''}" class="social" data-url="{$Tpl.phone|default=''}" aria-label="电话"><i class="fa fa-phone-alt"></i></a></li>
+                            <li><a href="#!" class="social" data-url="{$Tpl.email|default=''}" aria-label="邮箱"><i class="fas fa-envelope"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {// 产品展示栏目}
+                <div class="col-lg-3 col-md-6 mt-5 mt-lg-0 footer-widget">
+                    <h3 class="widget-title">{hkcms:channel name="21"}{$item.title}{/hkcms:channel}</h3>
+                    <ul class="list-arrow">
+                        {hkcms:channel name="21" type="son"}
+                        <li><a href="{$item.url}">{$item.title}</a></li>
+                        {/hkcms:channel}
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6 footer-widget mt-5 mt-md-0">
+                    <h3 class="widget-title">{:__('Fast entry')}</h3>
+                    <ul class="list-arrow">
+                        {hkcms:channel name="7"}
+                        <li><a href="{$item.url}" target="_blank">{$item.title}</a></li>
+                        {/hkcms:channel}
+                        {hkcms:channel name="34"}
+                        <li><a href="{$item.url}" target="_blank">{$item.title}</a></li>
+                        {/hkcms:channel}
+                    </ul>
+                </div><!-- Col end -->
+            </div><!-- Row end -->
+        </div><!-- Container end -->
+    </div><!-- Footer main end -->
+
+    <div class="copyright">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <div class="copyright-info text-center"><span>Copyright &copy; <script>document.write(new Date().getFullYear())</script> {$site.title} All Rights Reserved </span></div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="copyright-info text-center">
+                        <span><a href="http://beian.miit.gov.cn" target="_blank">{$site.icp}</a></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="footer-menu text-center">
+                        <ul class="list-unstyled mb-0">
+                            {// 调用文字链接}
+                            {hkcms:adv name="link" key="kk"}
+                            {// kk是从1开始，每次循环+1，$kk==1表示执行第一次时，获取友情链接备注（在站点模块列表页叫标题），$item.recommend是站点模块信息。}
+                            {if $kk==1}
+                            <li>{$item.recommend.remark}:</li>
+                            {/if}
+                            <li><a href="{$item.url}" {$item.target}>{$item.title}</a></li>
+                            {/hkcms:adv}
+                        </ul>
+                    </div>
+                </div>
+            </div><!-- Row end -->
+
+            <div id="back-to-top" data-spy="affix" data-offset-top="10" class="back-to-top position-fixed">
+                <button class="btn btn-primary" title="Back to Top">
+                    <i class="fa fa-angle-double-up"></i>
+                </button>
+            </div>
+
+        </div><!-- Container end -->
+    </div><!-- Copyright end -->
+</footer><!-- Footer end -->
+
+
+<!--libs库目录-->
+<script src="__libs__/jquery/jquery.min.js"></script>
+<script src="__libs__/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="__libs__/layer/layer.js"></script>
+<!--轮播图-->
+<script src="__static__/js/swiper.min.js"></script>
+<script src="__static__/js/main.js?v={$site.dev=='enable'?time():$site.version}"></script>
+
+<!--事件底部定义，部分插件所需-->
+{:hook("indexFooter")}

@@ -1,0 +1,39 @@
+<form role="form" action="{:url('/cms.model_field/fieldcategory')}" class="frm-operate" method="post">
+    <div class="card shadow-none">
+        <div class="card-body">
+            <input type="hidden" name="row[model_id]" value="{$model_id}">
+            <input type="hidden" name="row[model_field_id]" value="{$field_id}">
+            <div class="form-group row">
+                <label class="col-sm-2 row-form-label">{:lang("Column")}</label>
+                <div class="col-sm-8">
+                    <select name="row[category_id][]" id="frm-category_id" class="form-control" multiple style="height: 300px">
+                        <option value="0" {if (empty($categoryCurArr))}selected{/if}>{:lang("Unlimited columns")}</option>
+                        {volist name="category" id="vo"}
+                        <option value="{$vo.id}"
+                                {if $vo['model_id']!=$model_id}disabled style="background-color:#f5f5f5;"{/if}
+                                {if in_array($vo['id'], $categoryCurArr)}selected{/if}
+                        >{$vo.title|raw}</option>
+                        {/volist}
+                    </select>
+                    <p class="text-danger">{:lang("Hold Ctrl and click to make multiple selections")}</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin, Form) {
+        Form.api.init();
+    })
+</script>
+{/block:script}

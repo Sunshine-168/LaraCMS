@@ -1,0 +1,61 @@
+{$param['attr']|raw}
+
+{if $config['base']['map_type']==1}
+<script type="text/javascript" src="https://api.map.baidu.com/api?ak={$config.base.map_ak}&v=3.0"></script>
+<script type="text/javascript">
+    var lnglat = {$param['point']|raw};
+
+    var sContent =
+        "<div style='margin:0 0 5px 0;padding:0.2em 0;font-size: 16px'>{$param['title']}</div>" +
+        "<p style='margin-bottom: 0'>{:lang('Company address')}：{$param['address']}</p>";
+
+    // 初始化地图函数
+    function initMap() {
+
+        // 容器，id，创建地图
+        var map = new BMap.Map("{$key_id}");
+        // 定义一个中心点坐标
+        var point = new BMap.Point(lnglat.lng, lnglat.lat);
+        // 初始化地图、设置中心点，地图级别
+        map.centerAndZoom(point, {$param['scale']});
+        // 开启鼠标滚轮缩放
+        map.enableScrollWheelZoom(true);
+        // 添加缩放控件
+        var top_right_navigation = new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_SMALL});
+        map.addControl(top_right_navigation);
+
+        // 标注
+        var marker = new BMap.Marker(point);
+        map.addOverlay(marker);
+        var infoWindow = new BMap.InfoWindow(sContent);
+        marker.openInfoWindow(infoWindow);
+    }
+
+    initMap();
+</script>
+{else /}
+<script src="https://webapi.amap.com/maps?v=2.0&key={$config.base.map_ak}"></script>
+<script>
+    var lnglat = {$param['point']|raw};
+
+    var map = new AMap.Map('{$key_id}', {
+        zoom:{$param['scale']}, //初始化地图层级
+        center: [lnglat.lng, lnglat.lat] //初始化地图中心点
+    });
+    map.on("complete", function(){
+        // 标记
+        var marker = new AMap.Marker({position: [lnglat.lng, lnglat.lat]});
+        map.add(marker);
+
+        // 开启信息窗口
+        var info = [];
+        info.push("<div style=\"padding:7px 0px 0px 0px;\"><div style='font-size: 1rem;font-weight: bold;'>{$param['title']}</div>");
+        info.push("<p class='input-item'>{:lang('Company address')}:{$param['address']}</p></div>");
+        var infoWindow = new AMap.InfoWindow({
+            anchor: 'top-left',
+            content: info.join("")
+        });
+        infoWindow.open(map, [lnglat.lng, lnglat.lat]);
+    });
+</script>
+{/if}

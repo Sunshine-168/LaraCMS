@@ -1,0 +1,203 @@
+<div class="card card-tabs">
+    <div class="card-header">
+        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="group-tab" data-toggle="pill" href="#pane-tab-1" role="tab" aria-selected="false">{:lang('List')}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="group-tab2" data-toggle="pill" href="#pane-tab-2" role="tab" aria-selected="false">{:lang('Reinitialize')}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="custom-tabs-three-tabContent">
+            <div class="tab-pane fade active show" id="pane-tab-1" role="tabpanel">
+                <div class="filter-panel d-none">
+                    <form action="" method="get" class="frm-filter">
+                        <div class="row">
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label class="row-form-label">{:lang("Title")}</label>
+                                    <input type="text" class="form-control" name="title" placeholder="{:lang("Title")}" data-op="like %...%">
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <input type="submit" class="btn btn-primary " value="{:lang('Search')}">
+                                    <input type="reset" class="btn btn-default ml-2" value="{:lang('Reset')}">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="toolbar" class="toolbar">
+                    {:build_toolbar('refresh,add,del')}
+
+                    <button type="button" class="btn btn-default" data-toggle="open" data-url="{:url('/tags/config')}" data-title="{:__('TAG config')}"><i class="fas fa-cog"></i> {:__('TAG config')}</button>
+                    <a target="_blank" class="btn btn-default" href="{:url('index:/tags/index')}"><i class="fa fa-external-link-alt"></i> {:__('TAG Homepage')}</a>
+                </div>
+                <table id="table"
+                       data-edit="{if has_rule('edit')}{:url('/tags/edit')}{/if}"
+                       data-del="{if has_rule('del')}{:url('/tags/del')}{/if}"
+                       data-batches="{if has_rule('batches')}{:url('/tags/batches')}{/if}"
+                ></table>
+            </div>
+            <div class="tab-pane fade" id="pane-tab-2" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-default-warning alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h5><i class="icon fas fa-exclamation-triangle"></i> {:lang('Warning')}!</h5>
+                            {:lang('This operation will clear the original data and recreate it. This operation cannot be restored!')}
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group row">
+                            <label for="frm-category_id" class="col-sm-2 col-12 col-form-label">{:lang("Model list")}：</label>
+                            <div class="col-sm-8 col-12">
+                                <select id="frm-category_id" class="form-control">
+                                    <option value="0">{:lang('All')}</option>
+                                    {volist name="models" id="vo"}
+                                    <option value="{$vo.id}">{$vo.name}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row">
+                            <label for="frm-category_id" class="col-sm-2 col-form-label">&nbsp;</label>
+                            <div class="col-sm-8">
+                                <button type="button" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin,cmsTable) {
+        $(function () {
+            var table = cmsTable.init({
+                url: "{:url('/tags/index')}",
+                search: false,
+                escape: false,
+                sortName:'weigh',
+                customFilter: true,
+                contentLangSw: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter: cmsTable.formatter.txtEditBtn,
+                    events: cmsTable.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: 'ID'
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                    formatter: function (value,row,index) {
+                        return '<a href="'+row['url']+'" class="text-primary" target="_blank">'+value+'</a>';
+                    }
+                },{
+                    field: 'seo_title',
+                    title: '{:lang("SEO title")}',
+                    formatter: cmsTable.formatter.textBox,
+                    textLength: 10,
+                    events: cmsTable.events.textBoxBtn,
+                    visible: false
+                },{
+                    field: 'seo_keywords',
+                    title: '{:lang("SEO keywords")}',
+                    formatter: cmsTable.formatter.textBox,
+                    textLength: 10,
+                    events: cmsTable.events.textBoxBtn,
+                    visible: false
+                },{
+                    field: 'seo_description',
+                    title: '{:lang("SEO description")}',
+                    formatter: cmsTable.formatter.textBox,
+                    textLength: 10,
+                    events: cmsTable.events.textBoxBtn,
+                    visible: false
+                },{
+                    field: 'total',
+                    title: '{:lang("Total")}',
+                },{
+                    field: 'views',
+                    title: '{:lang("View")}',
+                },{
+                    field: 'autolink',
+                    title: '{:lang("Auto link")}',
+                    events: cmsTable.events.switchBtn,
+                    formatter: cmsTable.formatter.switchBtn
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: cmsTable.formatter.operate,
+                    events: cmsTable.events.operate
+                }]});
+
+            /**
+             * 重置
+             * @param id
+             * @param page
+             */
+            function reset(id, page)
+            {
+                $.ajax({
+                    url: '{:url("/tags/reset")}?id='+id+'&page='+page,
+                    async: true,
+                    success: function (e) {
+                        if (e.code == 200) {
+                            page = page+1;
+                            if (page>e.data.last_page) {
+                                layer.close(layerSt);
+                                item = item + 1;
+                                if ($('#frm-category_id').val()==0 && item<$('#frm-category_id option').length) {
+                                    layerSt = layer.msg('正在重置: '+$('#frm-category_id option').eq(item).text(), {icon: 16,shade: 0.3,time: false});
+                                    reset($('#frm-category_id option').eq(item).val(), 1);
+                                    return true;
+                                }
+                                layer.msg(e.msg, {time: 1000}, function (e) {
+                                    table.bootstrapTable('refresh');
+                                });
+                                return false;
+                            }
+                            reset(id, page);
+                        } else {
+                            layer.msg(e.msg, {time: 1000, icon: 2});
+                        }
+                    }
+                })
+            }
+
+            var layerSt;
+            var item = 0;
+            $('.btn-submit').click(function (e) {
+                var id = $('#frm-category_id').val();
+                item = 1;
+                if (id==0) {
+                    layerSt = layer.msg('正在重置: '+$('#frm-category_id option').eq(item).text(), {icon: 16,shade: 0.3,time: false});
+                }
+                reset($('#frm-category_id option').eq(item).val(), 1);
+            });
+        })
+    })
+</script>
+{/block:script}

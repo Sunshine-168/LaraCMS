@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{$site.title} - {:lang('Member center')} - {:lang('login')}</title>
+
+    {include file="user/common/head"}
+
+    <style>
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .login-card-body .title {
+            margin-top: 10px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .login-card-body .title .line {
+            height: 2px;
+            width: 32px;
+            margin: 0 auto;
+            margin-top: 8px;
+        }
+        .login-card-body .input-group {
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+{include file="user/common/menu"}
+
+<div class="login-page">
+    <div class="login-box">
+        <div class="card shadow">
+            <div class="card-body login-card-body">
+                <form action="" method="post" class="frm-operate">
+                    <div class="title">
+                        <span>{:__('Member Login')}</span>
+                        <div class="line bg-primary"></div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="{:lang('Email')}/{:lang('Mobile')}/{:lang('Username')}" name="row[username]">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" class="form-control" placeholder="{:lang('Password')}" name="row[password]">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    {if $site['login_captcha']==1}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="{:lang('Verification Code')}" name="row[code]">
+                        <div class="input-group-append">
+                            <a href="#" class="refresh"><img src="{:url('/user.user/verify')}" style="width: 108px" /></a>
+                        </div>
+                    </div>
+                    {/if}
+                    <div class="row mb-3">
+                        <div class="col-8">
+                            <div class="icheck-primary d-flex align-items-center">
+                                <input type="checkbox" id="remember" name="auto_signin" value="1">
+                                <label for="remember" style="margin-left: 2px">{:lang('Keep the session')}</label>
+                            </div>
+                        </div>
+                        <div class="col-4 text-right">
+                            <a href="{:url('/user.user/resetpwd')}">{:lang('Forget Password?')}</a>
+                        </div>
+                    </div>
+
+                    <div class="social-auth-links text-center mb-4" style="margin-top: 20px">
+                        <input type="submit" class="btn btn-block btn-primary btn-submit" value="{:lang('Sign in')}" />
+                    </div>
+                </form>
+
+                <p class="text-center"><a href="{:url('/user.user/register')}">{:lang('Create an account')}</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file="user/common/footer"}
+<script>
+    require(['jquery','bootstrap','layer','Form'], function ($,undefined,layer,Form) {
+        $('.refresh').click(function (e) {
+            e.preventDefault();
+            $(this).find('img').attr('src',"{:url('/user.user/verify')}?r="+Math.random());
+        });
+        Form.api.init({success:function (data, response) {
+                Layer.msg(response.msg,{time:1000, icon:1},function (e) {
+                    window.location.href = data.url;
+                });
+                return false;
+            },error: function (res) {
+                if (res.code==-1001) {
+                    $('.refresh').click();
+                }
+            }});
+    })
+</script>
+
+</body>
+</html>

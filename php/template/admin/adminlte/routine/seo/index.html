@@ -1,0 +1,457 @@
+<style>
+    .J-urlmodel1,.J-urlmodel0 {
+        display: none;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+</style>
+<div class="col-12 col-sm-12">
+    <div class="card card-tabs">
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="group-tab" data-toggle="pill" data-page="group" href="#pane-group-tab" role="tab" aria-selected="false">{:lang('URL Config')}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body config-row">
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                <div class="tab-pane fade active show" id="pane-group-tab" role="tabpanel">
+                    <form role="form" action="{:url('/routine.seo/index')}" class="frm-operate" method="post">
+                        <div class="form-group row mb-0">
+                            <label class="col-sm-2 row-form-label">{:lang("URL mode")}</label>
+                            <div class="col-sm-10">
+                                <div class="radio-group" style="height: 36px;">
+                                    <div class="radio-item">
+                                        <input id="row[url_mode]-2" name="row[url_mode]" type="radio" value="0" {if $field['url_mode']==0}checked="checked"{/if}>
+                                        <label for="row[url_mode]-2">{:__('Dynamic')}</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input id="row[url_mode]-1" name="row[url_mode]" type="radio" value="1" {if $field['url_mode']==1}checked="checked"{/if}>
+                                        <label for="row[url_mode]-1">{:__('Rewrite')}</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input id="row[url_mode]-3" name="row[url_mode]" type="radio" value="2" {if $field['url_mode']==2}checked="checked"{/if}>
+                                        <label for="row[url_mode]-3">{:__('Static page')}</label>
+                                    </div>
+                                </div>
+                                <div class="text-muted text-xs J-urlmodel1">{:__('Note: After checking Rewrite, your server must be configured with URL rewriting for normal access')}</div>
+                            </div>
+                        </div>
+                        <div class="J-urlmodel2">
+                            <div class="form-group row">
+                                <label class="col-sm-2 row-form-label"></label>
+                                <div class="col-sm-6">
+                                    <div class="alert alert-light m-0">
+                                        1. {:__('After enabling, columns and articles will generate static pages according to the rules when they are added or modified.')}<br />
+                                        2. {:__('Automatically add language identification in multilingual situations')}<br />
+                                        3.  {:__('After modifying the template, please regenerate')}<br />
+                                        4.  {:__('Non-responsive templates are not supported at this time')}<br />
+                                        5.  {:__('Make sure that the public directory has write permissions')}<br />
+                                        6.  {:__('注意：切换到其他模式后生成的HTML不会删除，如果修改模板没有生效请检查访问的地址是否是生成的HTML文件。')}<br />
+                                    </div>
+                                    {if $field['url_mode']==2}
+                                    <a href="#!" class="btn btn-primary btn-sm mt-2 btn-show">{:__('Generated manually')}</a>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="J-urlmodel1">
+                            <div class="form-group row">
+                                <label class="col-sm-2 row-form-label">{:lang("URL format")}</label>
+                                <div class="col-sm-10">
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-2" name="row[url_format]" type="radio" value="1" {if $field['url_rewrite']==1}checked="checked"{/if}>
+                                        <label for="row[url_format]-2" class="mb-0 ml-1">{:__("Current directory")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-6" name="row[url_format]" type="radio" value="2" {if $field['url_rewrite']==2}checked="checked"{/if}>
+                                        <label for="row[url_format]-6" class="mb-0 ml-1">{:__("Multilingual/Current Directory")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-1" name="row[url_format]" type="radio" value="3" {if $field['url_rewrite']==3}checked="checked"{/if}>
+                                        <label for="row[url_format]-1" class="mb-0 ml-1">{:__("parent directory/current directory")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-3" name="row[url_format]" type="radio" value="4" {if $field['url_rewrite']==4}checked="checked"{/if}>
+                                        <label for="row[url_format]-3" class="mb-0 ml-1">{:__("multilingual/parent directory/current directory")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-4" name="row[url_format]" type="radio" value="5" {if $field['url_rewrite']==5}checked="checked"{/if}>
+                                        <label for="row[url_format]-4" class="mb-0 ml-1">{:__("Model/Column")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[url_format]-0" name="row[url_format]" type="radio" value="0" {if !in_array($field['url_rewrite'],[1,2,3,4,5])}checked="checked"{/if}>
+                                        <label for="row[url_format]-0" class="mb-0 ml-1">{:__('Customize')}, <a href="{:url('/routine.config/index',['tabs_page'=>'more'])}" class="text-primary btn-newMenu" data-id="{:url('/routine.config/index')}" data-title="{:lang('Site config')}">{:lang('Click me to')}</a></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="J-urlmodel2">
+                            <div class="form-group row">
+                                <label class="col-sm-2 row-form-label">{:lang("Column Rules")}</label>
+                                <div class="col-sm-10">
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[html_column_rules]-1" name="row[html_column_rules]" type="radio" value="1" {if ($field['html_column_rules']=='/[catdir]/[list]/index.html|/[catdir]/[list]/index_[page].html')}checked="checked"{/if}>
+                                        <label for="row[html_column_rules]-1" class="mb-0 ml-1">{:__("Parent directory/Subdirectory")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[html_column_rules]-2" name="row[html_column_rules]" type="radio" value="2" {if $field['html_column_rules']=='/[list]/index.html|/[list]/index_[page].html'}checked="checked"{/if}>
+                                        <label for="row[html_column_rules]-2" class="mb-0 ml-1">{:__("Directory name")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="flex: 0 0 100%;">
+                                        <input id="row[html_column_rules]-0" name="row[html_column_rules]" type="radio" value="-1" {if !in_array($field['html_column_rules'],$htmlRules['category'])}checked="checked"{/if}>
+                                        <label for="row[html_column_rules]-0" class="mb-0" style="display: flex;align-items: center;flex: 0 0 100%;"><span class="ml-1">{:__('Customize')}：</span>
+                                            <input type="text" placeholder="" class="form-control" style="width: 50%" name="row[html_column_rules_diy]" value="{if !in_array($field['html_column_rules'],$htmlRules['category'])}{$field['html_column_rules']}{/if}">
+                                        </label>
+                                    </div>
+                                    <div class="text-muted text-xs mt-1"><a href="https://www.kancloud.cn/hkcms/hkcms_tp6/3030384" class="text-primary" target="_blank">{:lang('Help')}</a></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="J-urlmodel2">
+                            <div class="form-group row">
+                                <label class="col-sm-2 row-form-label">{:lang("Content Rules")}</label>
+                                <div class="col-sm-10">
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[html_content_rules]-1" name="row[html_content_rules]" type="radio" value="1" {if $field['html_content_rules']=='/[catdir]/[list]/[id].html|/[catdir]/[list]/[id]_[page].html' }checked="checked"{/if}>
+                                        <label for="row[html_content_rules]-1" class="mb-0 ml-1">{:__("Parent directory/Subdirectory/Document ID")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="height: 36px">
+                                        <input id="row[html_content_rules]-2" name="row[html_content_rules]" type="radio" value="2" {if $field['html_content_rules']=='/[list]/[id].html|/[list]/[id]_[page].html' }checked="checked"{/if}>
+                                        <label for="row[html_content_rules]-2" class="mb-0 ml-1">{:__("Directory Name/Document ID")}</label>
+                                    </div>
+                                    <div class="d-flex align-items-center" style="flex: 0 0 100%;">
+                                        <input id="row[html_content_rules]-0" name="row[html_content_rules]" type="radio" value="-1" {if !in_array($field['html_content_rules'],$htmlRules['content'])}checked="checked"{/if}>
+                                        <label for="row[html_content_rules]-0" class="mb-0 ml-1" style="display: flex;align-items: center;flex: 0 0 100%;"><span class="ml-1">{:__('Customize')}：</span>
+                                            <input type="text" placeholder="" class="form-control" style="width: 50%" name="row[html_content_rules_diy]" value="{if !in_array($field['html_content_rules'],$htmlRules['content'])}{$field['html_content_rules']}{/if}">
+                                        </label>
+                                    </div>
+                                    <div class="text-muted text-xs mt-1"><a href="https://www.kancloud.cn/hkcms/hkcms_tp6/3030384" class="text-primary" target="_blank">{:lang('Help')}</a></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 row-form-label">{:lang("Column title format")}</label>
+                            <div class="col-sm-10">
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-6" name="row[category_format]" type="radio" value="$name" {if $field['category_format']=='$name'}checked="checked"{/if}>
+                                    <label for="row[category_format]-6" class="mb-0 ml-1">{:__('Channel name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-2" name="row[category_format]" type="radio" value="$name - $site" {if $field['category_format']=='$name - $site'}checked="checked"{/if}>
+                                    <label for="row[category_format]-2" class="mb-0 ml-1">{:__('Channel name')} - {:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-1" name="row[category_format]" type="radio" value="$name - 第$page页 - $site" {if $field['category_format']=='$name - 第$page页 - $site'}checked="checked"{/if}>
+                                    <label for="row[category_format]-1" class="mb-0 ml-1">{:__('Channel name')} - {:__('Page N')} - {:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-3" name="row[category_format]" type="radio" value="$name_第$page页" {if $field['category_format']=='$name_第$page页'}checked="$name_第$page页"{/if}>
+                                    <label for="row[category_format]-3" class="mb-0 ml-1">{:__('Channel name')}_{:__('Page N')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-4" name="row[category_format]" type="radio" value="$name_第$page页_$site" {if $field['category_format']=='$name_第$page页_$site'}checked="checked"{/if}>
+                                    <label for="row[category_format]-4" class="mb-0 ml-1">{:__('Channel name')}_{:__('Page N')}_{:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[category_format]-5" name="row[category_format]" type="radio" value="-1" {if !in_array($field['category_format'],['$name_第$page页_$site','$name - $site','$name - 第$page页 - $site','$name_第$page页','$name_第$page页_$site','$name'])}checked="checked"{/if}>
+                                    <label for="row[category_format]-5" class="mb-0" style="display: flex;align-items: center;flex: 0 0 100%;"><span class="ml-1">{:__('Customize')}：</span><input type="text" placeholder="{:__('Example')}：$name - 第$page页 - $site" class="form-control" style="width: 50%" name="row[category_format_diy]" value="{if !in_array($field['category_format'],['$name_第$page页_$site','$name - $site','$name - 第$page页 - $site','$name_第$page页','$name_第$page页_$site', '$name'])}{$field['category_format']}{/if}"></label>
+                                </div>
+                                <div class="text-muted text-xs mt-1">{:__('Channel name')}：$name；{:__('Website name')}：$site；页码：$page</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 row-form-label">{:lang("Content title format")}</label>
+                            <div class="col-sm-10">
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-2" name="row[content_format]" type="radio" value="$title" {if $field['content_format']=='$title'}checked="checked"{/if}>
+                                    <label for="row[content_format]-2" class="mb-0 ml-1">{:__('Content title')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-5" name="row[content_format]" type="radio" value="$title - $site" {if $field['content_format']=='$title - $site'}checked="checked"{/if}>
+                                    <label for="row[content_format]-5" class="mb-0 ml-1">{:__('Content title')} - {:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-1" name="row[content_format]" type="radio" value="$title - $name - $site" {if $field['content_format']=='$title - $name - $site'}checked="checked"{/if}>
+                                    <label for="row[content_format]-1" class="mb-0 ml-1">{:__('Content title')} - {:__('Channel name')} - {:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-3" name="row[content_format]" type="radio" value="$title_$site" {if $field['content_format']=='$title_$site'}checked="checked"{/if}>
+                                    <label for="row[content_format]-3" class="mb-0 ml-1">{:__('Content title')}_{:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-4" name="row[content_format]" type="radio" value="$title_$name_$site" {if $field['content_format']=='$title_$name_$site'}checked="checked"{/if}>
+                                    <label for="row[content_format]-4" class="mb-0 ml-1">{:__('Content title')}_{:__('Channel name')}_{:__('Website name')}</label>
+                                </div>
+                                <div class="d-flex align-items-center" style="height: 36px">
+                                    <input id="row[content_format]-6" name="row[content_format]" type="radio" value="-1" {if !in_array($field['content_format'],['$title','$title - $site','$title - $name - $site','$title_$site','$title_$name_$site'])}checked="checked"{/if}>
+                                    <label for="row[content_format]-6" class="mb-0" style="display: flex;align-items: center;flex: 0 0 100%;"><span class="ml-1">{:__('Customize')}：</span><input type="text" placeholder="示例：$name - 第$page页 - $site" class="form-control" style="width: 50%" name="row[content_format_diy]" value="{if !in_array($field['content_format'],['$title','$title - $site','$title - $name - $site','$title_$site','$title_$name_$site'])}{$field['content_format']}{/if}"></label>
+                                </div>
+                                <div class="text-muted text-xs mt-1">{:__('Channel name')}：$name；{:__('Website name')}：$site；{:__('Content title')}：$title</div>
+                            </div>
+                        </div>
+                        <div class="J-urlmodel0">
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-12 row-form-label">前台入口文件</label>
+                                <div class="col-sm-6 col-12">
+                                    <div class="radio-group" style="height: 36px;">
+                                        <div class="radio-item">
+                                            <input id="row[url_file]-1" name="row[url_file]" type="radio" value="1" {if $field['url_file']==1}checked="checked"{/if}>
+                                            <label for="row[url_file]-1">{:__('show')}(index.php)</label>
+                                        </div>
+                                        <div class="radio-item">
+                                            <input id="row[url_file]-2" name="row[url_file]" type="radio" value="0" {if $field['url_file']==0}checked="checked"{/if}>
+                                            <label for="row[url_file]-2">{:__('hide')}(index.php)</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted text-xs">{:__('Note: After checking Rewrite, your server must be configured with URL rewriting for normal access')}</div>
+                                </div>
+                                <div class="col-sm-2 d-flex align-items-center"><a href="https://www.kancloud.cn/hkcms/hkcms_tp6/2252604" target="_blank">{:lang('Help')}</a></div>
+                            </div>
+                        </div>
+                        <div class="J-urlmodel2">
+                            <div class="form-group row">
+                                <label for="frm-home_title" class="col-sm-2 row-form-label">{:__('Save directory')}</label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" id="frm-home_title" name="row[html_dir]" type="text" value="{$field['html_dir']}">
+                                    <p class="home_title-txt text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-around">
+                            <div class="col-sm-8">
+                                <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                                <button type="reset" class="btn btn-default ml-2">{:lang('Reset')}</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-layer-shade d-none" id="layui-layer-shade12" style="z-index: 19891025; background-color: rgb(0, 0, 0); opacity: 0.3;"></div>
+<div class="layui-layer layui-layer-dialog layui-layer-msg d-none" id="layui-layer12" type="dialog" style="z-index: 19891026; top: calc(50% - 33px); left: calc(50% - 112px);">
+    <div id="" class="layui-layer-content layui-layer-padding">
+        <i class="layui-layer-ico layui-layer-ico16"></i>
+        <span class="tips-title"></span>
+        <span class="item-name"></span>，
+        <span class="item-progress"></span>
+    </div>
+    <span class="layui-layer-setwin"></span>
+</div>
+
+<div class="generated-tab" style="display: none;padding: 15px">
+    <div class="row">
+        <div class="col-sm-12" style="margin-bottom: 15px">
+            <div>
+                <label for="" style="font-weight: bold">整站页面</label>
+            </div>
+            <div><a href="#!" class="btn btn-primary btn-sm btn-generated" data-type="all">{:__('Generated')}</a></div>
+        </div>
+        <div class="col-sm-12" style="margin-bottom: 15px">
+            <div>
+                <label for="" style="font-weight: bold">网站首页</label>
+            </div>
+            <div><a href="#!" class="btn btn-primary btn-sm btn-generated" data-type="home">{:__('Generated')}</a></div>
+        </div>
+        <div class="col-sm-12" style="margin-bottom: 15px">
+            <div>
+                <label for="" style="font-weight: bold">栏目页</label>
+            </div>
+            <div class="d-flex align-items-center">
+                <select id="categorylist1" class="form-control form-control-sm" style="width: 180px">
+                    <option value="">{:__('All columns')}</option>
+                    {volist name="category" id="vo"}
+                    <option value="{$vo['id']}" data-title="{$vo['raw_title']}">{$vo['title']}</option>
+                    {/volist}
+                </select>
+                <div>
+                    <a href="#!" class="btn btn-primary btn-generated btn-sm" data-type="column" style="border-bottom-left-radius: 0;border-top-left-radius: 0">{:__('Generated')}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12" style="margin-bottom: 15px">
+            <div>
+                <label for="" style="font-weight: bold">文档页</label>
+            </div>
+            <div class="d-flex align-items-center">
+                <select id="categorylist2" class="form-control form-control-sm" style="width: 180px">
+                    <option value="">{:__('All columns')}</option>
+                    {volist name="category" id="vo"}
+                    <option value="{$vo['id']}" data-title="{$vo['raw_title']}">{$vo['title']}</option>
+                    {/volist}
+                </select>
+                <a href="#!" class="btn btn-primary btn-generated btn-sm" data-type="doc" style="border-bottom-left-radius: 0;border-top-left-radius: 0">{:__('Generated')}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{block:script}
+<script>
+    var types = ['home','list','content'];
+    var jump = 1;
+
+    /**
+     * 生成HTML
+     * @param type
+     * @param page
+     * @param catid
+     */
+    function buildHtml(type, page, catid)
+    {
+        $.ajax({
+            type: 'POST',
+            url: '{:url("/routine.seo/generation")}?t='+new Date().getTime(),
+            data: {type: type, page: page,catid: catid},
+            // async: false,
+            success:function (e) {
+                if (e.code==200) {
+                    if (e.data.status==1) {
+                        // 提交下一个
+                        $('.item-progress').html(e.data.title+'（'+e.data.next+'/'+e.data.max_next+'）');
+                        buildHtml(e.data.type, 1, e.data.next);
+                        return false;
+                    } else if (e.data.status==2) {
+                        // 当前数据分页继续提交
+                        $('.item-progress').html(e.data.title+'('+(e.data.page-1)+'/'+e.data.total_page+')'+'，（'+e.data.next+'/'+e.data.max_next+'）');
+                        buildHtml(e.data.type, e.data.page, e.data.next);
+                        return false;
+                    }
+
+                    types.splice(0,1);
+                    if (types.length<=0) {
+                        $('#layui-layer-shade12').addClass('d-none');
+                        $('#layui-layer12').addClass('d-none');
+                        Layer.msg(e.msg,{time:1000},function (e) {
+                            if (jump) {
+                                window.location.href = "{:url('/routine.seo/index')}";
+                            }
+                        });
+                    } else {
+                        var title = '';
+                        if (types[0]=='home') {
+                            title = '{:__("Home")}';
+                        } else if(types[0]=='list') {
+                            title = '{:__("Channel")}';
+                        } else {
+                            title = '{:__("Content")}';
+                        }
+                        $('.item-name').html(title);
+                        $('.item-progress').html('');
+                        buildHtml(types[0], e.data.page);
+                    }
+                } else {
+                    $('#layui-layer-shade12').addClass('d-none');
+                    $('#layui-layer12').addClass('d-none');
+                    Layer.alert(e.msg);
+                }
+            }
+        })
+    }
+
+    require(['admin','form'], function (admin, Form) {
+        Form.api.init({
+            success: function (data,res) {
+                if (data.isstatic == 1) {
+                    // 静态生成
+                    $('#layui-layer12').removeClass('d-none');
+                    $('#layui-layer-shade12').removeClass('d-none');
+                    $('.tips-title').html('{:__("Generating")}：');
+                    $('.item-name').html('{:__("Home")}');
+                    $('.item-progress').html('');
+                    jump = 1;
+                    types = ['home','list','content'];
+                    buildHtml(types[0],1);
+                } else {
+                    layer.msg(res.msg, {time:2000, icon:1}, function () {
+                        window.location.href = "{:url('/routine.seo/index')}";
+                    });
+                }
+                return false;
+            }
+        });
+
+        $('input[name="row[url_mode]"]').change(function (e) {
+            if ($(this).val()==0) {
+                $('.J-urlmodel1').hide();
+                $('.J-urlmodel2').hide();
+                $('.J-urlmodel0').show();
+            } else if ($(this).val()==1) {
+                $('.J-urlmodel0').hide();
+                $('.J-urlmodel2').hide();
+                $('.J-urlmodel1').show();
+            } else if ($(this).val()==2) {
+                $('.J-urlmodel0').hide();
+                $('.J-urlmodel1').hide();
+                $('.J-urlmodel2').show();
+            }
+        });
+        $('input[name="row[url_mode]"]:checked').trigger('change');
+
+        $('#frm-home_title').change(function (e) {
+            $('.home_title-txt').html($(this).val() ? 'http:'+Config.root_host+'/'+$(this).val()+'/':Config.root_host);
+        });
+
+        // 手动生成页面
+        $('.btn-show').click(function (e) {
+
+            var area = [$(top.window).width() > 800 ? '450px' : '90%', $(top.window).height() > 600 ? '400px' : '90%'];
+
+            layer.open({
+                title:"{:__('Generated manually')}",
+                area: area,
+                type: 1,
+                shade: false,
+                content: $('.generated-tab'),
+            });
+        });
+        // 手动一键生成
+        $('.btn-generated').click(function (e) {
+            jump = 0;
+            var type = $(this).data('type');
+            $('#layui-layer12').removeClass('d-none');
+            $('#layui-layer-shade12').removeClass('d-none');
+            $('.tips-title').html('{:__("Generating")}：');
+            $('.item-progress').html('');
+
+            if (type=='all') { // 整站生成
+                $('.item-name').html('{:__("Home")}');
+                types = ['home','list','content'];
+                buildHtml(types[0],1);
+            } else if (type=='home') { // 首页生成
+                types = ['home'];
+                $('.item-name').html('{:__("Home")}');
+                buildHtml(types[0],1);
+            } else if (type=='column') {
+                if (!$('#categorylist1').val()) {
+                    types = ['list'];
+                    $('.item-name').html('{:__("Channel")}');
+                    buildHtml(types[0],1);
+                } else {
+                    $('.item-name').html('{:__("Channel")}:'+$('#categorylist1 option:selected').data('title'));
+                    types = ['list-sing'];
+                    buildHtml(types[0],1,$('#categorylist1').val());
+                }
+            } else {
+                if (!$('#categorylist2').val()) {
+                    types = ['content'];
+                    $('.item-name').html('{:__("Content")}');
+                    buildHtml(types[0],1);
+                } else {
+                    types = ['content-cate'];
+                    $('.item-name').html('{:__("Content")}:'+$('#categorylist2 option:selected').data('title'));
+                    buildHtml(types[0],1,$('#categorylist2').val());
+                }
+            }
+            e.preventDefault();
+        });
+    });
+</script>
+{/block:script}

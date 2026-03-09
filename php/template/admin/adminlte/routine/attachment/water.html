@@ -1,0 +1,172 @@
+<form class="frm-operate">
+    <div class="card card-primary card-tabs">
+        <div class="card-body">
+            <div class="form-group row">
+                <label class="col-sm-2 col-12 row-form-label">水印功能</label>
+                <div class="col-sm-8 col-12">
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input id="row[water]-1" name="row[water_on]" type="radio" value="1" {if $sdata['water_on']==1}checked{/if}>
+                            <label for="row[water]-1">开启</label>
+                        </div>
+                        <div class="radio-item">
+                            <input id="row[water]-2" name="row[water_on]" type="radio" value="0" {if $sdata['water_on']==0}checked{/if}>
+                            <label for="row[water]-2">关闭</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row water-type">
+                <label class="col-sm-2 col-12 row-form-label">水印类型</label>
+                <div class="col-sm-8 col-12">
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input id="row[type]-1" name="row[water_type]" type="radio" value="1" {if $sdata['water_type']==1}checked{/if}>
+                            <label for="row[type]-1">图片</label>
+                        </div>
+                        <div class="radio-item">
+                            <input id="row[type]-2" name="row[water_type]" type="radio" value="2" {if $sdata['water_type']==2}checked{/if}>
+                            <label for="row[type]-2">文字</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-width" class="col-sm-2 col-12 row-form-label">图片宽度</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-width" placeholder="设置大于图片宽度才能添加水印" name="row[water_width]" type="text" value="{$sdata['water_width']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="设置大于图片宽度才能添加水印"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-height" class="col-sm-2 col-12 row-form-label">图片高度</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-height" placeholder="设置大于图片高度才能添加水印" name="row[water_height]" type="text" value="{$sdata['water_height']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="设置大于图片高度才能添加水印"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+
+            <div class="form-group row txt" {if $sdata['water_type']==1}style="display:none"{/if}>
+                <label for="frm-text" class="col-sm-2 col-12 row-form-label">文字</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-text" name="row[water_text]" type="text" value="{$sdata['water_text']}">
+                </div>
+            </div>
+
+            <div class="form-group row txt" {if $sdata['water_type']==1}style="display:none"{/if}>
+                <label for="frm-text_size" class="col-sm-2 col-12 row-form-label">文字大小</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-text_size" name="row[water_text_size]" type="text" value="{$sdata['water_text_size']}">
+                </div>
+            </div>
+
+            <div class="form-group row txt" {if $sdata['water_type']==1}style="display:none"{/if}>
+                <label for="frm-text_color" class="col-sm-2 col-12 row-form-label">文字颜色</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-text_color" placeholder="支持透明色 #00000042" name="row[water_text_color]" type="text" value="{$sdata['water_text_color']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="支持透明色 #00000042"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+
+            <div class="form-group row imgs" {if $sdata['water_type']==2}style="display:none"{/if}>
+                <label for="frm-img_opacity" class="col-sm-2 col-12 row-form-label">水印透明度</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-img_opacity" placeholder="值范围0-100, 0-完全透明，100-不透明" data-msg="" name="row[water_img_opacity]" type="text" value="{$sdata['water_img_opacity']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="值范围0-100, 0-完全透明，100-不透明"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+
+            <div class="form-group row imgs" {if $sdata['water_type']==2}style="display:none"{/if}>
+                <label for="frm-img" class="col-sm-2 col-12 row-form-label">水印图片</label>
+                <div class="col-sm-8 col-12 fileGroup">
+                    <div class="file-btn">
+                        <input type="text" class="form-control txt-files" id="frm-img" name="row[water_img]" placeholder="请上传水印图片" value="{$sdata['water_img']}" data-msg="请上传图片">
+                        <button type="button" class="btn btn-default btn-imgUpload" data-mimetype="image/*" data-multiple="false" data-field="frm-img">
+                            <i class="fas fa-upload"></i> {:lang('Upload')}
+                        </button>
+                        <button type="button" class="btn btn-default btn-imgSelect" data-mimetype="image/*" data-multiple="false" data-field="frm-img">
+                            <i class="fas fa-images"></i> {:lang('Select')}
+                        </button>
+                    </div>
+                    <div class="file-preview row mt-2"></div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-12 row-form-label">水印位置</label>
+                <div class="col-sm-8 col-12">
+                    <div class="radio-group">
+                        <div class="row">
+                            <div class="col-4">
+                                <input id="row[img_position]-1" name="row[water_img_position]" type="radio" value="1" {if $sdata['water_img_position']==1}checked=""{/if}>
+                                <label for="row[img_position]-1">顶部居左</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-2" name="row[water_img_position]" type="radio" value="2" {if $sdata['water_img_position']==2}checked=""{/if}>
+                                <label for="row[img_position]-2">顶部居中</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-3" name="row[water_img_position]" type="radio" value="3" {if $sdata['water_img_position']==3}checked=""{/if}>
+                                <label for="row[img_position]-3">顶部居右</label>&nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4">
+                                <input id="row[img_position]-4" name="row[water_img_position]" type="radio" value="4" {if $sdata['water_img_position']==4}checked=""{/if}>
+                                <label for="row[img_position]-4">中部居左</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-5" name="row[water_img_position]" type="radio" value="5" {if $sdata['water_img_position']==5}checked=""{/if}>
+                                <label for="row[img_position]-5">中部居中</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-6" name="row[water_img_position]" type="radio" value="6" {if $sdata['water_img_position']==6}checked=""{/if}>
+                                <label for="row[img_position]-6">中部居右</label>&nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4">
+                                <input id="row[img_position]-7" name="row[water_img_position]" type="radio" value="7" {if $sdata['water_img_position']==7}checked=""{/if}>
+                                <label for="row[img_position]-7">底部居左</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-8" name="row[water_img_position]" type="radio" value="8" {if $sdata['water_img_position']==8}checked=""{/if}>
+                                <label for="row[img_position]-8">底部居中</label>&nbsp;
+                            </div>
+                            <div class="col-4">
+                                <input id="row[img_position]-9" name="row[water_img_position]" type="radio" value="9" {if $sdata['water_img_position']==9}checked=""{/if}>
+                                <label for="row[img_position]-9">底部居右</label>&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2 form-tips"></div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (undefined,Form) {
+        $('.water-type').find('input[name="row[water_type]"]').change(function (e) {
+            if ($(this).val()==1) {
+                $('.imgs').show();
+                $('.txt').hide();
+            } else {
+                $('.imgs').hide();
+                $('.txt').show();
+            }
+        });
+
+        Form.api.init();
+    })
+</script>
+{/block:script}

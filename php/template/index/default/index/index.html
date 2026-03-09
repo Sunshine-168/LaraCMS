@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{// 引用头部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用。}
+		{include file="common/head"}
+	</head>
+	<body>
+		<div class="body-inner">
+			<!--引用导航栏、路径基于主题目录下common文件夹下的menu.html文件-->
+			{include file="common/menu"}
+
+			<!--首页轮播图-->
+			<div class="home-banner swiper-container">
+				<div class="swiper-wrapper">
+					{// 调用站点模块，图集类型的内容，name是标识，站点模块支持图集、视频、内容数据、文字链接、html代码。}
+					{hkcms:adv name="home_banner"}
+					<div class="swiper-slide" style="background-image: url({$item.image});background-position: 50% 50%;background-size: cover;">
+						<div class="container">
+							<div class="box-slider-content">
+								<div class="box-slider-text">
+									<h3 class="box-slide-sub-title">{$item.title}</h3>
+									<p class="box-slide-description">{$item.notes}</p>
+
+									<!--如果是第三张图片就显示视频播放按钮-->
+									{if $i==3}
+									{// 调用站点模块视频演示，itemid表示获取排序第一的视频，如果你只是一个视频可以不写}
+									{hkcms:adv name="video" id="video" itemid="1"}
+									<p><a href="#!" class="slider btn btn-primary"  data-toggle="h5video" data-url="{$video.content}" tabindex="-1"><i class="fa fa-video"></i> {:__('Video play')}</a></p>
+									{/hkcms:adv}
+									{else /}
+									{// 语言包：{:__('通常这里写英文，如果没有找到,则显示Know Us，有找到Know Us则中文对照就显示中文')}
+									<p><a href="{$item.url}" class="slider btn btn-primary" tabindex="-1">{:__('Know Us')}</a></p>
+									{/if}
+								</div>
+							</div>
+						</div>
+					</div>
+					{/hkcms:adv}
+				</div>
+				<!-- 分页器 -->
+				<div class="swiper-pagination"></div>
+
+				<!-- 导航按钮 -->
+				<div class="swiper-button-prev swiper-home-prev"><i class="fas fa-angle-left"></i></div>
+				<div class="swiper-button-next swiper-home-next"><i class="fas fa-angle-right"></i></div>
+			</div>
+			<!-- 首页轮播图结束 -->
+
+			<!--公司简介-->
+			<section id="project-area" class="project-area solid-bg">
+				{// 获取演示数据里关于我们，catid=3表示栏目ID，还可以传入英文目录字段，或变量}
+				{hkcms:content catid="3"}
+				<div class="container">
+					<div class="row text-center">
+						<div class="col-lg-12">
+							{// 使用content标签可以获取该内容的栏目信息，$item.category.title表示栏目标题，后面的default表示为空的时候默认显示什么}
+							<h3 class="section-sub-title">{$item.category.title|default=''}</h3>
+						</div>
+					</div>
+					<div class="home-company">
+						<div class="row m-0">
+							<div class="col-md-6 img">
+								{// 获取公司简介的封面图,若想生成缩略图使用hkcms:thumb标签 }
+								<img src="{$item.thumb|default=''}" alt="{$item.title}">
+							</div>
+							<div class="col-md-6 txt">
+								<h2>{$item.title}</h2>
+								{// 获取公司简介的内容，后面加default可以避免字段不存在的错误，default="abc"表示字段不存在或为空时显示abc}
+								<div class="content">{$item.content|default=""}</div>
+								{// 语言包：默认模板语言包在static\module\index\default\lang\zh-cn.json。 }
+								<a href="{$item.url}" class="btn btn-primary">{:__('Read More')}</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/hkcms:content}
+			</section>
+
+			<!--产品展示-->
+			<section class="project-area home-product">
+				<div class="container">
+					<!--产品栏目-->
+					<div class="row">
+						<div class="col-lg-5">
+							<div class="section-title">
+								<!--获取产品栏目名称-->
+								{hkcms:channel name="21"}
+								<h4>{$item.title}</h4>
+								{/hkcms:channel}
+							</div>
+						</div>
+						<div class="col-lg-7">
+							<div class="property-controls">
+								<ul class="nav nav-tabs" role="tablist">
+									<li><a data-toggle="tab" href="#home" class="active" role="tab" aria-selected="true">{:__('All')}</a></li>
+									{hkcms:channel name="21" type="son"}
+									{// $i 从1开始，循环变量每次+1}
+									<li><a data-toggle="tab" href="#home-{$i}" role="tab" aria-selected="false">{$item.title}</a></li>
+									{/hkcms:channel}
+								</ul>
+							</div>
+						</div>
+					</div>
+					<!--产品栏目 结束-->
+
+					<div class="tab-content">
+						<!--获取全部产品的6条记录,order="字段名 desc,字段名 desc" asc是正序 desc是倒序 多个字段用逗号分隔-->
+						<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+							<div class="row property-filter tab-content">
+								{hkcms:content catid="21" num="6" order="weigh desc,views desc"}
+								<div class="col-lg-4 col-md-6 mix all">
+									<div class="property-item">
+										<div class="pi-pic set-bg" style="background-image: url('{$item.thumb|default=''}');">
+											<div class="label c-magenta">{$item.category.title}</div>
+										</div>
+										<div class="pi-text">
+											<a href="#!" class="heart-icon"><span class="fas fa-meteor"></span> {$item.views}</a>
+
+											{// if语句的使用，下面是判断价格大于0就显示价格，反之显示咨询 }
+											{if !empty($item.price) && $item.price>0}
+											<div class="pt-price text-danger">¥ {$item.price|default=""}</div>
+											{else /}
+											<div class="pt-price text-warning">{:__('Consult')}</div>
+											{/if}
+
+											{// $item.fullurl是包含域名的url地址 }
+											<h5><a href="{$item.fullurl}">{$item.title}</a></h5>
+											<div class="desc">{$item.description}</div>
+										</div>
+									</div>
+								</div>
+								{/hkcms:content}
+							</div>
+							<div class="row">
+								<div class="col-12">
+									<div class="general-btn text-center" style="margin-top: 10px">
+										<!--获取产品首页的栏目地址-->
+										{hkcms:channel name="21"}
+										<a class="btn btn-primary" href="{$item.url}">{:__('Read More')}</a>
+										{/hkcms:channel}
+									</div>
+								</div>
+							</div>
+						</div>
+						<!--获取全部产品 结束-->
+						<!--获取产品下级栏目的内容数据-->
+						{hkcms:channel name="21" type="son" id="channel" key="ii"}
+						{// 默认循环变量$i,上面key改成了使用$ii 从1开始。每次循环加1}
+						<div class="tab-pane fade" id="home-{$ii}" role="tabpanel" aria-labelledby="profile-tab">
+							<div class="row property-filter tab-content">
+								{hkcms:content catid="$channel.id" num="6" order="weigh desc,publish_time desc"}
+								<div class="col-lg-4 col-md-6 mix all">
+									<div class="property-item">
+										<div class="pi-pic set-bg" data-setbg="img/property/property-1.jpg" style="background-image: url('{$item.thumb|default=''}');">
+											<div class="label c-magenta">{$item.category.title}</div>
+										</div>
+										<div class="pi-text">
+											<a href="#!" class="heart-icon"><span class="fas fa-meteor"></span> {$item.views}</a>
+
+											{// if语句的使用，下面是判断价格大于0就显示价格，反之显示咨询 }
+											{if !empty($item.price) && $item.price>0}
+											<div class="pt-price text-danger">¥ {$item.price|default=""}</div>
+											{else /}
+											<div class="pt-price text-warning">{:__('Consult')}</div>
+											{/if}
+
+											{// $item.fullurl是包含域名的url地址 }
+											<h5><a href="{$item.fullurl}">{$item.title}</a></h5>
+											<div class="desc">{$item.description}</div>
+										</div>
+									</div>
+								</div>
+								{/hkcms:content}
+							</div>
+							<div class="row">
+								<div class="col-12">
+									<div class="general-btn text-center" style="margin-top: 10px">
+										<!--获取产品栏目地址-->
+										<a class="btn btn-primary" href="{$channel.url}">{:__('Read More')}</a>
+									</div>
+								</div>
+							</div>
+						</div>
+						{/hkcms:channel}
+					</div>
+				</div><!--container 结束-->
+			</section>
+			<!--产品展示 结束-->
+
+			<!--案例展示-->
+			<section class="project-area solid-bg">
+				<div class="container">
+					<div class="row text-center">
+						<div class="col-lg-12">
+							{hkcms:channel name="19"}
+							<h3 class="section-sub-title">{$item.title}</h3>
+							{/hkcms:channel}
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-12">
+							<ul class="shuffle-btn-group nav nav-tabs" role="tablist">
+								<li><a data-toggle="tab" role="tab" href="#case-home" class="active" aria-selected="true">{:__('All')}</a></li>
+								{hkcms:channel name="19" type="son"}
+								<li><a data-toggle="tab" role="tab" href="#case-{$i}" aria-selected="false">{$item.title}</a></li>
+								{/hkcms:channel}
+							</ul>
+
+							<!--案例列表-->
+							<div class="tab-content">
+								<!--获取全部案例-->
+								<div class="tab-pane fade show active" id="case-home" role="tabpanel" aria-labelledby="case-home">
+									<div class="row shuffle-wrapper">
+										<!--获取案例展示栏目下所有案例 你也可以指定案例模型model="模型ID"-->
+										{hkcms:content catid="19" num="6" order="weigh desc,views desc" key="k"}
+										<div class="col-lg-4 col-md-6 shuffle-item">
+											<div class="project-img-container">
+												<a class="gallery-popup" href="#!" aria-label="{$item.title}">
+													<img class="img-fluid" layer-src="{$item.thumb|default=''}" layer-index="{$key}" src="{$item.thumb|default=''}" alt="{$item.title}">
+													<span class="gallery-icon" data-toggle="photos" data-id="case-home" layer-index="{$key}"><i class="fa fa-plus"></i></span>
+												</a>
+												<div class="project-item-info">
+													<div class="project-item-info-content">
+														<h3 class="project-item-title"><a href="{$item.url}">{$item.title}</a></h3>
+														<p class="project-cat">{$item.category.title}</p>
+													</div>
+												</div>
+											</div>
+										</div>
+										{/hkcms:content}
+									</div>
+									<div class="row">
+										<div class="col-12">
+											<div class="general-btn text-center">
+												<!--获取获取客户案例的栏目地址-->
+												{hkcms:channel name="19"}
+												<a class="btn btn-primary" href="{$item.url}">{:__('Read More')}</a>
+												{/hkcms:channel}
+											</div>
+										</div>
+									</div>
+								</div>
+								<!--获取全部案例 结束-->
+
+								{hkcms:channel name="19" type="son" id="cate" key="k"}
+								<div class="tab-pane fade" id="case-{$k}" role="tabpanel" aria-labelledby="case-{$k}-tab">
+									<div class="row shuffle-wrapper">
+										{// 使用php标签写原生：作用是为空的时候显示暂无数据。把这个值给到content里面的empty，如果没有html标签则就直接empty="暂无数据"即可}
+										{php}$empty = '<p class="nomore">- '.__('No content available').'- </p>';{/php}
+										{hkcms:content catid="$cate.id" num="6" order="weigh desc,views desc" empty="$empty"}
+										<div class="col-lg-4 col-md-6 shuffle-item">
+											<div class="project-img-container">
+												<a class="gallery-popup" href="#!" aria-label="{$item.title}">
+													{// $key是数组索引从0开始}
+													<img class="img-fluid" layer-src="{$item.thumb|default=''}" layer-index="{$key}" src="{$item.thumb|default=''}" alt="{$item.title}">
+													<span class="gallery-icon" data-toggle="photos" data-id="case-{$k}" layer-index="{$key}"><i class="fa fa-plus"></i></span>
+												</a>
+												<div class="project-item-info">
+													<div class="project-item-info-content">
+														<h3 class="project-item-title">
+															<a href="{$item.url}">{$item.title}</a>
+														</h3>
+														<p class="project-cat">{$item.category.title}</p>
+													</div>
+												</div>
+											</div>
+										</div>
+										{/hkcms:content}
+									</div>
+									<div class="row">
+										<div class="col-12">
+											<div class="general-btn text-center">
+												<!--获取获取客户案例的栏目地址-->
+												<a class="btn btn-primary" href="{$cate.url}">{:__('Read More')}</a>
+											</div>
+										</div>
+									</div>
+								</div>
+								{/hkcms:channel}
+							</div>
+							<!--案例列表 结束-->
+						</div><!-- col-12 结束 -->
+					</div><!-- row 结束 -->
+				</div>
+			</section>
+			<!--案例展示 结束-->
+
+			<!--新闻动态-->
+			<section class="project-area">
+				<div class="container">
+					<div class="row text-center">
+						<div class="col-lg-12">
+							{hkcms:channel name="9"}
+							<h3 class="section-sub-title">{$item.title}</h3>
+							{/hkcms:channel}
+						</div>
+					</div>
+					<div class="row home-news">
+						{// 获取新闻中心内的栏目 id为9，结合content标签输出内容，如果要获取副表内容more="1"即可}
+						{hkcms:channel name="9" type="son" id="cate" num="2" key="ii"}
+						<div class="col-md-6" {if $ii==1}style="border-right: 1px solid #EEEEEE;"{/if}>
+							<h3><a href="{$cate.url}">{$cate.title}</a> <em><a href="{$cate.url}">{:__('More')}</a></em></h3>
+							<ul>
+							{hkcms:content catid="$cate.id" num="6" order="weigh desc,publish_time desc" key="k"}
+								{// $k从1开始,第一个文章显示图文}
+								{if $k==1}
+								<li>
+									<div class="imggroup">
+										<div class="imggroup-img">
+											<a href="{$item.url}"><img src="{$item.thumb|default=''}" alt="{$item.title}"></a>
+										</div>
+										<div class="imggroup-text">
+											<p class="title"><a href="{$item.url}">{$item.title}</a></p>
+											<p class="desc">{$item.title}</p>
+										</div>
+									</div>
+								</li>
+								{else /}
+								<li class="item text-truncate ">
+									{// 使用if语句，给前三行加上底色，$k是从1开始的}
+									{if $k<=3}
+									<a href="{$item.url}"><span class="badge badge-warning"><em>{$k}</em></span> {$item.title}</a>
+									{else /}
+									<a href="{$item.url}"><span class="badge"><em>{$k}</em></span> {$item.title}</a>
+									{/if}
+									{//api="human" 将采用日期语义化显示，另外还支持限制范围比如说：lt="2592000" 表示超过6个月的时间按format里面的格式输出}
+									<span class="date"><abbr title="{hkcms:date name="$item.publish_time" format="Y-m-d"}">{hkcms:date name="$item.publish_time" format="Y-m-d" api="human"}</abbr></span>
+								</li>
+								{/if}
+							{/hkcms:content}
+							</ul>
+						</div>
+						{/hkcms:channel}
+					</div>
+
+					<div class="row">
+						<div class="col-12">
+							<div class="general-btn text-center">
+								<!--获取获取客户案例的栏目地址-->
+								{hkcms:channel name="9"}
+								<a class="btn btn-primary" href="{$item.url}">{:__('Read More')}</a>
+								{/hkcms:channel}
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!--合作伙伴-->
+			<section class="project-area solid-bg">
+				<div class="container">
+					<div class="row text-center">
+						<div class="col-lg-12">
+							<h3 class="section-sub-title">{:__('Partners')}</h3>
+						</div>
+					</div>
+					<div style="height: 130px;position: relative">
+						<div class="swiper-container frm-swiper" style="height: 130px">
+							<div class="swiper-wrapper">
+								{hkcms:adv name="partner"}
+								<div class="swiper-slide">
+									<a href="{$item.url}" {$item.target} class="d-flex align-items-center justify-content-center" style="width: 100%;height: 100%;background-color: #ffffff;border-radius: 4px">
+										<img style="max-width: 80%;max-height: 80%;" src="{$item.image}" alt="{$item.title}">
+									</a>
+								</div>
+								{/hkcms:adv}
+							</div>
+							<div class="swiper-pagination"></div>
+						</div>
+						<!-- 导航按钮 -->
+						<div class="swiper-button-prev swiper-outside-prev"><i class="fas fa-angle-left"></i></div>
+						<div class="swiper-button-next swiper-outside-next"><i class="fas fa-angle-right"></i></div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 引用底部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用 -->
+			{include file="common/footer"}
+		</div>
+	</body>
+</html>

@@ -1,0 +1,92 @@
+<div class="card">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {if has_rule('add')}
+            <button type="button" class="btn btn-primary btn-add " data-url="{:url('/cms.flags/add')}"><i class="fas fa-plus"></i> {:lang('Add')}</button>
+            {/if}
+            <div class="dropdown mr-1 btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{:lang('Batch operation')}"><i class="fas fa-cog"></i> {:lang('More')}</a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    {if has_rule('del')}
+                    <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.flags/del')}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+                    {/if}
+                    <div class="dropdown-divider"></div>
+                    {if has_rule('batches')}
+                    <a class="dropdown-item status" href="#" data-params="status=normal"><i class="fas fa-check-circle"></i> {:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden"><i class="fas fa-ban"></i> {:lang('Set to disabled')}</a>
+                    {/if}
+                </div>
+            </div>
+        </div>
+
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/cms.flags/edit')}{/if}"
+               data-del="{if has_rule('del')}{:url('/cms.flags/del')}{/if}"
+               data-batches="{if has_rule('batches')}{:url('/cms.flags/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.flags/index')}",
+                showToggle: false,
+                search: true,
+                contentLangSw: true,
+                formatSearch: function(){return "{:lang('Search')}{:lang('Title')}"},
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                    formatter: function (value, row, index, field) {
+                        if (row['name']=='top') {
+                            return {disabled:true};
+                        } else {
+                            return {disabled:false};
+                        }
+                    }
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter:Table.formatter.txtEditBtn,
+                    events:Table.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    visible: false
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                },{
+                    field: 'name',
+                    title: '{:lang("Name")}',
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                    visible: false
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: true
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        if (row['name']=='top') {
+                            return '<button type="button" class="btn btn-primary btn-xs btn-row-edit" data-toggle="tooltip" data-placement="top" title="" data-popup="true"><i class="fas fa-pen"></i></button>';
+                        }
+                        return Table.formatter.operate.call(this, value, row, index)
+                    },
+                    events: Table.events.operate
+                }]});
+        })
+    })
+</script>
+{/block:script}

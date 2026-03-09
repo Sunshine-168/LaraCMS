@@ -1,0 +1,200 @@
+<style>
+    .diy-menu {
+        width: auto;
+    }
+</style>
+<div class="card card-primary">
+    <div class="card-body">
+        <!--筛选-->
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">ID</label>
+                            <input type="text" class="form-control" name="id" placeholder="ID">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Model name")}</label>
+                            <input type="text" class="form-control" name="name" placeholder="{:lang("Model name")}" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Table Name")}</label>
+                            <input type="text" class="form-control" name="tablename" placeholder="{:lang("Table Name")}" data-op="like %...%">
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary mr-2" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('refresh,add')}
+
+            {if (has_rule('cms/model/import'))}
+            <button type="button" class="btn btn-default btn-import" data-url="{:url('/cms.model/import')}"><i class="fas fa-download"></i>
+                {:lang('Import')}</button>
+            {/if}
+
+            <div class="dropdown btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{:lang('Batch operation')}"><i class="fas fa-cog"></i> {:lang('More')}</a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    {if (has_rule('cms/model/del'))}
+                    <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.model/del')}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+                    {/if}
+                    {if (has_rule('batches'))}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item status" href="#" data-params="status=normal"><i class="fas fa-check-circle"></i> {:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden"><i class="fas fa-ban"></i> {:lang('Set to disabled')}</a>
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/cms.model/edit')}{/if}"
+               data-del="{if has_rule('del')}{:url('/cms.model/del')}{/if}"
+               data-batches="{if (has_rule('batches'))}{:url('/cms.model/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        var configCon = {$con|raw};
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.Model/index')}",
+                customFilter: true,
+                sortName: 'id',
+                sortOrder: 'asc',
+                classes: 'table table-bordered table-hover',
+                formatSearch: function (e) {
+                    return "模型名称";
+                },
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'id',
+                    title: 'ID'
+                },{
+                    field: 'name',
+                    title: '{:lang("Model name")}',
+                },{
+                    field: 'alias',
+                    title: '{:lang("Model alias")}',
+                },{
+                    field: 'tablename',
+                    title: '{:lang("Table Name")}',
+                },{
+                    field: 'diyname',
+                    title: '{:lang("Custom URL")}',
+                    visible: false
+                },{
+                    field: 'controller',
+                    title: '{:lang("Controller")}',
+                    visible: false
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                    textLength: 20,
+                    formatter: Table.formatter.textBox,
+                    events: Table.events.textBoxBtn
+                },{
+                    field: 'is_search',
+                    title: '{:lang("Global search")}',
+                    formatter: function (value, row, index, field) {
+                        if (value==-1) {
+                            return '-';
+                        }
+                        return Table.formatter.switchBtn.call(this, value, row, index,field);
+                    },
+                    events: Table.events.switchBtn
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                    visible: false
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    delTips: '{:lang("Confirm deletion? Pack column and document data")}',
+                    formatter: function (value, row, index) {
+
+                        let html = '';
+
+                        html = '<div class="btn-group mr-2">\n' +
+
+                                /* {if has_rule('cms/modelfield/index')} */
+                            '    <button type="button" class="btn btn-default btn-xs btn-newMenu" data-title="'+row['name']+'字段" data-url="{:url("/cms.ModelField/index")}?model_id='+row['id']+'">{:lang("Field")}</button>\n' +
+                                /* {/if} */
+
+                            '<button type="button" class="btn btn-default btn-xs" title="更多操作" data-toggle="dropdown" aria-expanded="false" data-reference="parent"><i class="fas fa-ellipsis-h"></i></button>\n' +
+                            '<div class="dropdown-menu dropdown-menu-right diy-menu">\n';
+
+                        if (configCon[row['controller']]) {
+                            html += '<a class="dropdown-item btn-config" href="{:url("/cms.model/config")}?id='+row['id']+'" data-title="'+row['name']+'"><i class="fas fa-cog"></i> {:lang("Config")}</a>'
+                        }
+
+                        html += '<a href="{:url("/cms.model/preview")}?model_id='+row['id']+'" target="_blank" class="dropdown-item"><i class="fa fa-eye"></i> {:lang('Preview')}</a>';
+
+                        /* {if has_rule('cms/model/export')} */
+                        html += '<a href="{:url("/cms.model/export")}?id='+row['id']+'" target="_blank" class="dropdown-item"><i class="fas fa-upload"></i> {:lang("Export")}</a>'
+                        /* {/if} */
+
+                        /* {if has_rule('cms/model/copy')} */
+                        html += '<a href="{:url("/cms.model/copy")}?id='+row['id']+'" data-title="'+row['name']+'" class="dropdown-item btn-copy"><i class="fas fa-copy"></i> {:lang("Copy")}</a>'
+                        /* {/if} */
+
+
+                        html += '</div></div>';
+                        return html+Table.formatter.operate.call(this, value, row, index);
+                    },
+                    events: Table.events.operate
+                }]
+            });
+
+            // 导入
+            $('.btn-import').click(function (e) {
+                var data = $(this).data();
+                hkcms.api.open(Util.setUrlParams({ url:data.url, query:{popup:1 }}),'{:lang(\'Import\')}')
+            });
+            // 复制
+            $(document).on('click','.btn-copy',function (e) {
+                var href = $(this).attr('href');
+                var title = $(this).attr('data-title');
+                hkcms.api.open(Util.setUrlParams({ url:href, query:{popup:1 }}),'{:lang(\'Copy\')} '+title);
+                e.preventDefault();
+                return false;
+            });
+            // 配置
+            $(document).on('click','.btn-config',function (e) {
+                var href = $(this).attr('href');
+                var title = $(this).attr('data-title');
+                hkcms.api.open(Util.setUrlParams({ url:href, query:{popup:1 }}),'{:lang(\'Config\')} '+title);
+                e.preventDefault();
+                return false;
+            });
+        })
+    })
+</script>
+{/block:script}

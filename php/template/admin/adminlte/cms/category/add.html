@@ -1,0 +1,341 @@
+<style>
+    .hiddenClass {
+        display: none;
+    }
+    .sp_container {
+        width: 100% !important;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card card-tabs shadow-none">
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true">{:__("Base")}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-three-seo-tab" data-toggle="pill" href="#custom-tabs-seo" role="tab" aria-controls="custom-tabs-seo" aria-selected="true">{:__("More")}</a>
+                </li>
+                {if (!empty($html))}
+                <li class="nav-item">
+                    <a class="nav-link" id="custom-tabs-three-more-tab" data-toggle="pill" href="#custom-tabs-more" role="tab" aria-controls="custom-tabs-more" aria-selected="true">{:__("Extended field")}</a>
+                </li>
+                {/if}
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                <div class="tab-pane fade active show" id="custom-tabs-three-home" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
+                    <div class="form-group row">
+                        <label class="col-sm-2 row-form-label">{:__("Column type")}: </label>
+                        <div class="col-sm-8">
+                            {:build_radios('row[type]',['category'=>__('Category home'),'list'=>__('Lists'),'link'=>__('Other links')],$parenInfo['type']??'list',['id'=>'frm-type','class'=>'form-control'])}
+                        </div>
+                    </div>
+                    <div class="form-group row model_id_html">
+                        <label for="frm-model_id" class="col-sm-2 row-form-label">{:__("Owning model")}: </label>
+                        <div class="col-sm-8">
+                            <input type="text" id="frm-model_id"
+                                   class="form-control selectpage"
+                                   name="row[model_id]"
+                                   data-select-only="true"
+                                   data-pagination="false"
+                                   value="{if !empty($parenInfo['model_id'])}{$parenInfo['model_id']}{/if}"
+                                   placeholder="点我，选择模型"
+                                   data-data="{:url('/cms.category/selectModel')}" >
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-name" class="col-sm-2 row-form-label">{:__("Superior column")}: </label>
+                        <div class="col-sm-8">
+                            {:build_select('row[parent_id]',$parent_list,$parenInfo['id']??'',['id'=>'frm-parent_id','class'=>'form-control'])}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-title" class="col-sm-2 row-form-label">{:__("Column name")}: </label>
+                        <div class="col-sm-8">
+                    <textarea class="form-control" id="frm-title" name="row[title]" rows="3" placeholder="{:__('Support batch, separated by English symbol `|`, newline, for example')}：
+{:__("Column name")}|{:__("Directory name")}
+
+国际新闻|world" data-rule="required"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-name" class="col-sm-2 row-form-label">{:__("Directory name")}: </label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="frm-name" name="row[name]" placeholder="{:__('Leave blank, the default pinyin + random number, when adding in batches, leave this item blank')}" value="">
+                            <div class="pt-1 pl-1 text-xs"><span class="text-muted">{:__('Name used for address bar access, supports letters, numbers, -, _')}</span></div>
+                        </div>
+                    </div>
+                    <div class="hiddenClass page-html">
+                        <div class="form-group row">
+                            <label for="frm-url" class="col-sm-2 row-form-label">{:__("link")}: </label>
+                            <div class="col-sm-8">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="frm-url" name="row[url]" placeholder="{:__("Link address or jump to other columns, valid when no model is selected")}">
+                                    <div class="input-group-append"><button type="button" class="btn btn-default btn-select">{:__("Select column")}</button></div>
+                                </div>
+                                <div class="pt-1 pl-1 text-xs select-column" style="display: none">{:__('Selected')}：<span class="text-muted"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hiddenClass">
+                        <div class="form-group row">
+                            <label for="frm-category_tpl" class="col-sm-2 row-form-label">{:__("Column home")}: </label>
+                            <div class="col-sm-8">
+                                <input type="text" id="frm-category_tpl"
+                                       class="form-control selectpage"
+                                       name="row[category_tpl]"
+                                       data-select-only="true"
+                                       data-key-field="name"
+                                       data-pagination="false"
+                                       data-show-field="name"
+                                       data-multiple="false"
+                                       data-data="{:url('/cms.model/getTplName',['type'=>'category'])}" >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hiddenClass">
+                        <div class="form-group row">
+                            <label for="frm-list_tpl" class="col-sm-2 row-form-label">{:__("List template")}: </label>
+                            <div class="col-sm-8">
+                                <input type="text" id="frm-list_tpl"
+                                       class="form-control selectpage"
+                                       name="row[list_tpl]"
+                                       data-select-only="true"
+                                       data-key-field="name"
+                                       data-pagination="false"
+                                       data-show-field="name"
+                                       data-multiple="false"
+                                       data-data="{:url('/cms.model/getTplName',['type'=>'list'])}" >
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="frm-show_tpl" class="col-sm-2 row-form-label">{:__("Content template")}: </label>
+                            <div class="col-sm-8">
+                                <input type="text" id="frm-show_tpl"
+                                       class="form-control selectpage"
+                                       name="row[show_tpl]"
+                                       data-select-only="true"
+                                       data-key-field="name"
+                                       data-pagination="false"
+                                       data-show-field="name"
+                                       data-multiple="false"
+                                       data-data="{:url('/cms.model/getTplName',['type'=>'show'])}" >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hiddenClass">
+                        <div class="form-group row">
+                            <label for="frm-page_tpl" class="col-sm-2 row-form-label">{:__("Page template")}: </label>
+                            <div class="col-sm-8">
+                                <input type="text" id="frm-page_tpl"
+                                       class="form-control selectpage"
+                                       name="row[page_tpl]"
+                                       data-select-only="true"
+                                       data-key-field="name"
+                                       data-pagination="false"
+                                       data-show-field="name"
+                                       data-multiple="false"
+                                       data-data="{:url('/cms.model/getTplName',['type'=>'page'])}" >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-weigh" class="col-sm-2 row-form-label">{:__("Weigh")}: </label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="frm-weigh" name="row[weigh]" value="100" placeholder="">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 row-form-label">{:__("Navigation display")}: </label>
+                        <div class="col-sm-8">
+                            {:build_radios('row[ismenu]',['1'=>__('Show'),'0'=>__('Hide')])}
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="custom-tabs-seo" role="tabpanel" aria-labelledby="custom-tabs-seo">
+                    <div class="form-group row">
+                        <label for="frm-seo_title" class="col-sm-2 row-form-label">SEO{:__('Title')}: </label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="frm-seo_title" name="row[seo_title]" placeholder="">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-seo_keywords" class="col-sm-2 row-form-label">{:__("SEO keywords")}: </label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="frm-seo_keywords" name="row[seo_keywords]" value="">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-seo_desc" class="col-sm-2 row-form-label">{:__("SEO description")}: </label>
+                        <div class="col-sm-8">
+                            <textarea class="form-control" id="frm-seo_desc" name="row[seo_desc]" rows="3" placeholder=""></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-image" class="col-sm-2 row-form-label">{:__("Column thumbnail")}</label>
+                        <div class="col-sm-8 fileGroup">
+                            <div class="file-btn">
+                                <input type="text" class="form-control txt-files" id="frm-image" name="row[image]">
+                                <button type="button"
+                                       class="btn btn-default btn-imgUpload"
+                                       data-mimetype="image/*"
+                                       data-multiple="false"
+                                       data-field="frm-image"><i class="fas fa-upload"></i> {:__('Upload')}</button>
+                                <button type="button"
+                                       class="btn btn-default btn-imgSelect"
+                                       data-mimetype="image/*"
+                                       data-multiple="false"
+                                       data-field="frm-image"><i class="fas fa-images"></i> {:__('Select')}</button>
+                            </div>
+                            <div class="file-preview row mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="frm-seo_keywords" class="col-sm-2 row-form-label">{:__("Paging Size")}: </label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="frm-num" name="row[num]" value="10" data-rule="digits">
+                            <div class="pt-1 pl-1 text-xs"><span class="text-muted">{:__('Tip: Applicable to list pages, requires template support')}</span></div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 row-form-label">{:__("Pop-up method")}: </label>
+                        <div class="col-sm-8">
+                            {:build_radios('row[target]',['_self'=>__('Current window'),'_blank'=>__('New window')],'_self')}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 row-form-label">{:__("Status")}: </label>
+                        <div class="col-sm-8">
+                            {:build_radios('row[status]',['normal'=>__('Normal'),'hidden'=>__('Hidden')])}
+                        </div>
+                    </div>
+                </div>
+                {if (!empty($html))}
+                <div class="tab-pane fade" id="custom-tabs-more" role="tabpanel" aria-labelledby="custom-tabs-more">
+                {$html|raw}
+                </div>
+                {/if}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form','selectpage'], function (admin, Form) {
+        // 动态条件
+        $('input[name="row[model_id]"]').data('params', function () {
+            return {'type':$("input[name='row[type]']:checked").val()};
+        })
+
+        // 表单初始化
+        Form.api.init({
+            before: function (data) {
+                var status = 1;
+                $.each(data, function (key, value) {
+                    if (value.name=='row[model_id]' && value.value.length==0 && $("input[name='row[type]']:checked").val()!='link') {
+                        layer.msg("{:__('Please select a model')}");
+                        status = 0;
+                        return false;
+                    } else if (value.name=='row[category_tpl]' && value.value.length==0 && $("input[name='row[type]']:checked").val()=='category') {
+                        layer.msg("{:__('Please select the section homepage')}");
+                        status = 0;
+                        return false;
+                    } else if (value.name=='row[list_tpl]' && value.value.length==0 && $("input[name='row[type]']:checked").val()=='list') {
+                        layer.msg("{:__('Please select a list template')}");
+                        status = 0;
+                        return false;
+                    } else if (value.name=='row[show_tpl]' && value.value.length==0 && $("input[name='row[type]']:checked").val()=='list') {
+                        layer.msg("{:__('Please select a content template')}");
+                        status = 0;
+                        return false;
+                    } else if (value.name=='row[page_tpl]' && value.value.length==0 && $("input[name='row[type]']:checked").val()=='link' && $("input[name='row[model_id]']").val().length!=0) {
+                        layer.msg("{:__('Please select a page template')}");
+                        status = 0;
+                        return false;
+                    }
+                });
+                if (status) {
+                    return data;
+                }
+                return false;
+            }
+        });
+
+        $("input[name='row[type]']").change(function () {
+            $('.hiddenClass').hide();
+            if ($("input[name='row[type]']:checked").val() == 'link') {
+                $('.page-html').show();
+            }
+            $('.selectpage').selectPageClear();
+        });
+        $("input[name='row[type]']").trigger('change');
+
+        $("input[name='row[model_id]']").change(function () {
+            let model_id = $(this).val();
+            if (model_id) {
+                if ($("input[name='row[type]']:checked").val() == 'link') {
+                    $('.page-html').hide();
+                    $('input[name="row[page_tpl]"]').parents('.hiddenClass').show();
+                    Util.ajax({ url:"{:url('/cms.model/getTplName',['type'=>'page'])}" }, '', function (data) {
+                        $('#frm-page_tpl').val(data[0] && data[0].name ? data[0].name:'');
+                        $('#frm-page_tpl').selectPageRefresh();
+                        return false;
+                    });
+                } else if ($("input[name='row[type]']:checked").val() == 'list') {
+                    $('input[name="row[list_tpl]"]').parents('.hiddenClass').show();
+                    Util.ajax({ url:"{:url('/cms.model/getTplName',['type'=>'list'])}" }, '', function (data) {
+                        $('#frm-list_tpl').val(data[0] && data[0].name ? data[0].name:'');
+                        $('#frm-list_tpl').selectPageRefresh();
+                        return false;
+                    });
+                    Util.ajax({ url:"{:url('/cms.model/getTplName',['type'=>'show'])}" }, '', function (data) {
+                        $('#frm-show_tpl').val(data[0] && data[0].name ? data[0].name:'');
+                        $('#frm-show_tpl').selectPageRefresh();
+                        return false;
+                    });
+                } else {
+                    $('input[name="row[category_tpl]"]').parents('.hiddenClass').show();
+                    Util.ajax({ url:"{:url('/cms.model/getTplName',['type'=>'category'])}" }, '', function (data) {
+                        $('#frm-category_tpl').val(data[0] && data[0].name ? data[0].name:'');
+                        $('#frm-category_tpl').selectPageRefresh();
+                        return false;
+                    });
+                }
+            } else {
+                $('.hiddenClass').hide();
+                if ($("input[name='row[type]']:checked").val() == 'link') {
+                    $('.page-html').show();
+                }
+                $('#frm-category_tpl').selectPageClear();
+                $('#frm-show_tpl').selectPageClear();
+                $('#frm-list_tpl').selectPageClear();
+                $('#frm-page_tpl').selectPageClear();
+            }
+        });
+        if ($("input[name='row[model_id]']").val()) {
+            $("input[name='row[model_id]']").trigger('change');
+        }
+
+
+        // 选择跳转栏目
+        $('.btn-select').click(function (e) {
+            hkcms.api.open("{:url('/cms.category/selectColumn')}",lang("Select column"),{area:["320px","280px"]},function (value,title) {
+                $('#frm-url').val(value);
+                $('.select-column .text-muted').html(title);
+                $('.select-column').show();
+            });
+        });
+    })
+</script>
+{/block:script}

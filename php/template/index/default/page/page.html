@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {// 引用头部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用。}
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    <!--引用导航栏、路径基于主题目录下common文件夹下的menu.html文件-->
+    {include file="common/menu"}
+
+    <!--获取内页横幅的第一张-->
+    {hkcms:adv name="sub" itemid="1"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-lg-4">
+                    <div class="sidebar sidebar-left">
+                        <div class="widget">
+                            {// $Cate变量每个栏目页面都有，里面的字段是栏目管理里面的字段}
+                            {if $Cate.parent_id}
+                            <h3 class="widget-title">{hkcms:channel name="$Cate['parent_id']"}{$item.title}{/hkcms:channel}</h3>
+                            {else /}
+                            <h3 class="widget-title">{$Cate.title}</h3>
+                            {/if}
+                            <ul class="nav service-menu">
+                                {if $Cate.parent_id}
+                                    {// 如果当前栏目为子级则获取同级栏目}
+                                    {hkcms:channel name="$Cate['id']" type="peer" ismenu="1" currentstyle="active"}
+                                    <li class="{$item.currentstyle}"><a href="{$item.url}" title="{$item.title}">{$item.title}</a></li>
+                                    {/hkcms:channel}
+                                {else /}
+                                    {// 一级栏目时则显示下级栏目}
+                                    {hkcms:channel name="$Cate['id']" type="son" ismenu="1"}
+                                    <!--currentstyle 是选中高亮的class。默认是active-->
+                                    <li class="{$item.currentstyle}"><a href="{$item.url}" title="{$item.title}">{$item.title}</a></li>
+                                    {/hkcms:channel}
+                                {/if}
+                            </ul>
+                        </div><!-- Widget end -->
+                    </div><!-- Sidebar end -->
+                </div><!-- Sidebar Col end -->
+
+                <div class="col-xl-9 col-lg-8">
+                    <div class="content-inner-page">
+                        {// $Info 每个详情页、单页都有}
+                        <h2 class="column-title mrt-0">{$Info.title}</h2>
+                        <div class="row">
+                            {if !empty($Info.thumb)}
+                            <div class="col-md-12 text-center" style="margin-bottom: 15px">
+                                <img src="{$Info.thumb|default=''}" alt="{$Info.title}" style="max-width: 100%;height: auto">
+                            </div>
+                            {/if}
+                            <div class="col-md-12 main-content">{$Info.content}</div>
+                        </div>
+                        <div class="gap-40"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 引用底部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用 -->
+    {include file="common/footer"}
+</div>
+</body>
+</html>

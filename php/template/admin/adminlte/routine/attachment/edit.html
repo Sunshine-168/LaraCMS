@@ -1,0 +1,65 @@
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card shadow-none">
+        <div class="card-body">
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Title")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-title" name="row[title]" placeholder="{:lang("Title")}" data-rule="required" value="{$row['title']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Path")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-path" name="row[path]" placeholder="{:lang("Path")}" data-rule="required" value="{$row['path']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Size")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-size" name="row[size]" placeholder="{:lang("Size")}" data-rule="required" value="{$row['size']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Suffix")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-ext" name="row[ext]" placeholder="{:lang("Suffix")}" data-rule="required" value="{$row['ext']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Mime type")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-mime_type" name="row[mime_type]" placeholder="{:lang("Mime type")}" data-rule="required" value="{$row['mime_type']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 col-form-label">{:lang("Storage")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-storage" name="row[storage]" placeholder="{:lang("Storage")}" data-rule="required" value="{$row['storage']}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-remark" class="col-sm-2 col-form-label">{:lang("Remark")}: </label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" id="frm-remark" name="row[remark]" rows="3" placeholder="{:lang("Remark")}">{$row['remark']}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','layer','form'], function (undefined,undefined,Form) {
+        Form.api.init({success:function (data) {}});
+    })
+</script>
+{/block:script}
+

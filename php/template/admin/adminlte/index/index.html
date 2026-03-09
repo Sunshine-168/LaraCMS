@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/meta"}
+
+    <style>
+        .user-image img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .control-sidebar-default {
+            color: #1d2129;
+            background-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .control-sidebar > h5 {
+            margin: 0;
+            font-size: 16px;
+            padding: 0 16px;
+            line-height: 48px;
+            border-bottom: 1px solid #e5e6eb;
+        }
+        .control-sidebar-default .control-sidebar-content{
+            padding: 12px 16px;
+        }
+        .control-sidebar-default p {
+            font-weight: 600;
+            margin: 10px 0;
+            padding: 0;
+            font-size: 14px;
+            color: #1d2129;
+        }
+        .control-sidebar-default .group>.d-flex {
+            height: 32px;
+        }
+        .control-sidebar-default .group {
+            margin-bottom: 24px;
+        }
+
+        .iframe-mode .navbar-nav {
+            display: block;
+        }
+        .iframe-mode .navbar-nav>.nav-item {
+            float: left;
+        }
+        .iframe-mode .navbar-nav .more-tab .dropdown-toggle {
+            line-height: 56px;
+            color: #4E5969;
+            white-space: nowrap;
+            display: block;
+            padding: 0 12px;
+        }
+        .iframe-mode .navbar-nav .more-tab .dropdown-toggle.active {
+            background-color: #f7f8fa;
+        }
+        .iframe-mode .navbar-nav .more-tab .dropdown-menu .nav-link {
+            line-height: 36px;
+        }
+        .iframe-mode .navbar-nav .more-tab .dropdown-menu {
+            font-size: 14px;
+            text-align: left;
+            background-color: #fff;
+            border: 1px solid #e5e6eb;
+            margin: 0;
+            padding: 4px 0;
+            border-radius: 4px;
+            background-clip: padding-box;
+            overflow: auto;
+            max-height: 200px;
+            box-shadow: 0 4px 10px rgba(0,0,0,.1);
+        }
+    </style>
+</head>
+<body class="sidebar-mini layout-fixed" data-panel-auto-height-mode="height">
+<div class="wrapper">
+    <!-- 侧边栏 -->
+    <aside class="main-sidebar sidebar-dark-blue" style="box-shadow: 0 2px 5px rgba(0,0,0,0.1)">
+        <!-- 左上角标题 -->
+        <a href="" class="brand-link text-center">
+            {if $site['title']}
+            <span class="brand-text brand-text-min">{$site.title|mb_substr=0,4,'utf-8'|mb_strtoupper='utf-8'}</span>
+            <span class="brand-text">{$site.title}</span>
+            {else /}
+            {php}$logotitle = __('Backstage panel');{/php}
+            <span class="brand-text brand-text-min">{$logotitle|mb_substr=0,4,'utf-8'|mb_strtoupper='utf-8'}</span>
+            <span class="brand-text">{:__('Backstage panel')}</span>
+            {/if}
+        </a>
+
+        <div class="sidebar">
+            <!-- 菜单栏目 -->
+            <nav class="">
+                <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false" id="userMenu"></ul>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="content-wrapper iframe-mode" data-widget="iframe" data-loading-screen="0">
+        <div class="nav navbar navbar-expand navbar-white border-bottom p-0">
+            <!--收缩菜单栏-->
+            <a class="nav-link pushmenu" data-widget="pushmenu" href="#" role="button" style="margin-left: 8px"><i class="fas fa-outdent"></i></a>
+
+            <!--子页管理、标签切换-->
+            <ul class="navbar-nav clearfix" role="tablist">
+                <li class="more-tab dropdown d-none float-right">
+                    <a class="dropdown-toggle" data-toggle="dropdown"  href="#"><i class="fas fa-bars"></i></a>
+                    <ul class="dropdown-menu dropdown-hover"></ul>
+                </li>
+                <li class="nav-item active default-page" role="presentation">
+                    <a class="nav-link active" data-toggle="row" id="tab-{:str_replace(['.','/'],'-',url('/index/dashboard'))}" href="#panel-{:str_replace(['.','/'],'-',url('/index/dashboard'))}" role="tab" aria-controls="panel-{:str_replace(['.','/'],'-',url('/index/dashboard'))}" aria-selected="true">{:__("Dashboard")}</a>
+                </li>
+            </ul>
+
+            <!--垃圾清理-->
+            {if has_rule('index/clearcache')}
+            <div class="dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#" id="delop" >
+                    <i class="far fa-trash-alt"></i> {:lang('Cache')}
+                </a>
+                <div class="dropdown-menu dropdown-hover J-clearCache" aria-labelledby="delop">
+                    <div class="dropdown-container">
+                        <a href="#" data-url="{:url('/index/clearCache',['type'=>'all'])}" class="dropdown-item J_item">{:__("Clean cache")}</a>
+                        <a href="#" data-url="{:url('/index/clearCache',['type'=>'log'])}" class="dropdown-item J_item">{:__("Clean logs")} <span style="color: #9ca3af" data-toggle="tooltip" data-placement="top" data-title="包含错误日志、SQL日志"><i class="far fa-question-circle"></i></span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" data-url="{:url('/index/clearCache',['type'=>'close_cache','st'=>1])}" class="dropdown-item {if site('dev')=='disabled'}d-none{/if} J_cache J_item">{:__("Enable cache")}</a>
+                        <a href="#" data-url="{:url('/index/clearCache',['type'=>'close_cache','st'=>2])}" class="dropdown-item {if site('dev')=='enable'}d-none{/if} J_cache J_item">{:__("Close cache")}</a>
+                    </div>
+                </div>
+            </div>
+            {/if}
+
+            <!--语言切换-->
+            {if site('admin_lang_on')==1 || site('content_lang_on')==1}
+            <div class="dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-language"></i> 语言
+                </a>
+                <div class="dropdown-menu dropdown-hover" id="J-lang">
+                    <div class="dropdown-container">
+                        {if site('admin_lang_on')==1}
+                        {volist name="langs['admin']" id="item"}
+                        <a href="{:url('/index/index',['lang'=>$item['mark']])}" class="dropdown-item {if (app('lang')->getLangSet()==$item['mark'])}active{/if}">{$item['title']}</a>
+                        {/volist}
+                        {/if}
+
+                        {if site('admin_lang_on')==1 && $site['content_lang_on']==1}
+                        <div class="dropdown-divider"></div>
+                        {/if}
+
+                        {if $site['content_lang_on']==1}
+                        <span class="dropdown-item-text">{:__('Content lang mode')}</span>
+                        {volist name="langs['content']" id="item"}
+                        <a href="{:url('/index/changeContentLang',['l'=>$item['mark'],'t'=>$item['title']])}" class="dropdown-item J-content-model {if ($site['content_lang_mode']==$item['mark'])}active{/if}">{$item['title']}</a>
+                        {/volist}
+                        {/if}
+                    </div>
+                </div>
+            </div>
+            {/if}
+
+            <!--模板管理-->
+            <div class="dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="fas fa-home"></i> {:__("Home")}
+                </a>
+                <div class="dropdown-menu dropdown-hover">
+                    <div class="dropdown-container">
+                        <?php $lan = cookie('index_'.config('lang')['cookie_var']);?>
+                        {if $site['index_lang_on']==1}
+                        {volist name="langs['index']" id="item"}
+                        <a href="/?lang={$item['mark']}" class="dropdown-item {if ($lan==$item['mark'])}active{/if}" target="_blank"><i class="fa fa-external-link-alt"></i> {$item['title']}</a>
+                        {/volist}
+                        {else /}
+                        <a href="/" class="dropdown-item" target="_blank"><i class="fa fa-external-link-alt"></i> {:__('To Home')}</a>
+                        {/if}
+
+                        <div class="dropdown-divider"></div>
+
+                        {if get_addons_config('template',site('index_theme'),'index')}
+                        <a href="#" data-toggle="open" data-url="{:url('/appcenter/setConfig',['name'=>site('index_theme'),'type'=>'template','module'=>'index'])}" data-title="{:__('Theme configuration')}" class="dropdown-item" target="_blank"><i class="fa fa-cog"></i> {:__('Theme configuration')}</a>
+                        {/if}
+                        <a href="#" data-toggle="open" data-url="{:url('/appcenter/editTheme')}?name={:site('index_theme')}&type=template&popup=1&module=index&t=tpl" data-title="{:__('Theme management')}" class="dropdown-item" target="_blank"><i class="far fa-folder"></i> {:__('Theme management')}</a>
+                    </div>
+                </div>
+            </div>
+
+            <!--用户登录信息-->
+            <div class="dropdown user-image">
+                <a href="#" class="nav-link" data-toggle="dropdown" title="{$User['nickname']??$User['username']}">
+                    <img src="{:empty($User['avatar'])?'__static__/img/user.png':$User['avatar']}" class="img-circle"> {$User['nickname']}
+                </a>
+                <div class="dropdown-menu dropdown-hover dropdown-menu-right">
+                    <div class="dropdown-container">
+                        <a href="{:url('/index/profile')}" class="dropdown-item btn-newMenu" data-id="88" data-title="{:__("Profile")}"><i class="far fa-user"></i> {:__("Profile")}</a>
+                        <a href="{:url('/login/logout')}" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> {:__("Sign out")}</a>
+                    </div>
+                </div>
+            </div>
+
+            <a class="nav-link control-sidebar-btn" data-widget="control-sidebar" data-controlsidebar-slide="true" href="#" role="button"><i class="fas fa-cog"></i></a>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane default-page fade active show" id="panel-{:str_replace(['.','/'],'-',url('/index/dashboard'))}" role="tabpanel" aria-labelledby="tab-{:str_replace(['.','/'],'-',url('/index/dashboard'))}">
+                <iframe src="{:url('/index/dashboard')}"></iframe>
+            </div>
+            <div class="tab-empty">
+                <h2 class="display-4">No tab selected!</h2>
+            </div>
+            <div class="tab-loading">
+                <div>
+                    <h3 class="display-4">Tab is loading <i class="fa fa-sync fa-spin"></i></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 风格控制面板 -->
+    <aside class="control-sidebar control-sidebar-default">
+        <h5>{:__('Background settings')}</h5>
+        <div class="control-sidebar-content">
+            <form class="frm-operate">
+                <div class="group">
+                    <p>{:__('Global Settings')}</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="title">{:__('Popup full screen')}</div>
+                        <div class="custom-control custom-switch custom-control-sm" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="{:__('Click to switch')}">
+                            <input type="checkbox" class="custom-control-input" id="switchismenu_0" name="row[popup]" value="2" {if $Tpl.popup=="2"}checked=""{/if}>
+                            <label class="custom-control-label" for="switchismenu_0"><div class="custom-control-label-dot"></div></label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="title">{:__('Default paging size')}</div>
+                        <input type="number" value="{$Tpl.page}" class="form-control form-control-sm" style="width: 80px;" name="row[page]">
+                    </div>
+                </div>
+
+                <div class="group">
+                    <p>{:__('Content page')}</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="title">弹出框行为</div>
+                        <div>
+                            <select class="form-control form-control-sm" name="row[c_popup]" id="c_popup" style="width: 80px">
+                                <option value="1" {if $Tpl.c_popup=="1"}selected{/if}>{:__('Default')}</option>
+                                <option value="2" {if $Tpl.c_popup=="2"}selected{/if}>{:__('Full screen')}</option>
+                                <option value="3" {if $Tpl.c_popup=="3"}selected{/if}>{:__('New window')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="mr-2 title">{:__('Content list contains subordinates')}</div>
+                        <div class="custom-control custom-switch custom-control-sm" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="{:__('Click to switch')}">
+                            <input type="checkbox" class="custom-control-input" id="switchismenu_1" name="row[c_sub]" value="1" {if $Tpl.c_sub=="1"}checked{/if}>
+                            <label class="custom-control-label" for="switchismenu_1">
+                                <div class="custom-control-label-dot"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </aside>
+</div>
+<!-- ./wrapper -->
+
+{include file="common/script"}
+
+<script>
+    function getMenuList() {  // 获取菜单并显示页面
+        hkcms.api.ajax({ url:"{:url('/Index/menu')}",async:true },'',function (data) {
+            $('#userMenu').html(data);
+        });
+    }
+
+    require(['admin'], function () {
+        // 缓存清理
+        $('.J-clearCache').on('click','.J_item',function (e) {
+            var jc = $(this).is('.J_cache');
+            var _this = this;
+            hkcms.api.ajax({ url:$(this).data('url') },'',function (data,res) {
+                if (jc) {
+                    $('.J_cache').removeClass('d-none');
+                    $(_this).addClass('d-none');
+                }
+                Layer.msg(res.msg, {time:1000, icon: 1});
+            });
+        })
+
+        // 内容语言切换
+        $('#J-lang').on('click','.J-content-model',function (e) {
+            var that = this;
+            layer.confirm('{:__("Page will reload")}', {
+                btn : [ '{:__("Confirm")}', '{:__("Cancel")}' ]
+            }, function(idx) {
+                layer.close(idx);
+                Util.ajax({ url:$(that).attr('href') },'',function (data,res) {
+                    Layer.msg(res.msg, {time:2000, icon: 1}, function () {
+                        window.location.reload();
+                    });
+                });
+            });
+            e.preventDefault();
+        })
+
+        $('.frm-operate').change(function (e) {
+            var data = $(this).serializeArray();
+            var popup = "row[popup]";
+            var c_sub = "row[c_sub]";
+            $.each(data, function (idx, vo) {
+                if (vo.name==popup) {
+                    popup = "";return true;
+                }
+                if (vo.name==c_sub) {
+                    c_sub = "";return true;
+                }
+            });
+            if (popup) {
+                data.push({name:popup,value:1});
+            }
+            if (c_sub) {
+                data.push({name:c_sub,value:2});
+            }
+
+            $.post('{:url("/appcenter/setConfig",["type"=>"template","module"=>"admin","name"=>"adminlte"])}',data,function (data) {
+                layer.msg(data.msg);
+            });
+        })
+
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // 导出
+        //$('.btn-exp').click(function (e) {
+        //    layer.prompt({title: '请填写新的应用标识', formType: 3}, function(url, index){
+        //        window.open("{:url('/appcenter/packCode',['name'=>site('index_theme')])}&newname="+url);
+        //        layer.close(index);
+        //    });
+        //});
+
+        // 初始化菜单
+        $(function () {
+            getMenuList();
+        })
+    })
+</script>
+
+</body>
+</html>

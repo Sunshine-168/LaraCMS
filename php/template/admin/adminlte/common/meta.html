@@ -1,0 +1,19 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="never">
+<meta name="renderer" content="webkit">
+<title>{$site.title} - {:lang("Backstage panel")}</title>
+
+<link rel="Shortcut Icon" href="{$site.favicon}?v={:env('APP_DEBUG')?time():$site.version}" type="image/x-icon" />
+
+<!-- Font Awesome 5.13.0 字体图标库 -->
+<link rel="stylesheet" href="__libs__/fontawesome-free/css/all.min.css">
+<!-- AdminLTE v3.2.0 | Bootstrap v4.6.0 CSS框架 -->
+<link rel="stylesheet" href="__static__/css/adminlte.css?v={:env('APP_DEBUG')?time():$site.version}">
+<link rel="stylesheet" href="__static__/css/common.css?v={:env('APP_DEBUG')?time():$site.version}">
+
+<script type="text/javascript">
+    window.Config = {:json_encode($site)};
+    window.Lang = {:json_encode($tempLang)};
+    window.Tpl = {:json_encode($Tpl)};
+</script>

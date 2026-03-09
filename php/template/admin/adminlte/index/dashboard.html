@@ -1,0 +1,303 @@
+{block:style}
+<style>
+    .table {
+        font-size: 13px;
+    }
+    .table th{
+        text-align: right;
+        font-weight: normal;
+    }
+    .table tr td,.table tr th {
+        border: 1px solid #e5e6eb
+    }
+    .hkcmsiframe {
+        width: 100%;
+        height: 100%;
+        min-height: 320px;
+    }
+
+    /*快捷导航样式*/
+    .quick { text-align: center;margin-bottom: 8px}
+    .quick a {color: #4e5969;}
+    .quick .icon { display: block;font-size: 16px;width: 32px;height: 32px;background-color: #f7f8fa;border-radius: 4px;line-height: 32px;margin: 0 auto;margin-bottom: 4px; }
+    .quick .text {font-size: 12px}
+    .quick a:hover {color: #007bff}
+</style>
+{/block:style}
+
+<!--快速导航-->
+<div class="card card-panel">
+    <div class="card-header">
+        <span><i class="fas fa-bars"></i> {:__('Quick navigation')}</span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {volist name="nav_list" id="n"}
+            <div class="col-4 col-md-2 col-lg-1 col-xl-1">
+                <div class="quick">
+                    <a href="{:url('/'.(!empty($n['route'])?$n['route']:$n['name']))}" class="btn-newMenu" data-is_nav="true" data-id="{$n.auth_rule_id}" id="nav-item-{$n.auth_rule_id}" data-title="{:__($n.title)}">
+                        <span class="icon"><i class="{$n['icon']}"></i></span>
+                        <span class="text">{:__($n.title)}</span>
+                    </a>
+                </div>
+            </div>
+            {/volist}
+            <div class="col-4 col-md-2 col-lg-1 col-xl-1">
+                <div class="quick" style="height: 100%">
+                    <a href="#!" class="add-admin-panel">
+                        <span class="icon"><i class="fas fa-plus"></i></span>
+                        <span class="text">{:__('Add')}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-panel">
+    <div class="card-header">
+        <span><i class="fas fa-cog"></i> {:__('System information')}</span>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <colgroup>
+                <col width="150">
+                <col width="40%">
+                <col width="150">
+                <col>
+            </colgroup>
+            <tr>
+                <th>{:__('Site name')}</th>
+                <td>{$site.title}</td>
+                <th>{:__('Current version')}</th>
+                <td>v{:config('ver.cms_version')}.{:config('ver.cms_build')}</td>
+            </tr>
+            <tr>
+                <th>{:__('System update')}</th>
+                <td>
+                    <a href="#" target="_blank" class="upgrade_url text-primary" style="display: none"></a>
+                    <span class="upgrade"></span>
+                </td>
+                <th>{:__('Business license')}</th>
+                <td>
+                    <a href="//www.hkcms.cn/index/index/authorize" target="_blank"><span class="authorize">免授权，永久商用</span></a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!--系统信息-->
+<div class="card card-panel">
+    <div class="card-header">
+        <span><i class="fas fa-server"></i> {:__('Server information')}</span>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <colgroup>
+                <col width="150">
+                <col width="40%">
+                <col width="150">
+                <col>
+            </colgroup>
+            <tr>
+                <th>{:__('Server system')}</th>
+                <td>{$system_info['OS']}</td>
+                <th>{:__('Server domain name')}</th>
+                <td>{$system_info['domain']}</td>
+            </tr>
+            <tr>
+                <th>{:__('Server environment')}</th>
+                <td>{$system_info['running_system']}</td>
+                <th>{:__('PHP version')}</th>
+                <td>{$system_info['phpv']}</td>
+            </tr>
+            <tr>
+                <th>{:__('Database version')}</th>
+                <td>{$system_info['mysqlv']}</td>
+                <th>{:__('GD version')}</th>
+                <td>{$system_info['gdv']}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="card card-primary">
+    <div class="card-body iframe-con" style="padding: 0.5rem">
+    </div>
+</div>
+
+{block:script}
+<script>
+    // 更新检测
+    function upgrade() {
+        $.ajax({
+            url:'{:url("/index/upgrade")}',
+            success:function (result){
+                if (result.data.upgrade==1) {
+                    $('.upgrade').hide();
+                    $('.upgrade_url').attr('href', result.data.url);
+                    $('.upgrade_url').attr('data-v', result.data.v);
+                    $('.upgrade_url').html(lang('New version v%s detected',[result.data.v]));
+                    $('.upgrade_url').show();
+                } else if (result.data.upgrade==-1) {
+                    if (result.data.p) {
+                        $('.upgrade').hide();
+                        $('.upgrade_url').show();
+                        $('.upgrade_url').attr('href', result.data.url);
+                        $('.upgrade_url').attr('data-p', result.data.p);
+                        $('.upgrade_url').attr('data-v', result.data.v);
+                        $('.upgrade_url').html(lang('There are new patches [%s]',[result.data.p]));
+                    } else {
+                        $('.upgrade').show();
+                        $('.upgrade_url').hide();
+                        $('.upgrade').html("{:__('Your HkCms is already up-to-date.')}");
+                    }
+                } else {
+                    $('.upgrade').html(result.msg);
+                }
+            }
+        });
+    }
+
+    require(['admin'], function () {
+        $(function () {
+
+            // 插入官方动态、问答
+            $('.iframe-con').html('<iframe class="hkcmsiframe" src="//www.hkcms.cn/index/index/notice" frameborder="no"></iframe>');
+
+            $('.add-admin-panel').click(function () {
+                hkcms.api.open('{:url("/auth.AdminPanel/add")}','{:__("Add")}',{ type: 2});
+            })
+
+
+            upgrade();
+
+            // 更新
+            var indx = 0;
+            $('.upgrade_url').click(function (e) {
+                var area = Tpl.popup==1 ? [$(window).width() > 800 ? '800px' : '90%', $(window).height() > 600 ? '600px' : '90%'] : ['100%', '100%'];
+
+                var url = $(this).attr('href');
+                layer.open({
+                    content:url,
+                    type:2,
+                    area: area,
+                    title:lang('Upgrade'),
+                    btn: [lang('Upgrade'),lang('Local Upload and Upgrade'),lang('Help'),lang('Cancel')],
+                    btnAlign: 'c',
+                    yes: function(index, layero){
+                        //询问框
+                        layer.confirm(lang('Confirm')+'?', {
+                            btn: [lang('Confirm'),lang('Cancel')] //按钮
+                        }, function(){
+                            var idx = layer.msg('{:__("Updating, please do not close the page.")}', {
+                                icon: 16
+                                ,shade: 0.3
+                                ,time: false
+                            });
+                            $.ajax({
+                                type: 'post',
+                                url:'{:url("/index/upgrade")}',
+                                data:{p: $('.upgrade_url').data('p'), v: $('.upgrade_url').data('v')},
+                                success:function (result){
+                                    layer.close(idx)
+                                    if (result.code==200) {
+                                        layer.msg(result.msg, {time: 1000}, function (e) {
+                                            parent.window.location.reload();
+                                        });
+                                    } else {
+                                        layer.alert(result.msg);
+                                    }
+                                }
+                            })
+                        });
+                    },
+                    btn2: function (index, layero) {
+                        $(layero).after('<input type="file" class="input-file-up" style="display: none" name="files[]" accept="application/zip,application/x-zip,application/x-zip-compressed">');
+                        $(layero).next().click();
+                        var chunkSize = 0; // 每次上次的分块字节
+                        var error = 0; // 1-错误，0-继续上传分块
+                        var count = 1;
+                        require(['jquery-fileupload'], function (undefined) {
+                            var idx = 0;
+                            $('.input-file-up').fileupload({
+                                mimetype:'application/zip',
+                                url:Config.upload_url,
+                                type: 'POST',
+                                dataType: 'json',
+                                autoUpload: true,
+                                size: Config.file_size || (2*1024*1024),
+                                singleFileUploads: false,
+                                fileNum: 10,
+                                filesguid: Util.guid(),
+                                maxChunkSize: Config && Config.chunk && Config.chunk==1 ? Config.chunk_size:0,  // 2MB
+                                add: function (e, data) { // 文件添加验证
+                                    idx = layer.msg('{:__("Updating, please do not close the page.")}', {
+                                        icon: 16
+                                        ,shade: 0.3
+                                        ,time: false
+                                    });
+                                    count = 1;
+                                    chunkSize = 0;
+                                    data.submit();
+                                },
+                                done: function (e, data) { // 成功回调
+                                    if (data.result.code==200) {
+                                        $.post('{:url("/index/upgrade")}',{path:data.result.data[0].path,p: $('.upgrade_url').data('p'), v: $('.upgrade_url').data('v')},function (result) {
+                                            layer.close(idx)
+                                            if (result.code==200) {
+                                                layer.msg(result.msg, {time: 1000}, function (e) {
+                                                    parent.window.location.reload();
+                                                });
+                                            } else {
+                                                layer.alert(result.msg);
+                                            }
+                                        });
+                                    } else {
+                                        layer.alert(data.result.msg);
+                                    }
+                                },
+                                chunksend: function (e, data) { // 分块上传前的回调，返回false，结束上传
+                                    if (error) {
+                                        return false;
+                                    }
+                                    data.data.append('chunksize', chunkSize += data.chunkSize);
+                                    data.data.append('filesize', data.files[0].size);
+                                    data.data.append('fileid', data.filesguid);
+                                    data.data.append('fileindex', count);
+
+                                    count++;
+                                },
+                                chunkdone: function (e, data) { // 每个分块上传完成的回调
+                                    if (data.result.code!=200) {
+                                        layer.alert(data.result.msg);
+                                        error = 1;
+                                        return false;
+                                    }
+                                },
+                                fail: function (e, data) {
+                                    if (data.maxChunkSize>0) {
+                                        // 切片上传处理
+                                        var url = Util.setUrlParams({ url:data.url, query:{action:'clear',fileid:data.filesguid}})
+                                        $.get({ url: url});
+                                    }
+                                    count = 1;
+
+                                    layer.alert(data._response.jqXHR.responseJSON.message);
+                                }
+                            });
+                        })
+
+                        return false;
+                    },
+                    btn3: function () {
+                        window.open("//www.hkcms.cn/help/azbs/167.html");
+                    }
+                })
+                e.preventDefault()
+            });
+        })
+    })
+</script>
+{/block:script}

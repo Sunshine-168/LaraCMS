@@ -1,0 +1,12 @@
+<div id="userMenu">
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action disabled title" aria-current="true">{:lang('Member center')}</a>
+        <a href="{:url('/user.user/index', [], false)}" class="list-group-item list-group-item-action {if request()->controller().'/'.request()->action()=='user.User/index'}active{/if}"><i class="fas fa-home"></i>
+            {:lang('Member center')}</a>
+        <a href="{:url('/user.user/profile')}" class="list-group-item list-group-item-action {if request()->controller().'/'.request()->action()=='user.User/profile'}active{/if}"><i class="fas fa-user"></i> {:lang('Profile')}</a>
+        <a href="{:url('/user.user/bind')}" class="list-group-item list-group-item-action {if request()->controller().'/'.request()->action()=='user.User/bind'}active{/if}"><i class="fas fa-plug"></i> {:lang('Account binding')}</a>
+        <a href="{:url('/user.user/changePwd')}" class="list-group-item list-group-item-action {if request()->controller().'/'.request()->action()=='user.User/changePwd'}active{/if}"><i class="fas fa-lock"></i> {:lang('Change password')}</a>
+    </div>
+
+    {:hook('userMenu', request())}
+</div>

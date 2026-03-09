@@ -1,0 +1,229 @@
+{block:style}
+<style>
+    .btn-sub-menu {
+        height:14px;
+        width: 14px;
+        font-size: 12px;
+        padding: 0;
+        line-height: 12px;
+        vertical-align: revert;
+    }
+    .menu-item {
+        color: #4e5969;
+    }
+    .menu-item:hover {
+        text-decoration: underline;
+    }
+</style>
+{/block:style}
+
+<div class="card card-primary">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {:build_toolbar('add')}
+
+            {if has_rule('auth')}
+            <a data-toggle="open" data-title="{:lang('Column authority')}" data-url="{:url('/cms.category/auth',['popup'=>1])}" class="btn btn-default"><i class="fas fa-lock"></i>
+                {:lang("Column authority")}</a>
+            {/if}
+
+            {if has_rule('fields')}
+            <a data-toggle="open" href="#!" data-title="{:lang('Extended field')}" data-url="{:url('/cms.fields/index',['source'=>'category','source_id'=>0])}" class="btn btn-default"><i class="fas fa-columns"></i>
+            {:lang("Extended field")}</a>
+            {/if}
+
+            {if (has_rule('recycle'))}
+            <button type="button" class="btn btn-default btn-recycle" data-url="{:url('/cms.category/recycle')}"><i class="fas fa-trash-restore"></i> {:lang('Recycle')}</button>
+            {/if}
+
+            <div class="dropdown btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{:lang('Batch operation')}"><i class="fas fa-cog"></i> {:lang('More')}</a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    {if (has_rule('cms/category/del'))}
+                    <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.Category/del')}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+                    {/if}
+                    {if (has_rule('batches'))}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item status" href="#" data-params="status=normal"><i class="fas fa-check-circle"></i> {:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden"><i class="fas fa-ban"></i> {:lang('Set to disabled')}</a>
+                    {/if}
+                </div>
+            </div>
+
+        </div>
+        <table id="table"
+               data-edit="{if has_rule('edit')}{:url('/cms.Category/edit')}{/if}"
+               data-del="{if has_rule('del')}{:url('/cms.Category/del')}{/if}"
+               data-batches="{if has_rule('batches')}{:url('/cms.Category/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    var Userid = '{$User["id"]}';
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                classes: 'table table-bordered table-hover',
+                url: "{:url('/cms.Category/index')}",
+                showToggle: false,
+                search: false,
+                pagination: false,
+                escape: false,
+                sortName:false,
+                contentLangSw: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter:Table.formatter.txtEditBtn,
+                    events:Table.events.txtEditBtn
+                },{
+                    field: 'id',
+                    title: 'ID',
+                    // visible: false
+                },{
+                    field: 'name',
+                    title: '{:lang("Directory name")}',
+                    visible: false
+                },{
+                    field: 'raw_title',
+                    title: '<button type="button" class="btn btn-default btn-xs btn-sub-menu '+(localStorage.getItem('menu_s_'+Userid)==1?'active':'')+' open-all-sub">'+(localStorage.getItem('menu_s_'+Userid)==1?'<i class="fas fa-minus"></i>':'<i class="fas fa-plus"></i>')+'</button> {:lang("Title")}',
+                    align: 'left',
+                    formatter: function (value, row, index) {
+                        var html = '';
+                        if (row.haschild == 0) {
+                            html = (row['spacer']?'<span class="mr-1">'+row['spacer']+'</span>':'')+'<button type="button" class="btn btn-default btn-xs btn-sub-menu mr-1"><i class="fas fa-minus"></i></button>';
+                        } else {
+                            html = (row['spacer']?'<span class="mr-1">'+row['spacer']+'</span>':'')+'<button type="button" class="btn btn-default btn-xs btn-sub-menu open-sub mr-1" data-id="'+row['id']+'" data-pid="'+row['parent_id']+'" data-haschild="'+row['haschild']+'"><i class="fas fa-plus"></i></button>';
+                        }
+
+                        return html+(row['url']?'<a href="'+row['url']+'" class="menu-item" target="_blank" style="vertical-align: middle;" data-id="'+row['id']+'" data-pid="'+row['parent_id']+'" data-haschild="'+row['haschild']+'">'+ value +'</a>':'<span style="vertical-align: middle;" data-id="'+row['id']+'" data-pid="'+row['parent_id']+'" data-haschild="'+row['haschild']+'" class="menu-item">'+ value +'</span>');
+                    },
+                },{
+                    field: 'type_text',
+                    title: '{:lang("Column type")}',
+                },{
+                    field: 'model_name',
+                    title: '{:lang("Owning model")}',
+                },{
+                    field: 'user_auth',
+                    title: '{:lang("Contribution allowed")}',
+                    formatter: function (value, row, index,field) {
+                        if (row['model_id']<=0) {
+                            return '-';
+                        }
+                        return Table.formatter.switchBtn.call(this, value,row,index,field);
+                    },
+                    events: Table.events.switchBtn
+                },{
+                    field: 'ismenu',
+                    title: '{:lang("Navigation display")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    delTips: '{:lang("Are you sure to move to the recycle bin? Will include sub-sections and document data.")}',
+                    formatter: function (value, row, index) {
+                        let url = Util.setUrlParams({ url:'{:url("/cms.category/add")}?parent_id='+row['id']+'&model_id='+row['model_id'], query:{popup:1} });
+                        let html = '';
+
+                        /* {if has_rule('cms/category/add')} */
+                        html = '<a href="#!" data-toggle="open" data-url="'+url+'" data-title="{:lang("Add")}" class="btn btn-primary btn-xs mr-2"><i class="fas fa-plus"></i> {:lang("Sub-columns")}</a>';
+                        /* {/if} */
+
+                        return html+Table.formatter.operate.call(this, value, row, index)
+                    },
+                    events: Table.events.operate
+                }]});
+
+            //当内容渲染完成后
+            $('#table').on('post-body.bs.table', function (e, settings, json, xhr) {
+                //控制tr背景颜色，展开收缩效果
+                if ($('.open-all-sub').is('.active')) {
+                    // 展开
+                    $(".menu-item[data-pid!='0']").closest("tr").show();
+                    $('.open-sub[data-haschild="1"]').find('.fa-plus').removeClass('fa-plus').addClass('fa-minus');
+
+                } else {
+                    // 收缩
+                    $(".menu-item[data-pid!='0']").closest("tr").hide();
+                    $('.open-sub[data-haschild="1"]').find('.fa-plus').addClass('fa-plus').removeClass('fa-minus');
+
+                    $('.open-sub').each(function (idx,item) {
+
+                        if (localStorage.getItem('menu_'+Userid+'_'+$(this).data('id'))==1) {
+                            $(this).addClass('active').find('.fas').removeClass('fa-plus').addClass('fa-minus');
+                            $('.menu-item[data-pid="'+$(this).data('id')+'"]').removeClass('active').find('.fas').removeClass('fa-plus').addClass('fa-minus');
+
+                            $(".menu-item[data-pid='"+$(this).data('id')+"']").closest("tr").show();
+                        }
+                    })
+                }
+
+                // 阻止冒泡
+                $('.btn-sub-menu').dblclick(function (e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // 列表展开、收缩按钮点击
+            $(document).on('click','.open-sub',function (e) {
+                e.stopPropagation();
+                if ($(this).is('.active')) { // 收缩
+                    sub_hide($(this).data('id'));
+                    $(this).removeClass('active').find('.fas').removeClass('fa-minus').addClass('fa-plus');
+
+                    localStorage.setItem('menu_'+Userid+'_'+$(this).data('id'),'0');
+                } else { // 展开
+                    $('.menu-item[data-pid="'+$(this).data('id')+'"]').closest("tr").show();
+                    $(this).addClass('active').find('.fas').removeClass('fa-plus').addClass('fa-minus');
+                    $('.menu-item[data-pid="'+$(this).data('id')+'"]').removeClass('active').find('.fas').removeClass('fa-plus').addClass('fa-minus');
+
+                    localStorage.setItem('menu_'+Userid+'_'+$(this).data('id'),'1');
+                }
+                return false;
+            })
+            // 表格头全部展开、收缩
+            $(document).on('click','.open-all-sub',function (e) {
+
+                if ($(this).is('.active')) { // 收缩
+                    localStorage.setItem('menu_s_'+Userid,'0');
+
+                    $(this).removeClass('active').find('.fa-minus').addClass('fa-plus').removeClass('fa-minus');
+                    $('.menu-item[data-pid!="0"]').closest("tr").hide();
+                    $('.open-sub[data-haschild="1"]').removeClass('active');
+                    $('.open-sub[data-haschild="1"]').find('.fa-minus').addClass('fa-plus').removeClass('fa-minus');
+                } else { // 展开
+                    localStorage.setItem('menu_s_'+Userid,'1');
+
+                    $(this).addClass('active').find('.fa-plus').addClass('fa-minus').removeClass('fa-plus');
+                    $('.menu-item[data-pid!="0"]').closest("tr").show();
+                    $('.open-sub[data-haschild="1"]').addClass('active');
+                    $('.open-sub[data-haschild="1"]').find('.fa-plus').addClass('fa-minus').removeClass('fa-plus');
+                }
+            })
+
+            // 隐藏子行
+            function sub_hide(id){
+                $('.menu-item[data-pid="'+id+'"]').each(function (index,value) {
+                    if ($(this).data('haschild') == 1) {
+                        localStorage.setItem('menu_'+Userid+'_'+$(this).data('id'),'0');
+                        sub_hide($(this).data('id'));
+                    }
+                })
+                $('.menu-item[data-pid="'+id+'"]').closest("tr").hide();
+            }
+        })
+    })
+</script>
+{/block:script}

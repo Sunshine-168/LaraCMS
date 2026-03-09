@@ -1,0 +1,10 @@
+{
+  "Copy": "复制",
+  "Field": "字段管理",
+  "Preview": "预览",
+  "Import": "导入",
+  "Config": "配置",
+  "Upload model file": "上传模型文件",
+  "Confirm deletion? Pack column and document data": "确认删除？将包栏目及文档数据",
+  "Table names starting with letters do not need to write database table prefixes": "字母开头的表名,不用写数据库表前缀"
+}

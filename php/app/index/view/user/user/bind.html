@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{$site.title} - {:lang('Member center')} - {:lang('Account binding')}</title>
+
+    {include file="user/common/head"}
+
+    <style>
+        .disabled {
+            color: #a7a7a7;
+            cursor: not-allowed;
+        }
+        .disabled:hover {
+            color: #a7a7a7;
+        }
+    </style>
+</head>
+<body class="main-body">
+{include file="user/common/menu"}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            {include file="user/common/nav"}
+        </div>
+        <div class="col-md-9">
+            <div class="card user-card">
+                <div class="card-header">
+                    <h4 class="card-title">{:lang('Account binding')}</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead >
+                            <tr>
+                                <th>{:lang('Name')}</th>
+                                <th>{:lang('State')}</th>
+                                <th>{:lang('Operate')}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr>
+                                <td><i class="fas fa-envelope"></i> {:lang('Email')}</td>
+
+                                {if (empty($user['email']))}
+                                <td class="text-danger">{:lang('No bind')}</td>
+                                <td><a href="#" class="btn btn-sm btn-primary btn-bind" data-type="email">{:lang('Bind')}</a></td>
+                                {else /}
+                                <td class="text-primary"><i class="fas fa-circle"></i> {:lang('Already bind')} ({$user['email']})</td>
+                                <td><a href="#" class="btn btn-sm btn-danger btn-bind" data-type="email">{:lang('Replace')}</a></td>
+                                {/if}
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-mobile-alt"></i> {:lang('Mobile')}</td>
+
+                                {if (empty($user['mobile']))}
+                                <td class="text-danger">{:lang('No bind')}</td>
+                                <td><a href="#" class="btn btn-sm btn-primary btn-bind" data-type="mobile">{:lang('Bind')}</a></td>
+                                {else /}
+                                <td class="text-primary"><i class="fas fa-circle"></i> {:lang('Already bind')} ({$user['mobile']})</td>
+                                <td><a href="#" class="btn btn-sm btn-danger btn-bind" data-type="mobile">{:lang('Replace')}</a></td>
+                                {/if}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="mobile_tpl">
+    <div class="pt-3 pl-3 pr-3">
+        <form action="" method="post" class="frm-bind">
+            <div class="form-group">
+                <div><input type="text" class="form-control" placeholder="{:lang('Mobile')}" name="row[mobile]" data-rule="required"></div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <div class="input-group m-0">
+                        <input type="text" class="form-control" placeholder="{:lang('Phone verification code')}" name="row[code]" data-rule="required ">
+                        <div class="input-group-append">
+                            <div class="input-group-text"><a href="#" class="send_sms">{:lang('Get verification code')}</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group m-0">
+                <input type="submit" class="btn btn-primary btn-submit btn-sm" value="{:lang('Submit')}" />
+                <input type="button" class="btn btn-default btn-cancel btn-sm" value="{:lang('Cancel')}" />
+            </div>
+        </form>
+    </div>
+</script>
+<script type="text/html" id="email_tpl">
+    <div class="pt-3 pl-3 pr-3">
+        <form action="" method="post" class="frm-bind">
+            <div class="form-group">
+                <div>
+                    <input type="email" class="form-control" placeholder="{:lang('Email')}" name="row[email]" data-rule="required ">
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <div class="input-group m-0">
+                        <input type="text" class="form-control" placeholder="{:lang('Email verification code')}" name="row[code]" data-rule="required">
+                        <div class="input-group-append">
+                            <div class="input-group-text"><a href="#" class="send_email">{:lang('Get verification code')}</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group m-0">
+                <input type="submit" class="btn btn-primary btn-submit btn-sm" value="{:lang('Submit')}" />
+                <input type="button" class="btn btn-default btn-cancel btn-sm" value="{:lang('Cancel')}" />
+            </div>
+        </form>
+    </div>
+</script>
+
+{include file="user/common/footer"}
+<script>
+    require(['jquery','bootstrap','layer', 'Form'], function ($,undefined,layer, Form) {
+        var index = 0;
+        $('.btn-bind').click(function (e) {
+            var type = $(this).data('type');
+            var content = $('#'+type+'_tpl').html();
+            index = layer.open({
+                type: 1,
+                title: "{:lang('Bind')}",
+                content: content,
+                area: ["300px","250px"],
+                success: function (tpl) {
+                    Form.api.init({frmOperate: $(tpl).find('.frm-bind'),success:function (data,all) {layer.msg(all.msg,{time:2000},function () {
+                            window.location.reload()
+                        });return false}});
+                }
+            });
+        });
+
+        // 取消
+        $(document).on('click','.btn-cancel', function (e) {
+            layer.close(index)
+        })
+
+        //  邮箱验证码
+        $(document).on('click','.send_email',function (e) {
+            e.preventDefault();
+            if ($('.send_email').is('.disabled')) {
+                return false;
+            }
+            var i = 60;
+            var val = $('input[name="row[email]"]').val();
+            if (val.length<=0) {
+                layer.msg("{:lang('Please fill in the email address')}");
+                return false;
+            }
+            if (!(new RegExp(/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/)).test(val)) {
+                layer.msg("{:lang('Incorrect email address format')}");
+                return false;
+            }
+            $('.send_email').addClass('disabled');
+            $.get("{:url('/user.user/sendems')}?email="+val+'&event=change_email',function(data, status){
+                if (data.code==200) {
+                    layer.msg(data.msg);
+                    var myint = setInterval(function(){
+                        if (i==0) {
+                            $('.send_email').removeClass('disabled');
+                            $('.send_email').html('{:lang('Resend')}');
+                            clearInterval(myint);
+                            return false;
+                        }
+                        $('.send_email').html('{:lang('Resend')} '+(--i));
+                    }, 1000);
+                } else {
+                    $('.send_email').removeClass('disabled');
+                    layer.msg(data.msg);
+                }
+            });
+        });
+
+        // 短信验证码
+        $(document).on('click','.send_sms',function (e) {
+            e.preventDefault();
+            if ($(this).is('.disabled')) {
+                return false;
+            }
+            var i = 60;
+            var val = $('input[name="row[mobile]"]').val();
+            if (val.length<=0) {
+                layer.msg("{:lang('Please fill in your phone number')}");
+                return false;
+            }
+            if (!(new RegExp(/^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/)).test(val)) {
+                layer.msg("{:lang('Phone number format is not correct')}");
+                return false;
+            }
+            $('.send_sms').addClass('disabled');
+            $.get("{:url('/user.user/send')}?mobile="+val+'&event=change_mobile',function(data, status){
+                if (data.code==200) {
+                    layer.msg(data.msg);
+                    var myint = setInterval(function(){
+                        if (i==0) {
+                            $('.send_sms').removeClass('disabled');
+                            $('.send_sms').html('{:lang('Resend')}');
+                            clearInterval(myint);
+                            return false;
+                        }
+                        $('.send_sms').html('{:lang('Resend')} '+(--i));
+                    }, 1000);
+                } else {
+                    $('.send_sms').removeClass('disabled');
+                    layer.msg(data.msg);
+                }
+            });
+        });
+    })
+</script>
+</body>
+</html>

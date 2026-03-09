@@ -1,0 +1,166 @@
+<div class="col-12 col-sm-12">
+    <div class="card card-tabs">
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-value="1">{:lang('Frontend language')}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-value="3">{:lang('Content language')}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-value="2">{:lang('Backend language')}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body config-row">
+
+            <!--数据筛选-->
+            <div class="filter-panel d-none">
+                <form action="" method="get" class="frm-filter">
+                    <input type="hidden" name="module" value="1" data-op="=">
+                </form>
+            </div>
+
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                <div class="tab-pane fade active show" id="pane-group-tab" role="tabpanel">
+                    <div id="toolbar" class="toolbar">
+                        <button type="button" class="btn btn-primary btn-add" data-url="{:url('/routine.Lang/add',['module'=>1])}"><i class="fas fa-plus"></i> 添加</button>
+                        {:build_toolbar('refresh,del')}
+                        {if (has_rule('batches'))}
+                        <div class="dropdown ml-1 btn-toggle">
+                            <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-"></i> {:lang('Setting')}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item status" href="#" data-params="status=1">{:lang('Set to enable')}</a>
+                                <a class="dropdown-item status" href="#" data-params="status=0">{:lang('Set to disabled')}</a>
+                            </div>
+                        </div>
+                        {/if}
+                    </div>
+                    <table id="table"
+                           data-edit="{if has_rule('edit')}{:url('/routine.Lang/edit')}{/if}"
+                           data-del="{if has_rule('del')}{:url('/routine.Lang/del')}{/if}"
+                           data-batches="{if has_rule('batches')}{:url('/routine.Lang/batches')}{/if}"
+                    ></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{block:script}
+<script>
+    require(['admin','table'], function (undefined, Table) {
+        $(function () {
+
+            var table = Table.init({
+                url: "{:url('/routine.Lang/index')}",
+                search: false,
+                escape: false,
+                customFilter: false,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                },{
+                    field: 'mark',
+                    title: '{:lang("Mark")}'
+                },{
+                    field: 'subtitle',
+                    title: '{:lang("Subtitle")}',
+                },{
+                    field: 'image',
+                    title: '{:lang("Image")}',
+                    formatter:Table.formatter.image
+                },{
+                    field: 'icon',
+                    title: '{:lang("Icon")}',
+                },{
+                    field: 'target',
+                    title: '{:lang("New window")}',
+                    formatter: function (value, row) {
+                        if (value==1) {
+                            return lang('Yes');
+                        } else {
+                            return lang('No');
+                        }
+                    }
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                },{
+                    field: 'is_default',
+                    title: '{:lang("Is default")}',
+                    formatter: function (value, row) {
+                        if (value==1) {
+                            return lang('Default');
+                        } else {
+                            return "-";
+                        }
+                    }
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}'
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        let url = hkcms.api.setUrlParams({ url:'{:url("/routine.Lang/setDefault")}?id='+row['id'], query:{} });
+                        let html = '';
+
+                        /* {if has_rule('routine/lang/setdefault')} */
+                        html = '<a href="#!" data-url="'+url+'" class="btn btn-primary btn-xs btn-set-default mr-2"><i class="fas fa-cog"></i> {:lang("Set default")}</a>';
+                        /* {/if} */
+
+                        if (row['is_default']) {
+                            html = "";
+                        }
+
+                        html += '<button type="button" class="btn btn-primary btn-xs btn-row-edit mr-2" title="{:__("Edit")}" data-popup="true"><i class="fas fa-pen"></i></button>';
+                        if (row['is_default']!=1) {
+                            html += '<button type="button" class="btn btn-danger btn-xs btn-row-del mr-2" title="{:__("Del")}" data-tips=""><i class="fas fa-trash-alt"></i></button>';
+                        }
+                        return html;
+                    },
+                    events: Table.events.operate
+                }]});
+
+            // 语言切换
+            $('.nav-tabs').find('a').click(function (){
+                var val = $(this).data('value');
+                $('input[name="module"]').val(val);
+                $('.btn-add').data('url', "{:url('/routine.Lang/add')}?module="+val);
+                $('.nav-tabs').find('a').removeClass('active');
+                $(this).addClass('active');
+                table.bootstrapTable('refresh');
+            });
+
+            // 设为默认
+            $(document).on('click', '.btn-set-default', function (){
+                var url = $(this).data('url');
+                hkcms.api.ajax({
+                    url: url
+                },'',function (data, all) {
+                    layer.msg(all.msg, {time:2000, icon:1}, function () {
+                        table.bootstrapTable('refresh');
+                    });
+                })
+            })
+        })
+    })
+</script>
+{/block:script}

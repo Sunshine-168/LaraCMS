@@ -1,0 +1,181 @@
+
+<div class="col-12 col-sm-12">
+    <form role="form" action="{:url('/routine.config/edit')}" class="frm-operate" method="post">
+    <div class="card card-tabs">
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+                {volist name="group" id="vo"}
+                <li class="nav-item">
+                    <a class="nav-link {if $tabs_page==$key}active{/if}" id="more-tab-{$key}" data-page="{$key}" data-toggle="pill" href="#pane-tab-{$key}" role="tab" aria-selected="false">{:lang($vo)}</a>
+                </li>
+                {/volist}
+
+                <li class="nav-item">
+                    <a class="nav-link {if $tabs_page=='group'}active{/if}" id="group-tab" data-toggle="pill" data-page="group" href="#pane-group-tab" role="tab" aria-selected="false">{:lang('Group config')}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="extend-tab" href="{:url('/routine.config/add',['popup'=>1])}" title="{:lang('Extended config')}"><i class="fas fa-plus"></i></a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body config-row">
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                {volist name="group" id="vo"}
+                <div class="tab-pane fade {if $tabs_page==$key || (empty($tabs_page)&&$i==1)}active show{/if}" id="pane-tab-{$key}" role="tabpanel">
+                    {if(isset($lists[$key]))}
+                        {$lists[$key]|raw}
+                    {/if}
+                </div>
+                {/volist}
+
+                <div class="tab-pane fade {if $tabs_page=='group'}active show{/if}" id="pane-group-tab" role="tabpanel">
+                    <!--分组配置-->
+                    <div class="form-group row">
+                        <label class="col-sm-2 row-form-label">{:lang('Group config')}：</label>
+                        <div class="col-sm-6 col-12">
+                            <div class="row">
+                                <div class="col-sm-5">{:lang('Key name')}</div>
+                                <div class="col-sm-5">{:lang('Value')}</div>
+                            </div>
+                            <div class="row" id="J-groups">
+                                {volist name="group" id="vo"}
+                                <div class="col-sm-5 pb-1 del{$key}">
+                                    <input type="text" class="form-control" value="{$key}" name="group[key][]">
+                                </div>
+                                <div class="col-sm-5 pb-1 del{$key}">
+                                    <input type="text" class="form-control" value="{$vo}" name="group[value][]">
+                                </div>
+                                <div class="col-sm-2 pb-1 del{$key} pt-1">
+                                    <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del{$key}"><i class="fas fa-times"></i></a>
+                                </div>
+                                {/volist}
+                            </div>
+                            <div class="row pt-2">
+                                <div class="col-sm-12">
+                                    <a href="#" class="btn btn-sm btn-default btn-groups"><i class="fas fa-plus"></i>  {:lang('Append')}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    {if $backBtn}<a href="javascript:history.back()" class="btn btn-default mr-3">{:lang('Return to previous page')}</a>{/if}
+                    {if (has_rule('edit'))}
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+
+{block:script}
+<script>
+    require(['admin','Form'], function (admin, Form) {
+        var oldOn = $('input[name="row[content_lang_on]"]:checked').val();
+        $('#extend-tab').click(function (e) {
+            hkcms.api.open($(this).attr('href'),$(this).attr('title'));
+            e.preventDefault();
+        });
+
+        var item = 1;
+        $('.btn-groups').click(function (e) {
+            $('#J-groups').append('<div class="col-sm-5 pb-1 del'+item+'">\n' +
+                '      <input type="text" class="form-control" value="" name="group[key][]">\n' +
+                '  </div>\n' +
+                '  <div class="col-sm-5 pb-1 del'+item+'">\n' +
+                '      <input type="text" class="form-control" value="" name="group[value][]">\n' +
+                '  </div>\n' +
+                '  <div class="col-sm-2 pb-1 del'+item+' pt-1">\n' +
+                '      <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del'+item+'"><i class="fas fa-times"></i></a>\n' +
+                '  </div>');
+            item++;
+            e.preventDefault();
+        });
+        $(document).on('click','.btn-groups-del',function (e) {
+            $($(this).data('class')).remove();
+            e.preventDefault();
+        });
+        $(document).on('click','.btn-row-del',function () {
+            let id = $(this).attr('data-id');
+            let url = "{:url('/routine.config/del')}";
+            Layer.confirm('{:lang("Confirm operation?")}', {
+                btn: ['{:lang("Confirm")}','{:lang("Cancel")}'] //按钮
+            }, function(){
+                $.post(url,{ids:id},function (msg) {
+                    Layer.msg('{:lang("Operation completed")}',{time:1000},function (e) {
+                        window.location.href = '{:url("/routine.config/index")}?tabs_page='+$('#custom-tabs-three-tab').find('.nav-link.active').data('page');
+                    });
+                })
+            });
+        })
+
+        var s = 0;
+        var s1 = 0;
+        Form.api.init({success:function (data,res) {
+            Layer.msg(res.msg,{time: 1000,icon:1},function () {
+                window.location.href = '{:url("/routine.config/index")}?tabs_page='+$('#custom-tabs-three-tab').find('.nav-link.active').data('page');
+            })
+            return false;
+        },before:function (data) {
+            if (s) {
+                return data;
+            }
+
+            if (s1) {
+                return data;
+            }
+
+            var on = $('input[name="row[content_lang_on]"]:checked').val();
+            if (on==1 && on!=oldOn) {
+                layer.confirm(lang('After multi-language content is enabled, content data is synchronized'),{},function (e) {
+                    s = 1;
+                    $('.btn-submit').trigger('click');
+                    layer.closeAll();
+                })
+                return false;
+            } else if (on==2 && oldOn!=on) {
+                layer.confirm(lang("When turned off, the default language data will be used"),{},function (e) {
+                    s1 = 1;
+                    $('.btn-submit').trigger('click');
+                    layer.closeAll();
+                })
+                return false;
+            }
+
+            return data;
+        }});
+
+        $(document).on('click', '.hk-btn-showTags', function (e) {
+            var html = '{literal}{hkcms:language currentstyle="active"}\n' +
+                    '<a href="{$item.url}" class="{$currentstyle}">{$item.value}</a>\n' +
+                    '{/hkcms:language}{/literal}';
+            layer.open({
+                type: 1
+                ,title: $(this).data('title')
+                ,area: '40%;'
+                ,resize: false
+                ,moveType: 1
+                ,content: '<div class="p-2"><textarea class="form-control" rows="10">'+html+'</textarea></div>'
+                ,success: function(layero){
+
+                }
+            });
+        });
+        $(document).on('change keyup', '.keyvalue .keyvalue-item [data-name="keyvalue-key"]', function (e) {
+            var v = $(this).val();
+            if (v) {
+                $(this).parent().parent().find('input[type="radio"]').val(v);
+            } else {
+                $(this).parent().parent().find('input[type="radio"]').val('');
+            }
+        })
+    });
+</script>
+{/block:script}

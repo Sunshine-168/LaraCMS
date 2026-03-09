@@ -1,0 +1,85 @@
+{block:style}
+<style>
+    .col-form-label {
+        text-align: right;
+    }
+</style>
+{/block:style}
+<form class="frm-operate">
+    <div class="card card-primary card-tabs">
+        <div class="card-body">
+            <div class="form-group row">
+                <label class="col-sm-2 col-12 col-form-label">缩略图：</label>
+                <div class="col-sm-8 col-12">
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input id="row[thumb]-1" name="row[thumb_on]" type="radio" value="1" {if $sdata['thumb_on']==1}checked{/if}>
+                            <label for="row[thumb]-1">开启</label>
+                        </div>
+                        <div class="radio-item">
+                            <input id="row[thumb]-2" name="row[thumb_on]" type="radio" value="0" {if $sdata['thumb_on']==0}checked{/if}>
+                            <label for="row[thumb]-2">关闭</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-12 col-form-label">生成方式：</label>
+                <div class="col-sm-8 col-12">
+                    <div class="radio-group">
+                        <div class="row">
+                            <div class="col-12">
+                                <input id="row[thumb_type]-1" name="row[thumb_type]" type="radio" value="1" {if $sdata['thumb_type']==1}checked{/if}>
+                                <label for="row[thumb_type]-1">等比例缩放</label>&nbsp;
+                                <input id="row[thumb_type]-2" name="row[thumb_type]" type="radio" value="2" {if $sdata['thumb_type']==2}checked{/if}>
+                                <label for="row[thumb_type]-2">缩放填充</label>&nbsp;
+                                <input id="row[thumb_type]-3" name="row[thumb_type]" type="radio" value="3" {if $sdata['thumb_type']==3}checked{/if}>
+                                <label for="row[thumb_type]-3">居中裁剪</label>&nbsp;
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 10px">
+                            <div class="col-12">
+                                <input id="row[thumb_type]-4" name="row[thumb_type]" type="radio" value="4" {if $sdata['thumb_type']==4}checked{/if}>
+                                <label for="row[thumb_type]-4">左上角裁剪</label>&nbsp;
+                                <input id="row[thumb_type]-5" name="row[thumb_type]" type="radio" value="5" {if $sdata['thumb_type']==5}checked{/if}>
+                                <label for="row[thumb_type]-5">右下角裁剪</label>&nbsp;
+                                <input id="row[thumb_type]-6" name="row[thumb_type]" type="radio" value="6" {if $sdata['thumb_type']==6}checked{/if}>
+                                <label for="row[thumb_type]-6">固定尺寸缩放</label>&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-thumb_width" class="col-sm-2 col-12 col-form-label">缩略图宽度：</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-thumb_width" name="row[thumb_width]" type="text" value="{$sdata['thumb_width']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="缩略图宽度"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-thumb_height" class="col-sm-2 col-12 col-form-label">缩略图高度：</label>
+                <div class="col-sm-8 col-12">
+                    <input class="form-control" id="frm-thumb_height" name="row[thumb_height]" type="text" value="{$sdata['thumb_height']}">
+                </div>
+                <div class="col-sm-2 form-tips"><span class="form-tips-span text-md" data-tips="缩略图高度"><i class="fa fa-info-circle"></i></span></div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (undefined,Form) {
+        Form.api.init();
+    })
+</script>
+{/block:script}

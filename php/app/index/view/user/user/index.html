@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{$site.title} - {:lang('Member center')} - {:lang('Home')}</title>
+
+    {include file="user/common/head"}
+</head>
+<body class="main-body">
+    {include file="user/common/menu"}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-12">
+                {include file="user/common/nav"}
+            </div>
+            <div class="col-md-9 col-sm-12">
+                <div class="card user-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="avater_img m-auto"><img src="{$user.avatar}" alt=""></div>
+                                <div class="mt-3"><a href="{:url('/user.user/profile')}" class="btn btn-primary btn-xs"><i class="fas fa-edit"></i> {:lang('Profile')}</a></div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="user_inshort mb-4">
+                                    <p class="mb-1 text-lg">{:empty($user.nickname)?$user.username:$user.nickname}</p>
+                                    <p class="mb-2">
+                                        {if !empty($user['group'])}
+                                        {volist name="user['group']" id="vo"}
+                                        <a href="#" class="bg-light text-secondary p-1 rounded text-sm">{$vo.name}</a>
+                                        {/volist}
+                                        {/if}
+                                    </p>
+                                    <p class="text-secondary text-sm">{$user.introduction|default=lang('No personal introduction')}</p>
+                                </div>
+                                <div class="usercount">
+                                    <div class="row text-sm">
+                                        <div class="col-md-2 col-4 mb-2">{:lang('Money')}</div>
+                                        <div class="col-md-4 col-8 mb-2">
+                                            <a href="#" class="text-muted">{$user.money}</a>
+                                        </div>
+                                        <div class="col-md-2 col-4 mb-2">{:lang('Score')}</div>
+                                        <div class="col-md-4 col-8 mb-2">
+                                            <a href="#" class="text-muted">{$user.score}</a>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2 text-sm">
+                                        <div class="col-md-2 col-4 mb-2">{:lang('Log in time')}</div>
+                                        <div class="col-md-3 col-8 mb-2">
+                                            {$user.login_time}
+                                        </div>
+                                        <div class="col-md-3 col-4 mb-2">{:lang('Last Login Time')}</div>
+                                        <div class="col-md-4 col-8 mb-2">
+                                            {$user.latest_time}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {include file="user/common/footer"}
+</body>
+</html>

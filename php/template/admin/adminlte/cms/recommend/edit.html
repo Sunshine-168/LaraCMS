@@ -1,0 +1,424 @@
+<link rel="stylesheet" href="{$site.cdn}/static/libs/jquery-ui/jquery-ui.min.css">
+<style>
+    .fw-initial{
+        font-weight: initial !important;
+    }
+    .card-item {
+        padding: .5rem .5rem 0 .5rem;
+        position: relative;
+    }
+    .card-item .card-img-top:hover {
+        cursor: pointer;
+    }
+    .card-item .itemid {
+        position: absolute;
+        top: 0;
+        right: 24px;
+        background-color: #ffffff;
+        padding: 0 4px;
+        border-radius: 2px;
+        cursor: pointer
+    }
+    .bb-solid{
+        border-bottom: 1px #00000008 solid;
+    }
+    .top h3{
+        font-size: 16px;
+        font-weight: normal;
+        line-height: 20px;
+        color: #333;
+        display: inline-block;
+    }
+    .btn-del-item {
+        position: absolute;
+        right: 0;
+    }
+    .custom-control-label {
+        vertical-align: sub;
+    }
+    .custom-control-label::before {
+        top: 0.15rem;
+    }
+    .custom-switch .custom-control-label::after {
+        top: calc(0.15rem + 2px);
+    }
+    .card-img-top {
+        width: 100%;
+        min-height: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .card-item .btn-del-item {right: 4px;cursor: pointer}
+    .card-item .btn-del-item:hover {color: #dc3545}
+    .card-img-top img {
+        height: 140px;
+    }
+    .input-image {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .btn-img-son {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .banner-list-item, .video-content-item,.txt-item-list-item {
+        width: 24%;
+        float: left;
+        margin-right: 8px;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <a href="javascript:history.back()">
+                <i class="fas fa-reply"></i>
+            </a>
+            {$row.remark?$row.remark:$row.name}-{:lang('Edit')}
+            </span>
+        </div>
+        <div class="card-body recommend">
+
+            <div class="form-group row">
+                <label for="frm-name" class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:lang('Mark')}</label>
+                <div class="col-sm-8">
+                    <input type="text" id="frm-name" class="form-control" name="row[name]" placeholder="{:lang('Used for label calls to keep unique')}" value="{$row['name']}" data-rule="required">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-title" class="col-sm-2 row-form-label">{:lang('Title')}</label>
+                <div class="col-sm-8">
+                    <input type="text" id="frm-title" class="form-control" name="row[remark]" value="{$row['remark']}">
+                </div>
+            </div>
+
+            <div class="images-list" {neq name='row.type' value='1'}style="display:none"{/neq}>
+                <div class="form-group row">
+                    <label class="col-sm-2 row-form-label">{:lang('Atlas')}</label>
+                    <div class="col-sm-8 d-flex align-items-center">
+                        <input type="button" class="btn btn-default btn-imgSelect-add btn-sm" value="{:lang('Add item')}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 row-form-label"></label>
+                    <div class="col-sm-8" id="layer-photos-demo">
+                        <div class="banner-list" style="flex:1;width: 100%;">
+                            {eq name="row.type" value='1'}
+                            {volist name="row['banner']" id="vo"}
+                            <div class="banner-list-item">
+                                <div class="card card-item card-shadow card-border">
+                                    <div class="card-img-top">
+                                        <img data-toggle="tooltip" data-placement="top" data-title="{:lang("View larger image")}" layer-src="{$vo.image}" src="{$vo.image}" class="img-thumbnail">
+                                    </div>
+                                    <div class="d-flex" data-toggle="tooltip" data-placement="top" data-title="{:lang("Please upload the image or specify the link")}">
+                                        <input id="frm-img{$key}" class="form-control input-image" name="row[image][]" value="{$vo.image}" placeholder="{:lang("Please upload the image or specify the link")}">
+                                        <button type="button" class="btn border-left btn-default btn-img-son btn-imgSelect" data-field="frm-img{$key}" data-mimetype="image/jpeg,image/png,image/gif"><i class="fas fa-images"></i></button>
+                                    </div>
+                                    <hr>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Title")}"       name="row[title][]" placeholder="{:lang("Title")}">{$vo.title}</textarea>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Link")}"        name="row[url][]" placeholder="{:lang("Link")}">{$vo.url}</textarea>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Description")}" name="row[notes][]" placeholder="{:lang("Description")}">{$vo.notes}</textarea>
+                                    <input type="hidden" class="form-control mb-1" name="row[weigh][]" placeholder="{:lang("Weigh")}" value="{$vo.weigh}">
+                                    <div class="custom-control custom-switch custom-control-sm mb-1" style="font-size: 12px">
+                                        <input type="checkbox" class="custom-control-input checked-new" id="customSwitch-{$i}" {$vo.new_window?'checked':''}>
+                                        <input type="hidden" name="row[new_window][]" value="{$vo.new_window}">
+                                        <label class="custom-control-label fw-initial" for="customSwitch-{$i}"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>
+                                    </div>
+                                    <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>
+                                    <div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>
+                                    <input type="hidden" value="{$vo['id']}" name="row[banner_id][]">
+                                </div>
+                            </div>
+                            {/volist}
+                            {/eq}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--视频-->
+            <div class="video-list" {neq name='row.type' value='2'}style="display:none"{/neq}>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('Content')}</label>
+                    <div class="col-sm-8 col-12 fileGroup  d-flex align-items-center">
+                        <button type="button" class="btn btn-default btn-sm btn-add-video">{:lang('Add item')}</button>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="frm-content" class="col-sm-2 col-12 row-form-label"></label>
+                    <div class="col-sm-8 col-12">
+                        <div class="video-content" style="flex:1;width: 100%;">
+                            {eq name="row.type" value='2'}
+                            {volist name="row['banner']" id="vo"}
+                            <div class="video-content-item">
+                                <div class="card card-item card-border card-shadow">
+                                    <div class="fileGroup" style="margin-top: 20px">
+                                        <div class="file-btn" data-toggle="tooltip" data-placement="top" data-title="{:lang('Please upload the video or specify the link')}">
+                                            <input type="text" class="form-control txt-files" id="frm-content{$key}" name="row[v_content][]" placeholder="{:lang('Please upload the video or specify the link')}" value="{$vo.content}">
+                                            <button type="button" data-file-num="1" class="btn btn-default mb-2 btn-imgSelect" data-multiple="false" data-field="frm-content{$key}"><i class="fas fa-images"></i></button>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Title")}" name="row[v_title][]" placeholder="{:lang("Title")}">{$vo.title}</textarea>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Link")}"  name="row[v_url][]" placeholder="{:lang("Link")}">{$vo.url}</textarea>
+                                    <textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Description")}" name="row[v_notes][]" placeholder="{:lang("Description")}">{$vo.notes}</textarea>
+                                    <input type="hidden" class="form-control" name="row[v_weigh][]" placeholder="{:lang("Weigh")}" value="{$vo.weigh}">
+                                    <div class="custom-control custom-switch custom-control-sm mb-1" style="font-size: 12px">
+                                        <input type="checkbox" class="custom-control-input checked-new" id="v_customSwitch-{$i}" {$vo.new_window?'checked':''}>
+                                        <input type="hidden" name="row[v_new_window][]" value="{$vo.new_window}">
+                                        <label class="custom-control-label fw-initial" for="v_customSwitch-{$i}"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>
+                                    </div>
+                                    <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>
+                                    <div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>
+                                    <input type="hidden" value="{$vo['id']}" name="row[banner_id][]">
+                                </div>
+                            </div>
+                            {/volist}
+                            {/eq}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--HTML内容-->
+            <div class="html-block" {neq name='row.type' value='3'}style="display:none"{/neq}>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('HTML Content')}</label>
+                    <div class="col-sm-8 col-12 fileGroup">
+                        <textarea class="form-control" name="row[html_content]" placeholder="{:lang("HTML Content")}" rows="8">{$row['banner'][0]['content']??''}</textarea>
+                        <input type="hidden" value="{$row['banner'][0]['id']??''}" name="row[html_banner_id]">
+                    </div>
+                </div>
+            </div>
+
+            <!--文章内容-->
+            {if $row['type']==4}
+            <div class="article-block">
+                <div class="form-group row J-model">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('Model')}</label>
+                    <div class="col-sm-8 col-12">
+                        <div class="radio-group">
+                            {volist name="modelList" id="vo"}
+                            <div class="radio-item"><input id="row[model]-{$key}" {if $row['value_id']['model']==$vo['id']}checked="checked"{/if} name="row[model]" type="radio" value="{$vo['id']}"><label for="row[model]-{$key}">{$vo['name']}</label></div>
+                            {/volist}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row J-column">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('Column')}</label>
+                    <div class="col-sm-8 col-12">
+                        <input type="hidden" class="hidden" value="{$row['value_id']['column']|default=''}">
+                        <input type="hidden" class="lang" value="{$row['lang']}">
+                        <div class="radio-group"></div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('Limit')}</label>
+                    <div class="col-sm-8 col-12">
+                        <input type="text" class="form-control" name="row[limit]" value="{$row['value_id']['limit']|default=''}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-12 row-form-label">{:lang('Order')}: </label>
+                    <div class="col-sm-8 col-12">
+                        <input type="text" class="form-control" name="row[order]" placeholder="默认：weigh desc,id desc" value="{$row['value_id']['order']|default=''}">
+                    </div>
+                </div>
+            </div>
+            {/if}
+
+            <!--文字链接-->
+            {if $row['type']==5}
+            <div class="txt-list">
+                <div class="form-group row">
+                    <label class="col-sm-2 row-form-label">{:lang('Links')}</label>
+                    <div class="col-sm-8 d-flex align-items-center">
+                        <input type="button" class="btn btn-default btn-sm btn-add-link" value="{:lang('Add item')}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-12 row-form-label"></label>
+                    <div class="col-sm-8 col-12">
+                        <div class="txt-item-list" style="flex:1;width: 100%;">
+                            {volist name="row['banner']" id="vo"}
+                            <div class="txt-item-list-item">
+                                <div class="card card-item card-border card-shadow">
+                                    <textarea class="form-control mb-1" name="row[link_url][]" placeholder="{:lang("Link")}">{$vo.url}</textarea>
+                                    <textarea class="form-control mb-1" name="row[link_title][]" placeholder="{:lang("Title")}">{$vo.title}</textarea>
+                                    <textarea class="form-control mb-1" name="row[link_notes][]" placeholder="{:lang("Description")}">{$vo.notes}</textarea>
+                                    <input type="hidden" class="form-control " name="row[link_weigh][]" placeholder="{:lang("Weigh")}" value="{$vo.weigh}">
+                                    <div class="custom-control custom-switch custom-control-sm mb-1" style="font-size: 12px">
+                                        <input type="checkbox" class="custom-control-input checked-new" id="customSwitch-{$i}" {$vo.new_window?'checked':''}>
+                                        <input type="hidden" name="row[link_new_window][]" value="{$vo.new_window}">
+                                        <label class="custom-control-label fw-initial" for="customSwitch-{$i}"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>
+                                    </div>
+                                    <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>
+                                    <div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>
+                                    <input type="hidden" value="{$vo['id']}" name="row[banner_id][]">
+                                </div>
+                            </div>
+                            {/volist}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/if}
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{block:script}
+<script>
+    require(['admin','jquery-ui','form'], function (admin, undefined, Form) {
+        Form.api.init({success:function (data,all) {layer.msg(all.msg,{time:1000},function () {window.location.href="{:url('/cms.Recommend/index')}";});return false;}});
+
+        $(function(){
+            // 删除
+            $(document).on('click', '.btn-del-item', function () {
+                $('[data-toggle="tooltip"]').tooltip('hide');
+                $(this).parents('.card-item').parent().remove();
+            });
+
+            // 监听选择的图片
+            var ii = 0;
+            $('.btn-imgSelect-add').click(function (e) {
+                var html = '<div class="banner-list-item">\n' +
+                        '       <div class="card card-item card-shadow card-border">\n' +
+                        '           <div class="card-img-top">\n' +
+                        '               <img title="{:lang("View larger image")}" layer-src="" src="" style="display:none" class="img-thumbnail">\n' +
+                        '           </div>\n' +
+                        '           <div class="d-flex" data-toggle="tooltip" data-placement="top" data-title="{:lang("Please upload the image or specify the link")}"><input id="frm-img-'+ii+'" class="form-control input-image" name="row[image][]" value="" placeholder="{:lang("Please upload the image or specify the link")}"><button type="button" class="btn border-left btn-default btn-img-son btn-imgSelect" data-field="frm-img-'+ii+'" data-mimetype="image/jpeg,image/png,image/gif"><i class="fas fa-images"></i></button></div>\n' +
+                        '           <hr><textarea class="form-control mb-1" data-toggle="tooltip" data-placement="top" data-title="{:lang("Title")}"       name="row[title][]" placeholder="{:lang("Title")}"></textarea>\n' +
+                        '           <textarea class="form-control mb-1"     data-toggle="tooltip" data-placement="top" data-title="{:lang("Link")}"         name="row[url][]" placeholder="{:lang("Link")}"></textarea>\n' +
+                        '           <textarea class="form-control mb-1"     data-toggle="tooltip" data-placement="top" data-title="{:lang("Description")}"  name="row[notes][]" placeholder="{:lang("Description")}"></textarea>\n' +
+                        '           <input type="hidden" class="form-control mb-1" name="row[weigh][]" placeholder="{:lang("Weigh")}">\n' +
+                        '           <div class="custom-control custom-switch custom-control-sm mb-1" style="font-size: 14px">\n' +
+                        '               <input type="checkbox" class="custom-control-input checked-new" id="customSwitch'+ii+'">\n' +
+                        '               <input type="hidden" name="row[new_window][]" value="0">\n' +
+                        '               <label class="custom-control-label fw-initial" for="customSwitch'+ii+'"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>\n' +
+                        '           </div>\n' +
+                        '           <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>\n' +
+                '<div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>\n' +
+                        '       </div>\n' +
+                        '    </div>';
+
+                $('.banner-list').append(html);
+                ii++;
+
+                $('[data-toggle="tooltip"]').tooltip();
+            })
+            $(document).on('change','.input-image',function () {
+                $(this).parent().parent().find('.card-img-top img').attr('src',$(this).val());
+                $(this).parent().parent().find('.card-img-top img').attr('layer-src',$(this).val());
+                $(this).parent().parent().find('.card-img-top img').show();
+            })
+
+            // 放大图片
+            layer.photos({
+                photos: '#layer-photos-demo'
+                ,anim: 5
+                ,closeBtn:1
+            });
+
+            // 可移动拖动
+            $('.banner-list').sortable({cursor:"move",items:".banner-list-item",opacity:0.6});
+            $('.video-list').sortable({cursor:"move",items:".video-content-item",opacity:0.6});
+            $('.txt-item-list').sortable({cursor:"move",items:".txt-item-list-item",opacity:0.6});
+
+            // 视频添加
+            var inputIdx = 1;
+            $('.btn-add-video').click(function (e) {
+                var html = '<div class="video-content-item">\n' +
+                    '         <div class="card card-item card-border card-shadow">\n' +
+                    '             <div class="fileGroup" style="margin-top: 20px">\n' +
+                    '                 <div class="file-btn">\n' +
+                    '                     <input type="text" class="form-control txt-files" id="frm-content-'+inputIdx+'" name="row[v_content][]" placeholder="{:lang(\'Please upload the video or specify the link\')}" value="">' +
+                    '                     <button type="button" data-file-num="1" class="btn btn-default mb-2 btn-imgSelect" data-multiple="false" data-field="frm-content-'+inputIdx+'""><i class="fas fa-images"></i></button>' +
+                    '                 </div>\n' +
+                    '             </div>\n' +
+                    '             <textarea class="form-control mb-1" name="row[v_title][]" data-toggle="tooltip" data-placement="top" data-title="{:lang("Title")}" placeholder="{:lang("Title")}"></textarea>\n' +
+                    '             <textarea class="form-control mb-1" name="row[v_url][]"   data-toggle="tooltip" data-placement="top" data-title="{:lang("Link")}" placeholder="{:lang("Link")}"></textarea>\n' +
+                    '             <textarea class="form-control mb-1" name="row[v_notes][]" data-toggle="tooltip" data-placement="top" data-title="{:lang("Description")}" placeholder="{:lang("Description")}"></textarea>\n' +
+                    '             <input type="hidden" class="form-control mb-1" name="row[v_weigh][]" placeholder="{:lang("Weigh")}">\n' +
+                    '             <div class="custom-control custom-switch custom-control-sm mb-1" style="font-size: 12px">\n' +
+                    '                 <input type="checkbox" class="custom-control-input checked-new" id="v_customSwitch'+inputIdx+'">\n' +
+                    '                 <input type="hidden" name="row[v_new_window][]" value="0">\n' +
+                    '                 <label class="custom-control-label fw-initial" for="v_customSwitch'+inputIdx+'"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>\n' +
+                    '             </div>\n' +
+                    '             <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>\n' +
+                    '             <div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>\n' +
+                    '         </div>\n' +
+                    '     </div>';
+                inputIdx++;
+                $('.video-content').append(html);
+
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // 新窗口
+            $(document).on('click', '.checked-new', function () {
+                if ($(this).is(':checked')) {
+                    $(this).parent().find('input[type=hidden]').val(1);
+                }else{
+                    $(this).parent().find('input[type=hidden]').val(0);
+                }
+            })
+
+            // 模型更改
+            $('.J-model').find('input[type="radio"]').change(function (e) {
+                var id = $(this).val();
+                var lang = $('.lang').val();
+                $.post('{:url("/cms.recommend/column")}?m='+id+'&lan='+lang,'',function (data) {
+                    if (data.code==200) {
+                        var html = '';
+                        var checked = $('.J-column .hidden').val();
+                        checked = checked ? checked.split(',') : [];
+                        $.each(data.data, function (idx, val) {
+                            html += '<div class="radio-item"><input id="row[column]-'+val['id']+'" name="row[column][]" '+($.inArray(val['id'].toString(),checked)!=-1?'checked':'')+' type="checkbox" value="'+val['id']+'"><label for="row[column]-'+val['id']+'">'+val['title']+'</label></div>';
+                        })
+                        $('.J-column').find('.radio-group').html(html);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                });
+            });
+
+            // 文字链接
+            var linkIdx = 1;
+            $('.btn-add-link').click(function (e) {
+                var html = '<div class="txt-item-list-item">\n' +
+                    '         <div class="card card-item card-border card-shadow">\n' +
+                    '             <textarea class="form-control mb-1" name="row[link_url][]" placeholder="{:lang("Link")}"></textarea>\n' +
+                    '             <textarea class="form-control mb-1" name="row[link_title][]" placeholder="{:lang("Title")}"></textarea>\n' +
+                    '             <textarea class="form-control mb-1" name="row[link_notes][]" placeholder="{:lang("Description")}"></textarea>\n' +
+                    '             <input type="hidden" class="form-control " name="row[link_weigh][]" placeholder="{:lang("Weigh")}">\n' +
+                    '             <div class="custom-control custom-switch mb-1 custom-control-sm" style="font-size: 12px">\n' +
+                    '                 <input type="checkbox" class="custom-control-input checked-new" id="customSwitch'+linkIdx+'">\n' +
+                    '                 <input type="hidden" name="row[link_new_window][]" value="0">\n' +
+                    '                 <label class="custom-control-label fw-initial" for="customSwitch'+linkIdx+'"><div class="custom-control-label-dot"></div></label><span class="ml-1">{:lang("New window")}</span>\n' +
+                    '             </div>\n' +
+                    '             <div class="itemid" data-toggle="tooltip" data-placement="top" data-title="{:lang("Drag to sort")}"><i class="fas fa-arrows-alt"></i></div>\n' +
+                    '             <div class="itemid btn-del-item" data-toggle="tooltip" data-placement="top" data-title="{:lang("Delete")}"><i class="fas fa-times"></i></div>\n' +
+                    '         </div>\n' +
+                    '     </div>';
+                linkIdx++;
+                $('.txt-item-list').append(html);
+
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+            $('[data-toggle="tooltip"]').tooltip();
+            $('.J-model').find('input[type="radio"]:checked').trigger('change');
+        })
+    })
+
+</script>
+{/block:script}

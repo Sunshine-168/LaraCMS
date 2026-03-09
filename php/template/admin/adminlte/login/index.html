@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/meta"}
+    <style>
+        .login-box .card {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .login-box .login-card-body {
+            padding-top: 30px;
+        }
+        .login-card-body .input-group {
+            margin-bottom: 20px;
+        }
+        .login-card-body .title {
+            font-size: 16px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 32px;
+        }
+        .login-card-body .title .line {
+            height: 2px;
+            width: 32px;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+        .refresh {
+            display: block;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="card">
+        <div class="card-body login-card-body">
+            <div class="title">
+                <span>{:site('title')}</span>
+                <div class="line bg-primary"></div>
+            </div>
+            <form action="{:url('/login/index')}" method="post" class="frm-operate" novalidate>
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="{:__('Username')}" name="username" autocomplete="off">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="password" class="form-control" name="password" placeholder="{:__('Password')}">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-7">
+                        <div class="icheck-primary">
+                            <input type="text" class="form-control" placeholder="{:__('Captcha')}" name="captcha" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <a href="#" class="refresh"><img src="{:url('/login/verify')}" style="width: 100%;height: 36px" /></a>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 32px;margin-bottom: 10px">
+                    <div class="col-md-12">
+                        <input type="hidden" name="url" value="{$url}">
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">{:__('Sign In')}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<p style="color: #86909c;font-size: 13px;position: absolute;bottom: 20px">Copyright {:date('Y',time())} <a href="{:config('cms.app_url')}" style="color: #86909c" target="_blank">{:config('ver.cms_app')}</a> All Rights Reserved</p>
+
+{include file="common/script"}
+
+<script>
+    require(['admin','form'], function (admin, Form) {
+
+        $('.refresh').click(function (e) {
+            e.preventDefault();
+            $(this).find('img').attr('src',"{:url('/login/verify')}?r="+Math.random());
+        });
+
+        Form.api.init({
+            isValidate:false, // 取消nice验证
+            before: function (data) {
+                let validate = true;
+                $.each(data,function (k,v) {
+                    if (v.name=="username" && v.value.length===0) {
+                        Layer.msg('{:__("Please enter in username")}', {icon:2,time:500000});
+                        validate = false;
+                        return false;
+                    }
+                    if (v.name=="password" && v.value.length===0) {
+                        Layer.msg('{:__("Please enter in password")}', {icon:2});
+                        validate = false;
+                        return false;
+                    }
+                    if (v.name=="captcha" && v.value.length===0) {
+                        Layer.msg('{:__("Please enter the verification code")}', {icon:2});
+                        validate = false;
+                        return false;
+                    }
+                });
+                if (!validate) {
+                    return false;
+                }
+                return data;
+            },
+            success: function (data, response) {
+                Layer.msg(response.msg,{time:1000, icon:1},function (e) {
+                    window.location.replace(data.url); // 跳转
+                });
+                return false;
+            },
+            error: function (res) {
+                if (res.code==-1001) {
+                    $('.refresh').click();
+                }
+                layer.msg(res.msg, {time:4000, icon:2, offset:"ct"});
+                return false;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

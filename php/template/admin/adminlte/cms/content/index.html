@@ -1,0 +1,175 @@
+<style>
+    .showJstree span {
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .jstree-default .jstree-icon:empty {
+        width: 24px;
+        height: 24px;
+    }
+    .jstree-default .jstree-anchor {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .card.category,.card.card-primary{
+        height: 100%;
+    }
+    .r-ifm {
+        width: 100%;
+        height: 100%;
+    }
+    .content,.container-fluid {
+        height: 100%;
+    }
+    .csbtn-l{
+        width: 14px;
+        height: 26px;
+        background-color: #007bff;
+        color: #ffffff;
+        text-align: center;
+        line-height: 26px;
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        cursor: pointer;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        z-index: 2;
+    }
+    .csbtn-r {
+        width: 14px;
+        height: 26px;
+        background-color: #007bff;
+        color: #ffffff;
+        text-align: center;
+        line-height: 26px;
+        position: absolute;
+        top: 50%;
+        left: -7px;
+        cursor: pointer;
+        display: none;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+    .jstree-default .jstree-disabled {
+        cursor: not-allowed;
+    }
+    .openAll {
+        padding-left: 6px;
+    }
+</style>
+<div class="row" style="height: 100%">
+    <div class="col-md-2 col-12" style="height: 100%;" id="left-p">
+        <div class="card category" style="overflow-x: hidden;overflow-y: auto">
+            <div class="card-header">
+                <div class="card-header-title">{:__('Category list')}</div>
+                <div class="card-header-operate">
+                    <button class="btn btn-secondary btn-xs float-right" onclick="getCategory()" type="button" name="refresh" aria-label="Refresh" title="{:lang('Refresh')}"><i class="fa fa-sync"></i></button>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 10px 16px 16px 8px">
+                <p class="showJstree mb-2">
+                    <span class="openAll"><i class="fas fa-minus"></i> {:lang("Collapse all")}</span>
+                </p>
+                <div class="frm-category"></div>
+            </div>
+        </div>
+
+        <div class="csbtn-l"><span><i class="fa fa-angle-left"></i></span></div>
+    </div>
+    <div class="col-md-10 col-12" id="right-p">
+        <div class="card card-primary">
+            <div class="card-body" style="padding: 0;height: 100%">
+                <iframe src="{:url('/cms.content/show')}" frameborder="0" id="iframe1" class="r-ifm"></iframe>
+            </div>
+        </div>
+        <div class="csbtn-r"><span><i class="fa fa-angle-right"></i></span></div>
+    </div>
+</div>
+
+{block:script}
+
+<script>
+    require(['admin','jstree'], function (admin, undefined) {
+        $(function () {
+            getCategory();
+
+            let bl = false;
+            $('.openAll').click(function (e) {
+                $(".frm-category").jstree(bl===true ? "open_all" : "close_all");
+                if (bl) {
+                    $('.openAll').html('<i class="fas fa-minus"></i> {:lang("Collapse all")}');
+                } else {
+                    $('.openAll').html('<i class="fas fa-plus"></i> {:lang("Expand all")}');
+                }
+                bl = !bl;
+            });
+
+            // var h = $('body').height();
+            // if (h) {
+            //     $('.r-ifm').height((h-55)+'px');
+            // } else {
+            //     $('.r-ifm').height((parent.$('#panel--admin-php-cms-content-index-html').height()-58)+'px');
+            // }
+
+            $('.category').overlayScrollbars({
+                scrollbars:{autoHide:"leave"}
+            });
+        })
+
+        $('.csbtn-l').click(function (e) {
+            $('#left-p').hide();
+            $('#right-p').removeClass().addClass('col-md-12');
+            $('.csbtn-r').show();
+        })
+
+        $('.csbtn-r').click(function (e) {
+            $('#left-p').show();
+            $('.csbtn-r').hide();
+            $('#left-p').removeClass().addClass('col-md-2');
+            $('#right-p').removeClass().addClass('col-md-10');
+        })
+    })
+
+    function getCategory() {
+        Util.ajax({
+            url:'{:url("/cms.Category/getCategoryJstree")}?id=1'
+        },'',function (data) {
+            // 默认选择是模型的链接
+            var checked = '';
+            $.each(data, function (idx, val) {
+                if (checked) {
+                    return false;
+                }
+                if (val.data && val.data.model_id>0) {
+                    checked = val.id;
+                    return false;
+                }
+                if (val.children) {
+                    $.each(val.children, function (key, v) {
+                        if (v.data && v.data.model_id>0) {
+                            checked = v.id;
+                            return false;
+                        }
+                    });
+                }
+            })
+            $('.frm-category').jstree("destroy");
+            $('.frm-category').jstree({ "core":{"data":data,"multiple":false},"state":{"opened":true}}).on('loaded.jstree', function(e, data){
+                var inst = data.instance;
+                //var obj = inst.get_node(e.target.firstChild.firstChild.lastChild);console.log(obj)
+                inst.select_node(checked);
+            });
+
+            $('.frm-category').on('changed.jstree', function (e, data) {
+                var url = data.instance.get_node(data.selected[0]).data.to_url;
+                var ifmUrl = $('.r-ifm').attr('src');
+                if (ifmUrl!=url) {
+                    $('.r-ifm').attr('src', url);
+                }
+            });
+        });
+        return false;
+    }
+</script>
+{/block:script}

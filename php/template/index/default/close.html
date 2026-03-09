@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{$site.title} - 站点维护中...</title>
+
+    <link rel="Shortcut Icon" href="{$site.favicon}" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/libs/fontawesome-free/css/all.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+            margin: 0;
+            color: #a8a8a8;
+        }
+        html,body,.plane{
+            width: 100%;
+            height: 100%;
+        }
+        .plane {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .icon {
+            font-size: 48px;
+        }
+    </style>
+</head>
+<body>
+    <div class="plane">
+        <div class="icon"><i class="fas fa-frown"></i></div>
+        <p class="tips">站点临时关闭、请稍后再试~</p>
+    </div>
+</body>
+</html>

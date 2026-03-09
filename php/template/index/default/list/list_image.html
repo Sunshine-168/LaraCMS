@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            {// $Cate 存在于栏目首页、栏目列表页、详情页，里面是栏目的信息}
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <!--案例展示-->
+    <section class="project-area solid-bg">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-lg-12"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <ul class="shuffle-btn-group nav nav-tabs" role="tablist">
+                        {if $Cate.parent_id}
+                        {// 如果当前栏目为子级则获取同级栏目}
+                        <li><a href="{$Cate.parent_url}">{:__('All')}</a></li>
+                        {hkcms:channel name="$Cate['id']" type="peer" ismenu="1" currentstyle="active"}
+                        <li><a href="{$item.url}" title="{$item.title}" class="{$item.currentstyle}">{$item.title}</a></li>
+                        {/hkcms:channel}
+                        {else /}
+                        {// 一级栏目时则显示下级栏目}
+                        <li><a class="active" href="{$Cate.url}">{:__('All')}</a></li>
+                        {hkcms:channel name="$Cate['id']" type="son" ismenu="1"}
+                        <!--currentstyle 是选中高亮的class。默认是active-->
+                        <li><a href="{$item.url}" class="{$item.currentstyle}" title="{$item.title}">{$item.title}</a></li>
+                        {/hkcms:channel}
+                        {/if}
+                    </ul>
+
+                    <!--案例列表-->
+                    <div class="tab-content">
+                        <!--获取全部案例-->
+                        <div class="tab-pane fade show active" id="case-home" role="tabpanel" aria-labelledby="case-home">
+                            <div class="row shuffle-wrapper">
+                                <!--列表页无需指定catid-->
+                                {hkcms:content num="$Cate['num']" order="weigh desc,publish_time desc" page="1"}
+                                <div class="col-lg-4 col-md-6 shuffle-item">
+                                    <div class="project-img-container">
+                                        {// substr字符截取，保留8个字，使用...拼接}
+                                        <div class="item-info-title">{hkcms:substr name="$item.title" len="8" str="..." }</div>
+                                        <a class="gallery-popup" href="#!" aria-label="{$item.title}">
+                                            <img class="img-fluid" layer-src="{$item.thumb|default=''}" layer-index="{$key}" src="{$item.thumb|default=''}" alt="{$item.title}">
+                                            <span class="gallery-icon" data-toggle="photos" data-id="case-home" layer-index="{$key}"><i class="fa fa-plus"></i></span>
+                                        </a>
+                                        <div class="project-item-info">
+                                            <div class="project-item-info-content">
+                                                <h3 class="project-item-title"><a href="{$item.url}">{$item.title}</a></h3>
+                                                <p class="project-cat">{$item.category.title}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/hkcms:content}
+                            </div>
+                        </div>
+                        <!--获取全部案例 结束-->
+                    </div>
+                    <!--案例列表 结束-->
+                    <div class="gap-40"></div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            {hkcms:contentpage item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                        </div>
+                    </div>
+                </div><!-- col-12 结束 -->
+            </div><!-- row 结束 -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="general-btn text-center">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--案例展示 结束-->
+
+
+    {include file="common/footer"}
+</div>
+</body>
+</html>

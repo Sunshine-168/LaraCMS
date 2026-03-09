@@ -1,0 +1,253 @@
+<div class="card card-primary">
+    <div class="card-body">
+
+        <!--筛选-->
+        <div class="filter-panel d-none">
+            <form action="" method="get" class="frm-filter">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang("Title")}</label>
+                            <input type="text" class="form-control" name="title" placeholder="{:lang("Title")}" data-op="like %...%">
+                        </div>
+                    </div>
+                    {if $mimetype!='' && (isset($mimetype[-1]) && $mimetype[-1] != '/') && stristr($mimetype, '/')!==false}
+                    <input type="hidden" name="mime_type" value="{$mimetype}" data-op="in">
+                    {elseif ($mimetype!='' && isset($mimetype[-1]) && $mimetype[-1]=='/')}
+                    <input type="hidden" name="mime_type" value="{$mimetype}" data-op="like ...%">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang('Suffix')}</label>
+                            <select name="ext" class="form-control">
+                                <option value="">{:lang('All')}</option>
+                                {volist id="vo" name="ext"}
+                                <option value="{$vo}">{$vo}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    {php}$mimetype = $mimetype."*";{/php}
+                    {elseif ($mimetype=='')}
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang('Suffix')}</label>
+                            <select name="ext" class="form-control">
+                                <option value="">{:lang('All')}</option>
+                                {volist id="vo" name="ext"}
+                                <option value="{$vo}">{$vo}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    {else /}
+                    <input type="hidden" name="ext" value="{:str_replace('.','',$mimetype)}" data-op="in">
+                    {/if}
+
+                    {if !empty($size)}
+                    <input type="hidden" name="size" value="{$size}" data-op="<">
+                    {else /}
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label class="row-form-label">{:lang('Size')}</label>
+                            <input type="hidden" name="size" data-op="BETWEEN">
+                            <div class="row ml-0">
+                                <div class="col-6 pr-0">
+                                    <input type="number" class="form-control" id="size_start" placeholder="{:lang('Unit byte')}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="size_end" placeholder="{:lang('Unit byte')}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/if}
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+                        <div class="form-group text-center">
+                            <input type="submit" class="btn btn-primary" value="{:lang('Search')}">
+                            <input type="reset" class="btn btn-default ml-2" value="{:lang('Reset')}">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+            {if has_rule('common/upload')}
+            <div class="file-upload-group">
+                <button type="button" class="btn btn-primary btn-uploads"
+                        data-multiple="{$multiple}"
+                        data-mimetype="{$mimetype|default='*'}"
+                        data-size="{$size ? $size : site('file_size')}">
+                    <i class="fas fa-arrow-alt-circle-up"></i> {:lang('Upload')}
+                </button>
+            </div>
+
+            <button type="button" class="btn btn-default btn-remote" data-toggle="tooltip"><i class="fas fa-download"></i> {:__('Remote download')}</button>
+            {/if}
+
+            {if has_rule('del')}
+            <button type="button" class="btn btn-disabled btn-danger disabled btn-del " data-url="{:url('/routine.attachment/del')}"><i class="fas fa-trash-alt"></i>
+                {:lang('Delete')}</button>
+            {/if}
+            <button type="button" class="btn btn-success btn-img-select btn-disabled disabled" data-field="{$field|default=''}" data-multiple="{$multiple}" data-file-num="{$fileNum|default='10'}"><i class="fas fa-check-circle"></i>
+                {:lang('Select')}</button>
+
+        </div>
+        <table id="table"
+               data-del="{if has_rule('del')}{:url('/routine.attachment/del')}{/if}"
+               data-edit="{if has_rule('edit')}{:url('/routine.attachment/edit')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            var table = Table.init({
+                url: "{:url('/routine.attachment/select')}",
+                showToggle: false,
+                search: false,
+                pagination: true,
+                escape: false,
+                customFilter: true,
+                sortName: 'update_time',
+                sortOrder: 'desc',
+                singleSelect: !("{$multiple}"=="true" || "{$multiple}"=='1'),
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'user_id',
+                    title: '{:lang("User ID")}',
+                    visible: false
+                },{
+                    field: 'user_name',
+                    title: '{:lang("Username")}',
+                },{
+                    field: 'title',
+                    title: '{:lang("Title")}',
+                    formatter: function (value, row, index, field) {
+                        if (value.length>20) {
+                            return '<span title="'+value+'">'+(value.substring(0,20)+'...')+'</span>'
+                        }
+                        return value;
+                    }
+                },{
+                    field: 'cdn_url',
+                    title: '{:lang("Preview")}',
+                    formatter: Table.formatter.image,
+                    events: Table.events.image
+                },{
+                    field: 'path',
+                    title: '{:lang("Path")}',
+                    visible: false
+                },{
+                    field: 'storage',
+                    title: '{:lang("Storage")}',
+                },{
+                    field: 'size_text',
+                    title: '{:lang("Size (kb)")}',
+                },{
+                    field: 'ext',
+                    title: '{:lang("Suffix")}',
+                },{
+                    field: 'mime_type',
+                    title: '{:lang("Mime type")}',
+                    visible: false
+                },{
+                    field: 'remark',
+                    title: '{:lang("Remark")}',
+                    visible: false
+                },{
+                    field: 'create_time',
+                    title: '{:lang("Create time")}',
+                },{
+                    field: 'update_time',
+                    title: '{:lang("Update time")}',
+                    visible: false
+                },{
+                    field: 'operate',
+                    title: '{:lang("operate")}',
+                    formatter: Table.formatter.operate,
+                    events: Table.events.operate
+                }]});
+
+            // 远程下载
+            $('.btn-remote').click(function (e) {
+                layer.prompt({title: '{:__("Please enter the remote attachment address")}', formType: 2}, function(url, index){
+                    var ind = layer.load(1);
+                    $.post('{:url("/routine.attachment/download")}',{ url:url },function (e) {
+                        layer.close(ind);
+                        if (e.code==200) {
+                            layer.msg(e.msg,{time:1000},function () {
+                                table.bootstrapTable('refresh');
+                                layer.close(index);
+                            })
+                        } else {
+                            layer.alert(e.msg);
+                        }
+                    });
+                });
+            });
+
+            // 文件选择事件
+            $(document).on('click', '.btn-img-select', function (e) {
+                let data = table.bootstrapTable('getSelections');
+                if (data.length===0) {
+                    layer.msg(lang('Please select a record line'),{time:4000,icon:2});
+                    return false;
+                }
+                let arr = [];
+                $.each(data, function(key, value) {
+                    arr.push(value.path);
+                });
+
+                // 判断文件最大选择数
+                let fileNum = $(this).data('file-num') || 10;
+                if (arr.length>fileNum) {
+                    layer.msg(lang('Only %s file can be uploaded at a time!',[fileNum]),{time:4000,icon:2});
+                    return false;
+                }
+
+                let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+
+                // 判断是否有回调
+                var toCallback = parent.$("#layui-layer" + index).data("callback");
+                if (toCallback && typeof toCallback === "function") {
+                    if (false===toCallback(arr)) {
+                        return false;
+                    }
+                } else {
+                    // let field = $(this).data('field');
+                    // if (field) {
+                    //     var multiple = $(this).data('multiple');
+                    //     if (multiple=='multiple' || multiple==1) {
+                    //         var oldfiles = $(parent.document).find('#'+field).val();
+                    //         if (oldfiles.length==0) {
+                    //             $(parent.document).find('#'+field).val(arr.join(','))
+                    //         } else {
+                    //             oldfiles = oldfiles.split(',');
+                    //             if (oldfiles.length+arr.length>fileNum) {
+                    //                 layer.msg(lang('Only %s file can be uploaded at a time!',[fileNum]),{time: 4000,icon:2})
+                    //                 return false;
+                    //             }
+                    //             $(parent.document).find('#'+field).val($(parent.document).find('#'+field).val()+','+(arr.join(',')));
+                    //         }
+                    //     } else {
+                    //         $(parent.document).find('#'+field).val(arr.join(','))
+                    //     }
+                    //
+                    //
+                    //     // 触发change事件
+                    //     let $obj = parent.$;
+                    //     $obj('#'+field).trigger('change');
+                    // }
+                }
+                parent.layer.close(index);
+            });
+        })
+    })
+</script>
+{/block:script}

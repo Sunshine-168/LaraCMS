@@ -1,0 +1,13 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{:token()}">
+
+<!-- Font Awesome 5.13.0 字体图标库 -->
+<link rel="stylesheet" href="__libs__/fontawesome-free/css/all.min.css">
+<!-- 个人中心样式,包含Bootstrap v4.6.0 -->
+<link rel="stylesheet" href="/static/common/user/css/style.css?v={:env('APP_DEBUG')?time():$site.version}">
+
+<script type="text/javascript">
+    window.Config = {:json_encode($site)};
+    window.Lang = [];
+</script>

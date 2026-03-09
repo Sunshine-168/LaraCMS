@@ -1,0 +1,417 @@
+{volist name="data" id="vo"}
+{if ($group)}
+    {if in_array($vo['type'], ['text', 'number'])}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo.title}</label>
+        <div class="col-sm-8 col-12">
+            {:build_input($vo['type'], 'row['.$group.']['.$key.']', $vo['value'], extend_options([
+            'class'=>'form-control',
+            'id'=>'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips']
+            ], $vo['extend']??[]))}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'],['textarea']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo.title}</label>
+        <div class="col-sm-8 col-12">
+            {:build_textarea('row['.$group.']['.$key.']', $vo['value'], [
+            'class'=>'form-control ',
+            'id' => 'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips'],
+            'rows'=>3
+            ])}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif ($vo['type']=='radio')}
+    {if !empty($vo['options'])}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <div class="radio-group">
+                <?php $field = $key;?>
+                {volist name="vo['options']" id="item"}
+                <div class="radio-item"><input id="row[{$group}][{$field}]-{$key}"
+                       name="row[{$group}][{$field}]" type="radio" value="{$key}"  {if $vo['value']==$key}checked {/if}
+                {if $i==1}data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}"{/if} >
+                <label for="row[{$group}][{$field}]-{$key}">{$item}</label></div>
+                {/volist}
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+    {elseif $vo['type']=='checkbox' /}
+    {if !empty($vo['options'])}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <div class="radio-group">
+                {php}$haystack = !empty($vo['value'])?explode(',', $vo['value']):[];{/php}
+                <?php $field = $key;?>
+                {volist name="vo['options']" id="item"}
+                <div class="radio-item"><input id="row[{$group}][{$field}]-{$i}"
+                       {if in_array($key,$haystack)}checked{/if}
+                name="row[{$group}][{$field}][]" type="checkbox" value="{$key}"
+                {if $i==1}data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}"{/if} >
+                <label for="row[{$group}][{$field}]-{$i}">{$item}</label></div>
+                {/volist}
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+    {elseif in_array($vo['type'], ['select', 'selects']) /}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}：</label>
+        <div class="col-sm-8 col-12">
+            {php}$haystack = !empty($vo['value'])?explode(',', $vo['value']):[];$field = $key;{/php}
+            <select {:extend_options([
+            'class'=>'form-control',
+            'id' => 'frm-'.$field,
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips'],
+            ], $vo['extend']??[], true)}
+            name="row[{$group}][{$field}]{if $vo['type']=='selects'}[]{/if}"
+            {if $vo['type']=='selects'}multiple{/if}>
+            {volist name="vo['options']" id="item"}
+            <option value="{$key}" {if in_array($key, $haystack)}selected{/if}>{$item}</option>
+            {/volist}
+            </select>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'], ['image','images']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12 fileGroup">
+            <div class="file-btn">
+                <input type="text"
+                       class="form-control txt-files"
+                       id="frm-{$key}"
+                       name="row[{$group}][{$key}]"
+                       placeholder="{$vo['tips']}"
+                       value="{$vo['value']}" data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}">
+                <button type="button"
+                       {if $vo['type']=='images'}data-file-num="{$vo['max_number']??4}"{/if}
+                {:extend_options(['class'=>'btn btn-default btn-imgUpload','data-mimetype'=>'image/*','data-multiple'=>$vo['type']=='images'?'true':'false','data-field'=>"frm-".$key], $vo['extend']??[], true)}><i class="fas fa-upload"></i> {:__('Upload')}</button>
+                <button type="button"
+                       {if $vo['type']=='images'}data-file-num="{$vo['max_number']}"{/if}
+                {:extend_options(['class'=>'btn btn-default btn-imgSelect','data-mimetype'=>'image/*','data-multiple'=>$vo['type']=='images'?'true':'false','data-field'=>"frm-".$key], $vo['extend']??[], true)}><i class="fas fa-images"></i> {:__('Select')}</button>
+            </div>
+            <div class="file-preview row mt-2"></div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'], ['date', 'datetime']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            {:build_input('text', 'row['.$group.']['.$key.']', $vo['value'], extend_options([
+            'class'=>'form-control laydate',
+            'id'=>'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['value'],
+            'data-msg'=>$vo['error_tips'],
+            'data-type'=>$vo['type']
+            ], $vo['extend']??[]))}
+
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif $vo['type']=='array' /}
+    <div class="form-group row keyvalue">
+        <script type="text/html" class="keyvalue-template">
+            <div class="row pt-2">
+                <div class="col-sm-5">
+                    <input type="text" value="" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                </div>
+                <div class="col-sm-5">
+                    <input type="text" value="" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                </div>
+                <div class="col-sm-2 d-flex align-items-center">
+                    <a href="#" class="btn btn-danger btn-xs btn-keyvalue-row-del"><i class="fas fa-trash-alt"></i></a>
+                    <a href="javascript:;" class="btn btn-default btn-xs  ml-1"><i class="fas fa-arrows-alt"></i></a>
+                </div>
+            </div>
+        </script>
+
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12" style="padding-top: calc(.375rem + 1px);padding-bottom: calc(.375rem + 1px);">
+            <div class="row">
+                <div class="col-sm-5">{$vo['data_list']['key']}</div>
+                <div class="col-sm-5">{$vo['data_list']['value']}</div>
+            </div>
+
+            <textarea name="row[{$group}][{$key}]" class="key-value-textarea d-none">{:empty($vo['value'])?'':json_encode($vo['value'])}</textarea>
+
+            <div class="keyvalue-item">
+                {volist name="vo['value']" id="item"}
+                <div class="row pt-2">
+                    <div class="col-sm-5">
+                        <input type="text" value="{$key}" name="keyvalue{$i}" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" value="{$item}" name="keyvalue{$i}" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                    </div>
+                    <div class="col-sm-2 d-flex align-items-center">
+                        <a href="#" class="btn btn-danger btn-xs btn-keyvalue-row-del"><i class="fas fa-trash-alt"></i></a>
+                        <a href="javascript:;" class="btn btn-default btn-xs  ml-1"><i class="fas fa-arrows-alt"></i></a>
+                    </div>
+                </div>
+                {/volist}
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-sm-12">
+                    <a href="#" class="btn btn-sm btn-primary btn-keyvalue-row-add">{:lang('Append')}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'],['selectpage']) /}
+    <div class="form-group row">
+        <label for="frm-{$group}{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <?php $vo['extend'] = extend_options([
+                    'id'=>'frm-'.$group.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips']
+            ], $vo['extend']??[]); ?>
+
+            <?php $vo['extend'] = array_merge($vo['extend'], [
+                    'class'=>'form-control selectpage',
+            'data-data'=>$vo['data_list']['type']=='url'?url($vo['data_list']['url']):url('/common/getSelectpage',['t'=>3,'id'=>$addonInfo['id'],'field'=>$key,'group'=>$group]),
+            'data-params'=>!empty($vo['data_list']['param'])?json_encode(['custom'=>$vo['data_list']['param']]):'',
+            'data-multiple'=>!empty($vo['data_list']['multiple'])?'true':'false',
+            'data-pagination'=>!empty($vo['data_list']['pagination'])?'true':'false',
+            'data-select-only'=>!empty($vo['data_list']['select-only'])?'true':'false',
+            'data-and-or'=>!empty($vo['data_list']['and-or'])?$vo['data_list']['and-or']:'and',
+            'data-order-by'=>!empty($vo['data_list']['order-by'])?json_encode(explode(',',$vo['data_list']['order-by'])):'',
+            'data-show-field'=>!empty($vo['data_list']['show-field'])?$vo['data_list']['show-field']:'title',
+            'data-search-field'=>!empty($vo['data_list']['search-field'])?$vo['data_list']['search-field']:'title',
+            'data-key-field'=>!empty($vo['data_list']['key-field'])?$vo['data_list']['key-field']:'id',
+            ]);?>
+
+            {:build_input('text', 'row['.$group.']['.$key.']', $vo['value'], $vo['extend'])}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+{else /}
+    {if in_array($vo['type'], ['text', 'number'])}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo.title}</label>
+        <div class="col-sm-8 col-12">
+            {:build_input($vo['type'], 'row['.$key.']', $vo['value'], extend_options([
+            'class'=>'form-control',
+            'id'=>'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips']
+            ], $vo['extend']??[]))}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'],['textarea']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo.title}</label>
+        <div class="col-sm-8 col-12">
+            {:build_textarea('row['.$key.']', $vo['value'], [
+            'class'=>'form-control ',
+            'id' => 'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips'],
+            'rows'=>3
+            ])}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif ($vo['type']=='radio')}
+    {if !empty($vo['options'])}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <div class="radio-group">
+                <?php $field = $key;?>
+                {volist name="vo['options']" id="item"}
+                <div class="radio-item"><input id="row[{$field}]-{$key}"
+                       name="row[{$field}]" type="radio" value="{$key}"  {if $vo['value']==$key}checked {/if}
+                {if $i==1}data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}"{/if} >
+                <label for="row[{$field}]-{$key}">{$item}</label></div>
+                {/volist}
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+    {elseif $vo['type']=='checkbox' /}
+    {if !empty($vo['options'])}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <div class="radio-group">
+                {php}$haystack = !empty($vo['value'])?explode(',', $vo['value']):[];{/php}
+                <div class="radio-item"><?php $field = $key;?>
+                {volist name="vo['options']" id="item"}
+                <input id="row[{$field}]-{$i}"
+                       {if in_array($key,$haystack)}checked{/if}
+                name="row[{$field}][]" type="checkbox" value="{$key}"
+                {if $i==1}data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}"{/if} >
+                <label for="row[{$field}]-{$i}">{$item}</label></div>
+                {/volist}
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+    {elseif in_array($vo['type'], ['select', 'selects']) /}
+    <div class="form-group row">
+        <label class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            {php}$haystack = !empty($vo['value'])?explode(',', $vo['value']):[];$field = $key;{/php}
+            <select {:extend_options([
+            'class'=>'form-control',
+            'id' => 'frm-'.$field,
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips'],
+            ], $vo['extend']??[], true)}
+            name="row[{$field}]{if $vo['type']=='selects'}[]{/if}"
+            {if $vo['type']=='selects'}multiple{/if}>
+            {volist name="vo['options']" id="item"}
+            <option value="{$key}" {if in_array($key, $haystack)}selected{/if}>{$item}</option>
+            {/volist}
+            </select>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'], ['image','images']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12 fileGroup">
+            <div class="file-btn">
+                <input type="text"
+                       class="form-control txt-files"
+                       id="frm-{$key}"
+                       name="row[{$key}]"
+                       placeholder="{$vo['tips']}"
+                       value="{$vo['value']}" data-rule="{$vo['rules']}" data-msg="{$vo['error_tips']}">
+                <button type="button"
+                        {if $vo['type']=='images'}data-file-num="{$vo['max_number']??4}"{/if}
+                {:extend_options(['class'=>'btn btn-default btn-imgUpload','data-mimetype'=>'image/*','data-multiple'=>$vo['type']=='images'?'true':'false','data-field'=>"frm-".$key], $vo['extend']??[], true)}><i class="fas fa-upload"></i> {:__('Upload')}</button>
+                <button type="button"
+                        {if $vo['type']=='images'}data-file-num="{$vo['max_number']}"{/if}
+                {:extend_options(['class'=>'btn btn-default btn-imgSelect','data-mimetype'=>'image/*','data-multiple'=>$vo['type']=='images'?'true':'false','data-field'=>"frm-".$key], $vo['extend']??[], true)}><i class="fas fa-images"></i> {:__('Select')}</button>
+            </div>
+            <div class="file-preview row mt-2"></div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'], ['date', 'datetime']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            {:build_input('text', 'row['.$key.']', $vo['value'], extend_options([
+            'class'=>'form-control laydate',
+            'id'=>'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['value'],
+            'data-msg'=>$vo['error_tips'],
+            'data-type'=>$vo['type']
+            ], $vo['extend']??[]))}
+
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span text-md" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif $vo['type']=='array' /}
+    <div class="form-group row keyvalue">
+        <script type="text/html" class="keyvalue-template">
+            <div class="row pt-2">
+                <div class="col-sm-5">
+                    <input type="text" value="" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                </div>
+                <div class="col-sm-5">
+                    <input type="text" value="" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                </div>
+                <div class="col-sm-2 d-flex align-items-center">
+                    <a href="#" class="btn btn-danger btn-xs btn-keyvalue-row-del"><i class="fas fa-trash-alt"></i></a>
+                    <a href="javascript:;" class="btn btn-default btn-xs  ml-1"><i class="fas fa-arrows-alt"></i></a>
+                </div>
+            </div>
+        </script>
+
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12" style="padding-top: calc(.375rem + 1px);padding-bottom: calc(.375rem + 1px);">
+            <div class="row">
+                <div class="col-sm-5">{$vo['data_list']['key']}</div>
+                <div class="col-sm-5">{$vo['data_list']['value']}</div>
+            </div>
+
+            <textarea name="row[{$key}]" class="key-value-textarea d-none">{:empty($vo['value'])?'':json_encode($vo['value'])}</textarea>
+
+            <div class="keyvalue-item">
+                {volist name="vo['value']" id="item"}
+                <div class="row pt-2">
+                    <div class="col-sm-5">
+                        <input type="text" value="{$key}" name="keyvalue{$i}" data-name="keyvalue-key" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" value="{$item}" name="keyvalue{$i}" data-name="keyvalue-value" {:extend_options(['class'=>'form-control', 'placeholder'=>$vo['tips'], 'data-rule'=>$vo['rules'], 'data-msg'=>$vo['error_tips']], $vo['extend']??[], true)}>
+                    </div>
+                    <div class="col-sm-2 d-flex align-items-center">
+                        <a href="#" class="btn btn-danger btn-xs btn-keyvalue-row-del"><i class="fas fa-trash-alt"></i></a>
+                        <a href="javascript:;" class="btn btn-default btn-xs  ml-1"><i class="fas fa-arrows-alt"></i></a>
+                    </div>
+                </div>
+                {/volist}
+            </div>
+
+            <div class="row pt-3">
+                <div class="col-sm-12">
+                    <a href="#" class="btn btn-sm btn-primary btn-keyvalue-row-add">{:lang('Append')}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {elseif in_array($vo['type'],['selectpage']) /}
+    <div class="form-group row">
+        <label for="frm-{$key}" class="col-sm-2 col-12 row-form-label">{$vo['title']}</label>
+        <div class="col-sm-8 col-12">
+            <?php $vo['extend'] = extend_options([
+                'id'=>'frm-'.$key,
+            'placeholder'=>$vo['tips'],
+            'data-rule'=>$vo['rules'],
+            'data-msg'=>$vo['error_tips']
+            ], $vo['extend']??[]); ?>
+
+            <?php $vo['extend'] = array_merge($vo['extend'], [
+                'class'=>'form-control selectpage',
+            'data-data'=>$vo['data_list']['type']=='url'?url($vo['data_list']['url']):url('/common/getSelectpage',['t'=>3,'id'=>$addonInfo['id'],'field'=>$key]),
+            'data-params'=>!empty($vo['data_list']['param'])?json_encode(['custom'=>$vo['data_list']['param']]):'',
+            'data-multiple'=>!empty($vo['data_list']['multiple'])?'true':'false',
+            'data-pagination'=>!empty($vo['data_list']['pagination'])?'true':'false',
+            'data-select-only'=>!empty($vo['data_list']['select-only'])?'true':'false',
+            'data-and-or'=>!empty($vo['data_list']['and-or'])?$vo['data_list']['and-or']:'and',
+            'data-order-by'=>!empty($vo['data_list']['order-by'])?json_encode(explode(',',$vo['data_list']['order-by'])):'',
+            'data-show-field'=>!empty($vo['data_list']['show-field'])?$vo['data_list']['show-field']:'title',
+            'data-search-field'=>!empty($vo['data_list']['search-field'])?$vo['data_list']['search-field']:'title',
+            'data-key-field'=>!empty($vo['data_list']['key-field'])?$vo['data_list']['key-field']:'id',
+            ]);?>
+
+            {:build_input('text', 'row['.$key.']', $vo['value'], $vo['extend'])}
+        </div>
+        <div class="col-sm-2 form-tips">{if !empty($vo['tips'])}<span class="form-tips-span" data-tips="{$vo['tips']}"><i class="far fa-question-circle"></i></span>{/if}</div>
+    </div>
+    {/if}
+{/if}
+{/volist}

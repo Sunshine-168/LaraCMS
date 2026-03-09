@@ -1,0 +1,45 @@
+{
+  "Dynamic": "动态",
+  "Rewrite":"伪静态",
+  "Static page":"静态页面",
+  "Help":"帮助",
+  "Click me to":"点我前往",
+  "Customize":"自定义",
+  "Column Rules":"栏目规则",
+  "Content Rules":"内容规则",
+  "Save directory":"保存目录",
+
+  "Current directory":"当前目录",
+  "Multilingual/Current Directory":"多语言/当前目录",
+  "parent directory/current directory":"父目录/当前目录",
+  "multilingual/parent directory/current directory":"多语言/父目录/当前目录",
+  "Model/Column":"模型/栏目",
+
+
+  "Parent directory/Subdirectory":"父目录/子目录",
+  "Directory name":"目录名称",
+  "Parent directory/Subdirectory/Document ID":"父级目录/子目录/文档ID",
+  "Directory Name/Document ID":"目录名称/文档ID",
+
+  "Channel name":"栏目名称",
+  "Website name":"网站名称",
+  "Page N":"第N页",
+  "Content title":"内容标题",
+  "Example":"示例",
+  "show":"显示",
+  "hide":"隐藏",
+  "Home":"首页",
+  "Channel":"栏目",
+  "Content":"内容页",
+
+  "Note: After checking Rewrite, your server must be configured with URL rewriting for normal access":"注意：勾选伪静态后您的服务器必须配置URL重写才能正常访问",
+  "After enabling, columns and articles will generate static pages according to the rules when they are added or modified.":"启用后栏目与文章在新增或修改都会按照规则生成静态页面。",
+  "Automatically add language identification in multilingual situations":"多语言情况下自动增加语言标识",
+  "After modifying the template, please regenerate":"修改模板后请重新生成",
+  "Generating":"正在生成",
+  "Non-responsive templates are not supported at this time":"暂不支持非响应模板",
+  "Make sure that the public directory has write permissions":"确保public目录下有写入的权限",
+  "Generated manually":"手动生成",
+  "Generated":"一键生成",
+  "All columns":"全部栏目"
+}

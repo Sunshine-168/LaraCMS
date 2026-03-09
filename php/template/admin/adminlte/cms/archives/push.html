@@ -1,0 +1,81 @@
+<style>
+    #table tr th,#table tr td {
+        text-align: center; vertical-align: middle;
+    }
+    #table label {
+        margin: 0;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post" novalidate>
+    <div class="card card-primary card-tabs">
+        <div class="card-body">
+            <div class="tab-content">
+                <table id="table" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col"><label><input name="btSelectAll" id="btSelectAll" type="checkbox"></label></th>
+                            <th scope="col">ID</th>
+                            <th scope="col">{:__("Column name")}</th>
+                            <th scope="col">{:__("Owning model")}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {volist name="categoryList" id="vo"}
+                        <tr>
+                            <td><label>{if $model_id==$vo['model_id']}<input name="btSelect" class="btSelect" type="checkbox" value="{$vo.id}">{/if}</label></td>
+                            <td>{$vo.id}</td>
+                            <td style="text-align: left;">{$vo.title|raw} {if $category_id==$vo['id']}<span style="font-weight: bold">&nbsp;({:__('Current column')}})</span>{/if}</td>
+                            <td>{$vo.model_name}</td>
+                        </tr>
+                        {/volist}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin'], function (admin) {
+        $('#btSelectAll').click(function (e) {
+            $('.btSelect').prop('checked',$(this).prop('checked'))
+        });
+        $('#table').find('td').click(function (e) {
+            $(this).parent().find('.btSelect').prop('checked', !$(this).parent().find('.btSelect').prop('checked'))
+        });
+
+        $('.btn-submit').click(function (e) {
+            var spCodesTemp = "";
+            $('input:checkbox[name=btSelect]:checked').each(function(i){
+                if(0==i){
+                    spCodesTemp = $(this).val();
+                }else{
+                    spCodesTemp += (","+$(this).val());
+                }
+            });
+            hkcms.api.ajax({
+                url: "{:url('/cms.archives/push',['ids'=>$ids,'category_id'=>$category_id,'model_id'=>$model_id])}",
+                type: 'post',
+                data: {to: spCodesTemp},
+            }, '', function (data,res) {
+                layer.msg(res.msg, {time: 1000, icon:1}, function () {
+                    var index = parent.layer.getFrameIndex(window.name);
+                    var page_callback = parent.$("#layui-layer" + index).data("page");
+                    parent.layer.close(index);
+                    if (page_callback) {
+                        page_callback();
+                    }
+                });
+            })
+        });
+    })
+</script>
+{/block:script}

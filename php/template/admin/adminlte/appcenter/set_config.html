@@ -1,0 +1,58 @@
+{block:style}
+<style>
+    .col-form-label {
+        text-align: right;
+    }
+</style>
+{/block:style}
+<form class="frm-operate">
+    <input type="hidden" name="module" value="{$module}">
+    <div class="card card-tabs">
+        {if (is_array($data))}
+        <div class="card-header">
+            <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+
+                {volist name="data" id="vo"}
+                <li class="nav-item">
+                    <a class="nav-link {if $i==1}active{/if}" data-toggle="pill" href="#base{$key}">{$vo.title}</a>
+                </li>
+                {/volist}
+            </ul>
+        </div>
+        {/if}
+        <div class="card-body">
+            <div class="tab-content" id="custom-tabs-three-tabContent">
+                {if (is_array($data))}
+                    {volist name="data" id="vo"}
+                    <div class="tab-pane fade {if $i==1}active show{/if}" id="base{$key}">
+                        {$vo.item|raw}
+                    </div>
+                    {/volist}
+                {else /}
+                    {$data|raw}
+                {/if}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin,Form) {
+        Form.api.init({success:function (data,response) {
+                layer.msg(response.msg, {time:2000, icon:1}, function () {
+                    window.location.reload();
+                })
+                return false;
+            }});
+    })
+</script>
+{/block:script}

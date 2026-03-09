@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {// 引用头部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用。}
+    {include file="common/head"}
+</head>
+<body>
+<div class="body-inner">
+    <!--引用导航栏、路径基于主题目录下common文件夹下的menu.html文件-->
+    {include file="common/menu"}
+
+    <!--获取内页横幅的第一张-->
+    {hkcms:adv name="sub" itemid="1"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section id="main-container" class="main-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="ts-service-box-bg text-center h-100">
+                        <span class="ts-service-icon icon-round"><i class="fas fa-map-marker-alt mr-0"></i></span>
+                        <div class="ts-service-box-content">
+                            <h4>{:__('Company address')}</h4>
+                            <p>{$Info.address|default=''}</p>
+                        </div>
+                    </div>
+                </div><!-- Col 1 end -->
+                <div class="col-md-4">
+                    <div class="ts-service-box-bg text-center h-100">
+                        <span class="ts-service-icon icon-round"><i class="fa fa-envelope mr-0"></i></span>
+                        <div class="ts-service-box-content">
+                            <h4>{:__('Email Us')}</h4>
+                            <p>{$Info.email|default=''}</p>
+                        </div>
+                    </div>
+                </div><!-- Col 2 end -->
+
+                <div class="col-md-4">
+                    <div class="ts-service-box-bg text-center h-100">
+                        <span class="ts-service-icon icon-round"><i class="fa fa-phone-square mr-0"></i></span>
+                        <div class="ts-service-box-content">
+                            <h4>{:__('Call Us')}</h4>
+                            <p>{$Info.contact_info|default=''}</p>
+                        </div>
+                    </div>
+                </div><!-- Col 3 end -->
+            </div>
+            <div class="gap-60"></div>
+
+            <div class="map-con">
+                {// 地图标签，htmlid是html上的属性id,attr是追加html属性，里面使用单引号，title地图上显示的标题，address标题下的地址，scale 缩放，point经纬度}
+                {hkcms:map htmlid="map" attr="class='map'" title="$Info.company" address="$Info.address" scale="18" point="$Info.point"}
+            </div>
+            <div class="gap-40"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    {// 栏目绑定表单模型，attr里面的内容原样输出到form标签上，注意里面用单引号 }
+                    {hkcms:form catid="34" attr="class='frm-data' id='frm' enctype='multipart/form-data'"}
+                    <h3 class="column-title">{$item.category.title}</h3>
+                    <div class="error-container"></div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>{:__('Name')}</label>
+                                <input class="form-control form-control-name" name="{$item.field.name|default=''}" id="name" placeholder="" type="text" required="">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>{:__('Mail')}</label>
+                                <input class="form-control form-control-email" name="{$item.field.email|default=''}" id="email" placeholder="" type="email" required="">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>{:__('Telephone')}</label>
+                                <input class="form-control form-control-subject" name="{$item.field.phone|default=''}" id="subject" placeholder="" required="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>{:__('Content')}</label>
+                        <textarea class="form-control form-control-message" name="{$item.field.content|default=''}" id="message" placeholder="" rows="10" required=""></textarea>
+                    </div>
+
+                    {// 只有开启验证码才显示}
+                    {if $item.captcha.status}
+                    <div class="form-group">
+                        <label>{:__('Verify code')}</label>
+                        <div class="d-flex align-items-center">
+                            {// 输入框，可以自己写个输入框来实现自定义，样式的调整：里面有两个class分别是：form-control(bootstrap class) form-captcha，按这两个class调整即可}
+                            <div class="mr-3">{$item.captcha.input}</div>
+                            {// 验证码btn，图文验证码时是图片，其他的则是发送按钮}
+                            <div class="captcha" style="width: 138px">{$item.captcha.btn}</div>
+                        </div>
+                    </div>
+                    {/if}
+
+                    <div class="form-group">
+                        <button class="btn btn-primary  blank" type="submit">{:__("Submit")}</button>
+                    </div>
+                    {/hkcms:form}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 引用底部文件，通常把通用的html代码块放到一个文件里面，使用include标签引用 -->
+    {include file="common/footer"}
+
+    <script>
+        // 手机、邮箱验证码发送演示。需要jq、弹出框提示用的是layer
+        $('[data-toggle="captcha_send"]').click(function (e) {
+            var obj = this;
+            if ($(obj).is('.disabled')) {
+                return false;
+            }
+
+            // 发送类型，手机/邮箱
+            var type = $(obj).data('type');
+            var frm = $(obj).parents('form'); // 获取当前form表单
+            var txt = ''; // 提示信息
+            var inter = 0; // 定时器
+
+            if (type=='email') {
+                txt = frm.find('input[name="row[email]"]').val(); // 获取邮箱，确保里面有email字段
+            } else if (type=='mobile') {
+                txt = frm.find('input[name="row[phone]"]').val(); // 获取手机号
+            }
+
+            var tips = $(obj).text();
+            // __() 语言包
+            $(obj).addClass('disabled').text('{:__("Sending")}');
+
+            // 发送邮件
+            $.ajax({
+                type:"post",
+                url:$(obj).data('url'), // 请求地址
+                data:{type:$(obj).data('type'),obj:txt},
+                success: function (res) {
+                    if (res.code==200) {
+                        var seconds = 60;
+                        inter = setInterval(function () {
+                            seconds--;
+                            if (seconds<=0) {
+                                clearInterval(inter);
+                                $(obj).removeClass('disabled').text(tips);
+                            } else {
+                                $(obj).text('{:__("Resend")} '+seconds+' s');
+                            }
+                        }, 1000)
+                        layer.msg(res.msg);
+                    } else {
+                        // 发送错误提示错误信息
+                        layer.msg(res.msg);
+                        $(obj).removeClass('disabled').text(tips);
+                    }
+                },
+                error: function (res) {
+                    layer.msg('error');
+                    $(obj).removeClass('disabled').text(tips);
+                }
+            });
+        })
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<style>
+    .type-table {display: none;}
+    .settings-item .row {
+        margin: 0 0 8px 0;
+    }
+    .settings-item .row .row-form-label {
+        padding-right: 0;
+    }
+</style>
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card card-primary">
+        <div class="card-body">
+            <input type="hidden" name="row[source]" value="{$source}">
+            <input type="hidden" name="row[source_id]" value="{$source_id}">
+            <div class="form-group row">
+                <label class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:__('Type')}: </label>
+                <div class="col-sm-8">
+                    {:build_select('row[form_type]',config('base.form_type'),'',['id'=>'frm-form_type','class'=>'form-control'])}
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-field_name" class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:__("Field")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-field_name" name="row[field_name]" placeholder="{:__('Starts with a letter, only supports letters, numbers, underscores')}" data-rule="required">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-field_title" class="col-sm-2 row-form-label"><span class="text-danger">*</span> {:__("Title")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-field_title" name="row[field_title]" placeholder="" data-rule="required">
+                </div>
+            </div>
+
+            <!--动态下拉配置-->
+            <div id="selectpage-setting"></div>
+            <script type="text/html" id="selectpage-setting-html">
+                <div class="form-group row">
+                    <label class="col-sm-2 row-form-label">{:lang("Config")}: </label>
+                    <div class="col-sm-8 ">
+                        <div class="border rounded settings-item">
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:__("Data source")}: </label>
+                                <div class="col-sm-10">
+                                    <div class="radio-group">
+                                        <div class="radio-item"><input type="radio" id="frm-data_list_type1" name="row[data_list][type]" value="url" checked><label for="frm-data_list_type1">{:__("URL")}</label></div>
+                                        <div class="radio-item"><input type="radio" id="frm-data_list_type2" name="row[data_list][type]" value="table"><label for="frm-data_list_type2">{:__("Association Table")}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="type-url">
+                                <div class="row">
+                                    <label for="frm-selectpage-url" class="col-sm-2 row-form-label">{:__("URL")}: </label>
+                                    <div class="col-sm-10">
+                                        <input id="frm-selectpage-url" type="text" class="form-control" name="row[data_list][url]">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="frm-selectpage-show-field" class="col-sm-2 row-form-label">{:__("Show fields")}: </label>
+                                    <div class="col-sm-4">
+                                        <input id="frm-selectpage-show-field" type="text" class="form-control" name="row[data_list][url-show-field]" placeholder="{:__('Default')}：title">
+                                    </div>
+                                    <label for="frm-selectpage-key-field" class="col-sm-2 row-form-label">{:__("Storage field")}: </label>
+                                    <div class="col-sm-4">
+                                        <input id="frm-selectpage-key-field" type="text" class="form-control" name="row[data_list][url-key-field]" placeholder="{:__('Default')}：id">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label for="frm-selectpage-search-field" class="col-sm-2 row-form-label">{:__("Search field")}: </label>
+                                    <div class="col-sm-10"><input id="frm-selectpage-search-field" type="text" class="form-control" name="row[data_list][url-search-field]" placeholder="{:__('Default')}：title"></div>
+                                </div>
+                            </section>
+
+                            <section class="type-table">
+                                <div class="row">
+                                    <label class="col-sm-2 row-form-label">{:__("Datasheet")}: </label>
+                                    <div class="col-sm-10">
+                                        <select id="J-selectpage-table" class="form-control" name="row[data_list][table]">
+                                            <option value="">{:lang('Please choose')}</option>
+                                            {volist name="table" id="vo"}
+                                            <option value="{$vo}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-2 row-form-label">{:__("Show fields")}: </label>
+                                    <div class="col-md-4">
+                                        <select class="form-control J-field" name="row[data_list][show-field]">
+                                            <option value="">{:lang('Please choose')}</option>
+                                        </select>
+                                    </div>
+                                    <label class="col-md-2 row-form-label">{:__("Storage field")}: </label>
+                                    <div class="col-md-4">
+                                        <select class="form-control J-field" name="row[data_list][key-field]">
+                                            <option value="">{:lang('Please choose')}</option>
+                                        </select>
+                                        <input type="hidden" name="row[data_list][delete_time]" value="0">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-md-2 row-form-label" for="frm-search-field">{:__("Search field")}: </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control selectpicker J-field" id="frm-search-field" data-width="60%" data-max-options="3" name="row[data_list][search-field][]" multiple></select>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:__("Query method")}: </label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="row[data_list][and-or]" placeholder="{:__('Default')}：and">
+                                </div>
+                                <label class="col-sm-2 row-form-label">{:__("Weigh")}: </label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" name="row[data_list][order-by]" placeholder="id desc">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:__("Additional conditions")}: </label>
+                                <div class="col-sm-10">
+                                    <div class="row mb-0">
+                                        <div class="col-sm-5 row-form-label" style="text-align: left">{:__('Field')}</div>
+                                        <div class="col-sm-5 row-form-label" style="text-align: left">{:__('Value')}</div>
+                                    </div>
+                                    <div class="" id="J-groups">
+                                        <div class="row del1">
+                                            <div class="col-sm-5">
+                                                <input type="text" class="form-control" value="" name="row[data_list][param][]">
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input type="text" class="form-control" value="" name="row[data_list][param][]">
+                                            </div>
+                                            <div class="col-sm-2 d-flex align-items-center">
+                                                <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del1"><i class="fas fa-times"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-0">
+                                        <div class="col-sm-12">
+                                            <a href="#" class="btn btn-xs btn-default btn-groups"><i class="fas fa-plus"></i> {:lang('Append')}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="col-sm-2 row-form-label">{:__("More options")}: </label>
+                                <div class="col-sm-10 d-flex">
+                                    <label class="row-form-label d-flex align-items-center mr-1"><input type="checkbox" name="row[data_list][multiple]" value="1"><span class="ml-1">{:__("Enable multiple selection")}</span></label>
+                                    <label class="row-form-label d-flex align-items-center mr-1"><input type="checkbox" name="row[data_list][pagination]" value="1"><span class="ml-1">{:__("Turn off pagination")}</span></label>
+                                    <label class="row-form-label d-flex align-items-center mr-1"><input type="checkbox" name="row[data_list][select-only]" value="1"><span class="ml-1">{:__("Select mode only")}</span></label>
+                                    <label class="row-form-label d-flex align-items-center mr-1"><input type="checkbox" name="row[data_list][enable-lang]" value="1"><span class="ml-1">{:__("Multilingual filter")}</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </script>
+            <!--动态下拉配置结束-->
+
+            <div class="form-group row">
+                <label for="frm-length" class="col-sm-2 row-form-label">{:__("Length")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-length" name="row[length]" value="250">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-default_value" class="col-sm-2 row-form-label">{:__("Default value")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-default_value" name="row[default_value]">
+                </div>
+            </div>
+
+            <div id="other-option"></div>
+
+            <div class="form-group row">
+                <label for="frm-tips" class="col-sm-2 row-form-label">{:__("Rule")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" id="frm-rules"
+                           class="form-control selectpage"
+                           name="row[rules]"
+                           data-select-only="true"
+                           data-key-field="name"
+                           data-pagination="false"
+                           data-show-field="title"
+                           data-multiple="true"
+                           data-data="{:url('/cms.model_field/getRules')}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-tips" class="col-sm-2 row-form-label">{:__("Tips")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-tips" name="row[tips]">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-error_tips" class="col-sm-2 row-form-label">{:__("Error tips")}: </label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="frm-error_tips" name="row[error_tips]">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-extend" class="col-sm-2 row-form-label">{:__("HTML attr")}: </label>
+                <div class="col-sm-8">
+                    <textarea class="form-control" id="frm-extend" name="row[extend]" rows="3" placeholder="{:__('Add or overlay HTML attributes, and separate multiple attributes with English commas.')}{:__('Example:')}data-title=&quot;ceshi&quot;,class=&quot;form-control selectpage&quot;"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="frm-weigh" class="col-sm-2 row-form-label">{:__("Weigh")}: </label>
+                <div class="col-sm-8">
+                    <input type="number" class="form-control" id="frm-weigh" name="row[weigh]" value="100">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 row-form-label">{:__("Status")}: </label>
+                <div class="col-sm-8">
+                    {:build_radios('row[status]',['normal'=>__("Normal"),'hidden'=>__("Hidden")])}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:__('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:__('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    require(['admin','form'], function (admin, Form) {
+        $(function () {
+            Form.api.init();
+            $(document).on('change', '#frm-form_type', function (e) {
+                if ($.inArray($(this).val(),['radio','checkbox','select','selects'])>-1) {
+                    $('#other-option').html('<div class="form-group row" id="data_list">\n' +
+                        '                    <label for="frm-data_list" class="col-sm-2 row-form-label">{:__("Option list")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                    <textarea class="form-control" id="frm-data_list" name="row[data_list]" rows="3" placeholder="" data-rule="required">key1|{:__("Title")}\n' +
+                        'key2|{:__("Title")}2</textarea>\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else if ($.inArray($(this).val(), ['images','downfiles'])>-1) {
+                    var html = '<div class="form-group row">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:__("Limit suffix")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="text" class="form-control" name="row[setting][ext]" value="" placeholder="{:__('Limit the upload format,when empty,the attachment configuration will be used. Multiple suffixes are separated by |')}">\n' +
+                    '                    </div>\n' +
+                    '                </div>';
+                    html += '<div class="form-group row">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:__("Limit size")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="number" class="form-control" name="row[setting][filesize]" value="" placeholder="{:__("When empty, the content of the attachment configuration will be used")}"><div class="pt-1 pl-1"><span class="text-muted">{:__('Unit:Byte')}(b)</span></div>\n' +
+                    '                    </div>\n' +
+                    '                </div>';
+                    $('#other-option').html(html+'<div class="form-group row" id="max_number">\n' +
+                        '                    <label for="frm-max_number" class="col-sm-2 row-form-label">{:__("Greatest amount")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="number" class="form-control" id="frm-max_number" name="row[max_number]" value="" data-rule="required|digits">\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else if ($(this).val()=='array') {
+                    $('#frm-length').val('');
+                    $('#other-option').html('<div class="form-group row">\n' +
+                        '                <label for="frm-key_name_alias" class="col-sm-2 row-form-label">{:__("Key name alias")}: </label>\n' +
+                        '                <div class="col-sm-8">\n' +
+                        '                    <input type="text" class="form-control" id="frm-key_name_alias" name="row[key_name_alias]" value="{:__('Key name')}">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '            <div class="form-group row">\n' +
+                    '                <label for="frm-key_value_alias" class="col-sm-2 row-form-label">{:__("Key value name")}: </label>\n' +
+                    '                <div class="col-sm-8">\n' +
+                    '                    <input name="row[data_list]" value="" type="hidden" /><input type="text" class="form-control" id="frm-key_value_alias" name="row[key_value_alias]" value="{:__('Key value')}">\n' +
+                    '                </div>\n' +
+                    '            </div>');
+                } else if ($.inArray($(this).val(),['downfile','image'])>-1) {
+                    var html = '<div class="form-group row">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:__("Limit size")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="number" class="form-control" name="row[setting][filesize]" value="" placeholder="{:__("When empty, the content of the attachment configuration will be used")}"><div class="pt-1 pl-1"><span class="text-muted">{:__('Unit:Byte')}(b)</span></div>\n' +
+                    '                    </div>\n' +
+                    '                </div>';
+                    $('#other-option').html('<div class="form-group row">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:__("Limit suffix")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="text" class="form-control" name="row[setting][ext]" value="" placeholder="{:__('Limit the upload format,when empty,the attachment configuration will be used. Multiple suffixes are separated by |')} (png|jpg|zip)">\n' +
+                    '                    </div>\n' +
+                    '                </div>'+html);
+                } else if ($(this).val()=='number') {
+                    $('#frm-length').val('');
+                    $('#other-option').html('<div class="form-group row" id="max_number">\n' +
+                        '                    <label for="frm-decimals" class="col-sm-2 row-form-label">{:__("Decimal places")}: </label>\n' +
+                        '                    <div class="col-sm-8">\n' +
+                        '                        <input type="number" class="form-control" id="frm-decimals" name="row[decimals]" value="0" data-rule="required|digits">\n' +
+                        '                    </div>\n' +
+                        '                </div>');
+                } else if ($(this).val()=='selectpage') {
+                    $('#other-option').html('');
+                    $('#selectpage-setting').html($('#selectpage-setting-html').html());
+
+                    Form.event.selectpicker($('.frm-operate'));
+                } else {
+                    $('#other-option').html('');
+                }
+            });
+
+            // 动态下拉配置删除
+            $(document).on('click','.btn-groups-del',function (e) {
+                $($(this).data('class')).remove();
+                e.preventDefault();
+            });
+            var item = 2;
+            $(document).on('click','.btn-groups',function (e) {
+                $('#J-groups').append('<div class="row mt-1 del'+item+'"><div class="col-sm-5">\n' +
+                    '      <input type="text" class="form-control" value="" name="row[data_list][param][]">\n' +
+                    '  </div>\n' +
+                    '  <div class="col-sm-5">\n' +
+                    '      <input type="text" class="form-control" value="" name="row[data_list][param][]">\n' +
+                    '  </div>\n' +
+                    '  <div class="col-sm-2 d-flex align-items-center">\n' +
+                    '      <a href="#" class="btn btn-default btn-xs btn-groups-del" data-class=".del'+item+'"><i class="fas fa-times"></i></a>\n' +
+                    '  </div></div>');
+                item++;
+                e.preventDefault();
+            });
+
+            // 数据源值改变
+            $(document).on('change', 'input[name="row[data_list][type]"]', function (e) {
+                var val = $(this).val();
+                if (val=='table') {
+                    $('.type-url').hide();
+                    $('.type-table').show();
+                } else {
+                    $('.type-url').show();
+                    $('.type-table').hide();
+                }
+            });
+            // 数据表更换事件
+            $(document).on('change', '#J-selectpage-table', function (e) {
+                var val = $(this).val();
+                $.get('{:url("/cms.model_field/getFields")}'+'?t='+val,function (data) {
+                    if (data.code==200) {
+                        var html = '';
+                        var is_delete_time = 0;
+                        $.each(data.data.field, function (idx, val) {
+                            if (val=='delete_time') {
+                                is_delete_time = 1;
+                            }
+                            html += '<option value="'+val+'">'+val+'</option>';
+                        })
+                        $('select.J-field').html(html);
+                        $('input[name="row[data_list][delete_time]"]').val(is_delete_time);
+                        $('.selectpicker').selectpicker('refresh');
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                })
+            })
+
+            $('#frm-form_type').trigger('change');
+        })
+    })
+</script>
+{/block:script}

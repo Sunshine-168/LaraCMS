@@ -1,0 +1,91 @@
+<form role="form" action="" class="frm-operate" method="post">
+    <div class="card shadow-none">
+        <div class="card-body">
+            <div class="form-group row">
+                <label for="frm-auth_group_id" class="col-sm-2 col-form-label">{:lang("Role group")}: </label>
+                <div class="col-sm-8">
+                    <select name="row[auth_group_id]" class="form-control" id="frm-auth_group_id">
+                        {volist name="data" id="vo"}
+                        <option value="{$vo.id}" {if $vo['id']==1}disabled{/if}>{$vo.name|raw}</option>
+                        {/volist}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <label for="frm-category_id" class="col-sm-2 col-form-label">{:lang("Column authority")}: </label>
+                <div class="col-sm-8">
+                    <label class="control-label"><input type="checkbox" onclick="checkAll(this)" class="J_check"> {:lang("Select all")}</label>
+                    <label class="control-label"><input type="checkbox" onclick="openAll(this)" class="J_check" checked>
+                        {:lang("Expand All")}</label>
+                    <div class="frm-category_id"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row justify-content-around">
+                <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary btn-submit">{:lang('Submit')}</button>
+                    <button type="reset" class="btn btn-default">{:lang('Reset')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{block:script}
+<script>
+    // 获取栏目权限
+    function getGroupRule() {
+        var id = $('#frm-auth_group_id').val();
+        if (!id) {
+            return ;
+        }
+        Util.ajax({
+            url:'{:url("/cms.category/auth")}?id='+id
+        },'',function (data) {
+            $('.frm-category_id').jstree("destroy");
+            $('.frm-category_id').jstree({ "plugins":["checkbox"],'core':{'data':data}});
+        });
+    }
+    // 全选
+    function checkAll(obj) {
+        var ch = $(obj).prop('checked');
+        if (ch) {
+            //选中
+            $('.frm-category_id').jstree('select_all');
+        } else {
+            $('.frm-category_id').jstree('uncheck_all');
+        }
+    }
+    // 展开所有
+    function openAll(obj) {
+        $(".frm-category_id").jstree($(obj).prop("checked") ? "open_all" : "close_all")
+    }
+
+    require(['admin','jstree','Form'], function (admin, undefined, Form) {
+        $('#frm-auth_group_id').change(function (e) {
+            getGroupRule();
+        });
+
+        $(function () {
+            getGroupRule();
+
+            Form.api.init({
+                before: function (data) {
+                    var ref = $('.frm-category_id').jstree(true);//获得整个树
+                    var sel = ref.get_selected(); //获得所有选中节点，返回值为数组
+                    sel.push.apply(sel,ref.get_undetermined(false)); //返回半选中节点ID并合并数组，true 则返回对象的形式.
+                    data.push({name:'row[category_id]',value:sel.join(',')});
+                    return data;
+                },
+                success:function (data,res) {
+                    layer.msg(res.msg,{time:1000},function (e) {
+                        getGroupRule();
+                    });
+                    return false;
+                }
+            });
+        })
+    })
+</script>
+{/block:script}

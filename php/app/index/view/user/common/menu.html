@@ -1,0 +1,55 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top J-nav">
+    <div class="container">
+        <a class="navbar-brand" href="#">{:lang('Member center')}</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/" target="_blank">{:lang('Home')} <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav navbar-no-expand ml-auto">
+                {if isset($user) && empty($user)}
+                <li class="nav-item d-flex align-items-center nologin">
+                    <div class="d-flex align-items-center">
+                        <a class="nav-link login" href="{:url('/user.user/login')}">
+                            {:lang('Sign in')}
+                        </a>
+                        <span class="text-secondary">/</span>
+                        <a class="nav-link register" href="{:url('/user.user/register')}">
+                            {:lang('Register')}
+                        </a>
+                    </div>
+                </li>
+                {else /}
+                <li class="nav-item user-avatar dropdown">
+                    <a class="nav-link" href="#" data-toggle="dropdown" aria-expanded="true">
+                        <img src="{$user.avatar}">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-container">
+                            <a href="{:url('/user.user/index',[],false)}" class="dropdown-item">
+                                <i class="fas fa-home"></i> {:lang('Member center')}
+                            </a>
+                            <a href="{:url('/user.user/profile')}" class="dropdown-item">
+                                <i class="fas fa-user"></i> {:lang('Profile')}
+                            </a>
+                            <a href="{:url('/user.user/changePwd')}" class="dropdown-item">
+                                <i class="fas fa-lock"></i> {:lang('Change password')}
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{:url('/user.user/loginout')}" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt mr-2"></i> {:lang('Sign out')}
+                            </a>
+                        </div>
+                    </div>
+                </li>
+                {/if}
+            </ul>
+        </div>
+    </div>
+</nav>

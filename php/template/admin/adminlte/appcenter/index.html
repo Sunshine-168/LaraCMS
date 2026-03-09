@@ -1,0 +1,544 @@
+{block:style}
+<style>
+    .tabs-group .title {
+        float: left;
+        padding: 10px 0;
+        width: 80px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-wrap: normal;
+    }
+    .tabs-group .content {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 0 80px;
+    }
+    .tabs-group .content > li {
+        float: left;
+        padding: 5px 12px;
+        position: relative;
+    }
+    .tabs-group .content > li .show-down {
+        position: absolute;
+        right: 0;
+        top: 10px;
+        cursor: pointer;
+        color: #7b7b7b;
+    }
+    .tabs-group .content > li > a {
+        display: block;
+        padding: 4px 5px;
+        border: none;
+        -webkit-border-radius: 4px;
+        -webkit-background-clip: padding-box;
+        -moz-border-radius: 4px;
+        -moz-background-clip: padding;
+        border-radius: 4px;
+        background-clip: padding-box;
+        color: #828a92;
+        -webkit-transition: all 0.3s ease;
+        -moz-transition: all 0.3s ease;
+        -o-transition: all 0.3s ease;
+        transition: all 0.3s ease;
+    }
+    .tabs-group .content > li.active > a, .tabs-group .content > li:hover > a {
+        color: #34D0B6;
+    }
+    .tabs-group .content > li:hover > .dropdown-menu {
+        display: block;
+        margin-top: -2px;
+    }
+    .card-list .card .card-title {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .card-list .card .card-text {
+        width: 100%;
+        height: 38px;
+        overflow: hidden;
+        color: #86909c;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    .card-list .img-thumb {
+        height: 250px;
+        overflow: hidden;
+        width: 100%;
+        border-top-right-radius: 2px;
+        border-top-left-radius: 2px;
+    }
+    .card-list .card>.img-thumb img {
+        width: 100%;
+    }
+    .user-img img {
+        width: 100%;
+        height: 100%;
+        border-radius: 100%;
+    }
+    .footer-fa {
+        font-size: 12px;
+        color: #989da2;
+    }
+    .footer-fa span {
+        margin-left: 2px;
+    }
+    table th, table tr td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .app-list .float-right span.dropdown-toggle {
+        cursor: pointer;
+    }
+    .app-list .card-body {
+        padding: 12px 16px 12px 16px;
+    }
+    @media (min-width: 768px) {
+        .app-list .img-thumb {
+            height: 180px;
+        }
+        .app-list .row {
+            margin-right: -12px !important;
+            margin-left: -12px !important;
+        }
+        .app-list .col-md-4 {
+            padding-right: 12px;
+            padding-left: 12px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .app-list .img-thumb {
+            height: 150px;
+        }
+        .app-list .row {
+            margin-right: -16px !important;
+            margin-left: -16px !important;
+        }
+        .app-list .col-md-4 {
+            padding-right: 16px;
+            padding-left: 16px;
+        }
+        .app-list .card {
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (min-width: 1200px){
+        .app-list .row {
+            margin-right: -20px !important;
+            margin-left: -20px !important;
+        }
+        .app-list .col-md-4 {
+            padding-right: 20px;
+            padding-left: 20px;
+        }
+        .app-list .img-thumb {
+            height: 240px;
+        }
+        .app-list .card {
+            margin-bottom: 24px;
+        }
+    }
+    .card-info {
+        color: #86909c;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    .card-info a {
+        color: #86909c;
+    }
+    .btn-group .btn {
+        white-space: nowrap;
+    }
+    .addon-pane .app-list {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .app-list tr td {
+        vertical-align: middle;
+    }
+</style>
+{/block:style}
+<div class="card card-tabs">
+    <div class="card-header">
+        <ul class="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="pill" href="#template-pane" data-type="template">{:__("Template")}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" href="#addon-pane" data-type="addon">{:__("Addon")}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="custom-tabs-three-tabContent">
+            <div class="tab-pane fade active show" id="template-pane">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a class="btn btn-secondary btn-refresh" href="#" data-type="template" aria-label="Refresh" title="{:__('Refresh')}">
+                            <i class="fa fa-sync"></i>
+                        </a>
+                        <button type="button" class="btn btn-default btn-upload ml-2" data-type="template"><i class="fa fa-download"></i>
+                            {:__("Import template")}</button>
+                        <input type="file" class="input-file1" style="display: none" name="files[]" accept="application/zip">
+                    </div>
+                </div>
+                <div class="card-list" style="margin-top: 20px">
+                    <div class="app-list"></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="addon-pane">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a class="btn btn-secondary btn-refresh" href="#" data-type="addon" aria-label="Refresh" title="{:__('Refresh')}">
+                            <i class="fa fa-sync"></i>
+                        </a>
+                        <button type="button" class="btn btn-default btn-upload ml-2" data-type="addon"><i class="fa fa-download"></i> {:__("Import addon")}</button>
+                        <input type="file" class="input-file1" style="display: none" name="files[]" accept="application/zip">
+                    </div>
+                </div>
+                <div class="card-list" style="margin-top: 15px">
+                    <div class="row">
+                        <div class="col-md-12 app-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="tmp-login">
+    <div style="padding: 20px">
+        <div class="alert alert-light">
+            {:__("This operation requires logging in to an online account")}!
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <input type="text" class="form-control" name="username" placeholder="邮箱/手机号/用户名">
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <input type="text" class="form-control" name="password" placeholder="密码">
+            </div>
+        </div>
+    </div>
+</script>
+
+{block:script}
+<script>
+    /**
+     * 获取插件列表
+     */
+    function getAddonList(type)
+    {
+        type = (type || $('#custom-tabs-three-tab').find('.nav-link.active').data('type'));
+        hkcms.api.ajax({
+            url:'{:url("/Appcenter/index")}',
+            data: {type: type,module: 'index'}
+        }, '', function (data) {
+            $('#'+type+'-pane .app-list').html(data.html);
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // 在线检测升级
+            var applist = $('#'+type+'-pane .app-list').find('.applist').val();
+            if (applist) {
+                hkcms.api.ajax({
+                    type: 'post',
+                    url:'{:url("/Appcenter/check")}',
+                    data: {type: type,module: 'index',applist:applist}
+                }, '', function (data) {
+                    if (data) {
+                        $.each(data, function (idx,vo) {
+                            // 版本升级检测
+                            if (vo.upgradeData && vo.upgradeData.length) {
+                                $('.version-'+idx).find('.btn-group').append('<button class="btn-upgrade btn btn-xs btn-default" data-name="'+idx+'" title="{:__("Upgrade to")}'+vo.upgradeData[0]+'" data-trigger="hover" data-toggle="tooltip">{:__("Upgrade")}</button>');
+                                if (vo.upgradeData.length>1) {
+                                    var html = '<button type="button" class="btn btn-default dropdown-toggle dropdown-toggle-split btn-xs" data-toggle="dropdown" aria-expanded="false" title="{:__("More versions")}">\n' +
+                                        '<span class="sr-only">Toggle Dropdown</span></button><div class="dropdown-menu dropdown-menu-right">';
+
+                                    $.each(vo.upgradeData, function (id,vv) {
+                                        html += '<a class="dropdown-item btn-upgrade" href="#" data-name="'+idx+'" data-version="'+vv+'">'+vv+'</a>';
+                                    });
+
+                                    $('.version-'+idx).find('.btn-group').append(html+'</div>');
+                                }
+                            }
+
+                            // 用户地址
+                            if (vo.user_url) {
+                                $('.user-'+idx).attr('href',vo.user_url);
+                            }
+
+                            // 插件图片与连接
+                            if (vo.url2) {
+                                $('.img-'+idx).find('a').attr('href',vo.url2);
+                            }
+                            if (vo.image) {
+                                $('.img-'+idx).find('img').attr('src',vo.image);
+                                $('.img-'+idx).find('img').attr('layer-src',vo.image);
+                            }
+                        });
+
+                        $('#'+type+'-pane .app-list').find('[data-toggle="tooltip"]').tooltip();
+                        layer.photos({
+                            photos: '.addon-table',
+                            anim: 5,
+                            closeBtn:1
+                        });
+                    }
+                })
+            }
+        });
+    }
+
+    require(['admin','jquery-fileupload'], function (admin,undefined) {
+
+        $('.btn-refresh').on('click',function (e) {
+            getAddonList($(this).data('type'));
+        })
+
+        // 类型切换
+        $('#custom-tabs-three-tab').on('click', 'a', function(e) {
+            e.preventDefault();
+            getAddonList($(this).data('type'));
+        });
+
+        // 卸载
+        $(document).on('click', '.btn-uninstall', function (e) {
+            var that = this;
+            layer.confirm('{:__("Are you sure to uninstall? The file will also be deleted.")}', {
+                btn: ['{:__("Uninstall")}','{:__("Cancel")}'],
+                icon: 5
+            }, function(){
+                var obj = {
+                    name: $(that).data('name'),
+                    type: $(that).data('type'),
+                    module: 'index'
+                }
+                hkcms.api.ajax({
+                    url:'{:url("/Appcenter/uninstall")}',
+                    data: obj
+                }, '', function (data,res) {
+                    layer.msg(res.msg,{time: 1000,icon:1},function () {
+                        getAddonList('');
+                        if ($('#custom-tabs-three-tab').find('.nav-link.active').data('type')!='template') {
+                            parent.getMenuList();
+                        }
+                    });
+                },function (data) {
+                    layer.alert(data.msg);
+                    return false;
+                });
+            }, function(){
+            });
+        });
+
+        /**
+         * 更新
+         */
+        $(document).on('click', '.btn-upgrade', function (e) {
+            e.preventDefault();
+            var version = $(this).data('version');
+            var obj = {name:$(this).data('name')};
+            if (typeof version !=='undefined') {
+                obj.version = version;
+            }
+
+            var that = this;
+            Util.ajax({
+                url:'{:url("/Appcenter/upgrade")}',
+                data: obj
+            }, '', function (data) {
+                hkcms.api.open(data.url+'&popup=1',data.title)
+                return false;
+            },function (data) {
+                if (data.msg=='请登录后操作') {
+
+                    layer.open({
+                        title: "{:__('Tips')}",
+                        type: 1,
+                        btn: ["{:lang('Submit')}"],
+                        area: ['400px', '320px'],
+                        content: $('#tmp-login').html(),
+                        shade: 0,
+                        yes: function(index, layero) {
+                            var idx = layer.load(1);
+                            $.post("{:url('/appcenter/login')}",{username:$('input[name="username"]').val(),password:$('input[name="password"]').val()},function (res) {
+                                layer.close(idx);
+                                if (res.code==200) {
+                                    layer.msg(res.msg,{time:1000},function () {
+                                        $('.btn-upgrade').trigger('click');
+                                        layer.close(index);
+                                    });
+                                } else {
+                                    layer.msg(res.msg);
+                                }
+                            });
+                        }
+                    });
+                    return false;
+                } else {
+                    layer.alert(data.msg);
+                    return false;
+                }
+            });
+        });
+
+        // 启用、禁用
+        $(document).on('change', '.custom-control-input', function (e) {
+            e.preventDefault();
+
+            let value = $(this).val();
+            value = value==1?-1:1;
+
+            Util.ajax({
+                url:'{:url("/Appcenter/enable")}',
+                data: {value:value,type:$('#custom-tabs-three-tab').find('.nav-link.active').data('type'),name:$(this).data('name')}
+            }, '', function (data,res) {
+                layer.msg(res.msg,{time: 1000},function () {
+                    getAddonList('');
+                    if ($('#custom-tabs-three-tab').find('.nav-link.active').data('type')!='template') {
+                        parent.getMenuList();
+                    }
+                });
+            },function (data) {
+                layer.alert(data.msg);
+                return false;
+            });
+        });
+
+        // 安装本地
+        $(document).on('click', '.btn-install-db', function (e) {
+            e.preventDefault();
+            var obj = {name:$(this).data('name'),type:$(this).data('type')};
+
+            var module  = 'index';
+            if (typeof module !=='undefined') {
+                obj.module = module;
+            }
+
+            Util.ajax({
+                url:'{:url("/Appcenter/installDb")}',
+                data: obj
+            }, '', function (data, all) {
+                hkcms.api.open(data.url,data.title)
+                return false;
+            },function (data) {
+                layer.alert(data.msg);
+                return false;
+            });
+        });
+
+        /**
+         * 离线上传安装
+         */
+        $('.btn-upload').click(function (e) {
+            e.preventDefault();
+            var type = $(this).data('type');
+            var option = {
+                url: "{:url('/appcenter/local')}?type="+type,
+                type: 'POST',
+                dataType: 'json', // 服务器返回的数据类型
+                autoUpload: true, // 选择文件后自动上传
+                mimetype: 'application/zip,application/x-zip-compressed',  // 文件类型
+                size: Config.file_size,
+                singleFileUploads: false,
+                fileNum: 1,
+                add: function (e, data) {
+                    let arr = option.mimetype.split(',');
+                    if (data.originalFiles.length > option.fileNum) {
+                        layer.msg(lang('Only %s file can be uploaded at a time!',[option['fileNum']]));
+                        return false;
+                    }
+                    for (let idx in data.originalFiles) {
+                        var type = data.originalFiles[idx]['type'];
+                        if (option.mimetype.indexOf("/*") !== -1) {
+                            type = type.split('/');
+                            type[1] = '*';
+                            type = type.join('/');
+                        }
+                        if (option.mimetype!='*' && 0>$.inArray(type, arr)) {
+                            layer.msg(lang('Unsupported file suffix'));
+                            return false;
+                        }
+
+                        //文件大小判断
+                        if(data.originalFiles[idx].size > option.size) {
+                            layer.msg(lang('Please upload a leaflet that does not exceed %s', (option.size/1024/1024).toFixed(2)+'M'));
+                            return false;
+                        }
+                    }
+                    data.submit();
+                },
+                done: function (e, data) { // 成功回调
+                    if (data.result.code==200) {
+                        hkcms.api.open(data.result.data.url+'&popup=1',data.result.data.title)
+                    } else {
+                        layer.alert(data.result.msg);
+                    }
+                }
+            };
+            $(this).next().fileupload(option);
+            $(this).next().click();
+        });
+
+        $('.btn-add').click(function (e) {
+            var type = $(this).data('type');
+            hkcms.api.open(hkcms.api.setUrlParams( { url:"{:url('/appcenter/add')}?type="+type, query:{popup:1}}),lang('Add'))
+        });
+
+        getAddonList('');
+
+        // 导出
+        $(document).on('click','.btn-exp',function (e) {
+            var name = $(this).data('name');
+            layer.prompt({title: '请填写新的应用标识', formType: 3}, function(url, index){
+                window.open("{:url('/appcenter/packCode')}?name="+name+"&newname="+url);
+                layer.close(index);
+            });
+        });
+
+        // 显示详情
+        $(document).on('click','.btn-show-desc',function (e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (href && href!='#' && href!='#!') {
+                var w = $(document).width();
+                window.top.layer.open({
+                    type: 2,
+                    title: '',
+                    maxmin: false,
+                    area: [w<=772?'95%':'772px', '95%'],
+                    content: $(this).attr('href')
+                })
+
+                window.top.$('.layui-layer-iframe').css('overflow-y','inherit')
+            }
+        });
+
+        // 设置主题
+        $(document).on('click', '.btn-theme', function (e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            var idx = layer.load();
+            $.get(href,function (res) {
+                layer.close(idx);
+                if (res.code==200) {
+                    layer.msg(res.msg,{time:1000},function () {
+                        $('.btn-refresh').trigger('click');
+                    });
+                } else {
+                    layer.msg(res.msg);
+                }
+            });
+        })
+    })
+</script>
+{/block:script}

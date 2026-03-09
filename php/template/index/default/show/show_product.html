@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+
+    <style>
+        .mySwiper {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+        .mySwiper2 {
+            width: 100%;
+            height: 570px;
+            margin-bottom: 20px;
+        }
+        .swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .mySwiper .swiper-slide {
+            opacity: 0.4;
+        }
+        .mySwiper .swiper-slide.swiper-slide-thumb-active {
+            opacity: 1;
+        }
+        @media (max-width: 1000px) {
+            .mySwiper {
+                width: 100%;
+                height: 80px;
+            }
+            .mySwiper2 {
+                width: 100%;
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="body-inner">
+    {include file="common/menu"}
+    <!--获取内页横幅的第二张-->
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{$Cate.title}</h1>
+                            {// 面包屑导航，symbol 是分隔符，class是html class,赋值给a标签，更多参数前往手册查看}
+                            <nav aria-label="breadcrumb" class="mt-4">{hkcms:breadcrumb class="active_a" symbol=" / " /}</nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section class="product-details">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <div class="product__details__pic">
+                        <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="swiper-container mySwiper2">
+                            <div class="swiper-wrapper">
+                                {// images是图集（多图）可以使用volist 循环输出，也可以使用fileinfo获取图片详细信息}
+                                {hkcms:volist name="Info.images"}
+                                <div class="swiper-slide">
+                                    <img src="{$item}" />
+                                </div>
+                                {/hkcms:volist}
+                            </div>
+                            <div class="swiper-button-next"><i class="fas fa-angle-right"></i></div>
+                            <div class="swiper-button-prev"><i class="fas fa-angle-left"></i></div>
+                        </div>
+                        <div thumbsSlider="" class="swiper-container mySwiper">
+                            <div class="swiper-wrapper">
+                                {hkcms:volist name="Info.images"}
+                                <div class="swiper-slide">
+                                    <img src="{$item}" />
+                                </div>
+                                {/hkcms:volist}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="product__details__text">
+                        <h3>{$Info.title}</h3>
+                        <div class="product__details__rating">
+                            <a href="{$Info.category.url}" class="mr-4"><i class="fa fa-list"></i> {$Info.category.title}</a>
+                            <span><i class="fa fa-eye"></i> {$Info.views} {:__('View')}</span>
+                        </div>
+                        {if !empty($Info.price) && $Info.price>0}
+                        <div class="product__details__price">¥ {$Info.price}</div>
+                        {else /}
+                        <div class="product__details__price">{:__('Consult')}</div>
+                        {/if}
+
+                        <p style="margin-bottom: 45px;">{$Info.description}</p>
+
+                        <a href="{$Info.buylink|default=''}" class="btn btn-primary" target="_blank"><i class="fa fa-external-link-alt"></i> {:__('Buy Now')}</a>
+                        <!--待定：<a href="#" class="btn btn-sm btn-primary">在线留言</a>-->
+                        <ul>
+                            {// attr字段是产品参数，是自定义字段，数组类型，所以继续用volist即可输出}
+                            {hkcms:volist name="Info.attr"}
+                            <li><b>{$key}</b> <span>{$item}</span></li>
+                            {/hkcms:volist}
+                            <li style="margin-top: 20px"><b>{:__('Share')}</b>
+                                <div class="share">
+                                    <a href="http://connect.qq.com/widget/shareqq/index.html?url={:urlencode($Info.fullurl)}?sharesource=qzone&title={$Info.title}&pics={:cdn_url($Info.thumb,true)}&summary={$Info.description}&desc={$site.title}"><i class="fab fa-qq"></i></a>
+                                    <a href="http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={:urlencode($Info.fullurl)}&title={$Info.title}-{$site.title}&summary={$Info.description}"><i class="far fa-star"></i></a>
+                                    <a href="http://service.weibo.com/share/share.php?url={:urlencode($Info.fullurl)}&title={$Info.title}-{$site.title}&pic={:cdn_url($Info.thumb,true)}"><i class="fab fa-weibo"></i></a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="product__details__tab">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab" aria-selected="true">{:__('Product Details')}</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="tabs-1" role="tabpanel">
+                                <div class="product__details__tab__desc main-content">{$Info.content}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--产品展示-->
+    <section class="project-area home-product" style="padding-top: 0">
+        <div class="container">
+            <!--产品栏目-->
+            <div class="product__details__tab" style="padding-top:0;padding-bottom: 44px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab" aria-selected="true">{:__('Related Product')}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!--产品栏目 结束-->
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="row property-filter tab-content">
+                        {// 在列表页无需写catid=""，默认就是当前列表页下的数据}
+                        {hkcms:content catid="$Cate.id" num="3" order="weigh desc,publish_time desc"}
+                        <div class="col-lg-4 col-md-6 mix all">
+                            <div class="property-item">
+                                <div class="pi-pic set-bg" style="background-image: url('{$item.thumb|default=''}');">
+                                    <div class="label c-magenta">{$item.category.title}</div>
+                                </div>
+                                <div class="pi-text">
+                                    <a href="#!" class="heart-icon"><span class="fas fa-meteor"></span> {$item.views}</a>
+
+                                    {// if语句的使用，下面是判断价格大于0就显示价格，反之显示咨询 }
+                                    {if !empty($item.price) && $item.price>0}
+                                    <div class="pt-price text-danger">¥ {$item.price|default=""}</div>
+                                    {else /}
+                                    <div class="pt-price text-warning">{:__('Consult')}</div>
+                                    {/if}
+
+                                    {// $item.fullurl是包含域名的url地址 }
+                                    <h5><a href="{$item.fullurl}">{$item.title}</a></h5>
+                                    <div class="desc">{$item.description}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/hkcms:content}
+                    </div>
+                </div>
+            </div>
+        </div><!--container 结束-->
+    </section>
+    <!--产品展示 结束-->
+
+    {include file="common/footer"}
+
+    <script>
+
+        var swiper = new Swiper(".mySwiper", {
+            spaceBetween: 10,
+            slidesPerView: 4,
+            freeMode: true,
+            watchSlidesProgress: true,
+        });
+        var swiper2 = new Swiper(".mySwiper2", {
+            spaceBetween: 10,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            thumbs: {
+                swiper: swiper,
+            },
+        });
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<div class="card card-primary">
+    <div class="card-body">
+        <div id="toolbar" class="toolbar">
+            {if (has_rule('add'))}
+            <button type="button" class="btn btn-primary btn-add " data-url="{:url('/cms.recommend/add')}" data-popup="false"><i class="fas fa-plus"></i>
+                {:lang('Add')}</button>
+            {/if}
+
+
+            <div class="dropdown ml-1 btn-toggle" data-toggle="tooltip" data-placement="right" data-title="点击表格行进行批量操作">
+                <a class="btn btn-secondary dropdown-toggle btn-disabled disabled" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-cog"></i> {:lang('More')}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    {if (has_rule('del'))}
+                    <a class="dropdown-item btn-del" href="#" data-url="{:url('/cms.recommend/del')}"><i class="fas fa-trash-alt"></i> {:lang('Batch delete')}</a>
+                    {/if}
+
+                    {if (has_rule('batches'))}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item status" href="#" data-params="status=normal"><i class="fas fa-check-circle"></i> {:lang('Set to enable')}</a>
+                    <a class="dropdown-item status" href="#" data-params="status=hidden"><i class="fas fa-ban"></i> {:lang('Set to disabled')}</a>
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <table id="table"
+               data-del="{if has_rule('del')}{:url('/cms.Recommend/del')}{/if}"
+               data-batches="{if has_rule('batches')}{:url('/cms.Recommend/batches')}{/if}"
+        ></table>
+    </div>
+</div>
+
+{block:script}
+<script>
+    require(['admin','table'], function (admin, Table) {
+        $(function () {
+            Table.init({
+                url: "{:url('/cms.Recommend/index')}",
+                showToggle: false,
+                search: false,
+                pagination: true,
+                escape: false,
+                contentLangSw: true,
+                columns: [{
+                    field: 'state',
+                    checkbox: true,
+                },{
+                    field: 'weigh',
+                    title: '{:lang("Weigh")}',
+                    formatter:Table.formatter.txtEditBtn,
+                    events:Table.events.txtEditBtn
+                },{
+                    field: 'SN',
+                    title: '{:lang("Serial number")}',
+                    formatter: Table.formatter.SN,
+                    visible: false
+                },{
+                    field: 'id',
+                    title: '{:lang("ID")}',
+                },{
+                    field: 'name',
+                    title: '{:lang("Mark")}',
+                    align: 'left',
+                },{
+                    field: 'remark',
+                    title: '{:lang("Title")}',
+                    align: 'left',
+                },{
+                    field: 'type',
+                    title: '{:lang("Type")}',
+                    formatter: function(value, row, index) {
+                        if (value==1) {
+                            return '{:lang("Banner")}';
+                        } else if (value==2) {
+                            return '{:lang("Video")}';
+                        } else if (value==3) {
+                            return '{:lang("HTML Content")}';
+                        } else if (value==4) {
+                            return '{:lang("Content data")}';
+                        } else if (value==5) {
+                            return '{:lang("Links")}';
+                        }
+                    }
+                },{
+                    field: 'status',
+                    title: '{:lang("Status")}',
+                    formatter: Table.formatter.switchBtn,
+                    events: Table.events.switchBtn
+                },{
+                    field: 'operate',
+                    title: '{:lang("Operate")}',
+                    formatter: function (value, row, index) {
+                        let edit_url = Util.setUrlParams({ url:'{:url("/cms.Recommend/edit")}', query:{popup:0,id:row['id'],rec_type:row['type']} });
+                        let html = '';
+
+                        /* {if has_rule('edit')} */
+                        html += '<a href="'+edit_url+'" class="btn btn-primary btn-xs text-white mr-1" data-toggle="tooltip" data-placement="top" data-trigger="hover" title="'+lang('Edit')+'"><i class="fas fa-pen"></i></a>';
+                        /* {/if} */
+
+                        return html+Table.formatter.operate.call(this, value, row, index)
+                    },
+                    events: Table.events.operate
+                }]
+            });
+        })
+    })
+</script>
+{/block:script}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Error 404 - 404 Not Found!</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="/static/libs/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
+    <style>
+        body {
+            color: #051922;
+        }
+        .error-text {
+            text-align: center;
+        }
+        .error-text .code {
+            font-size: 140px;
+        }
+        .error-text h1 {
+            font-size: 40px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .error-text .info {
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+        .error-text .btn {
+            padding: 6px 10px 6px 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="error-text mt-5">
+                    <p class="code">404</p>
+                    <h1>{:lang('Oops! Not Found.')}</h1>
+                    <p class="info">{:lang('The page you requested for is not found.')}</p>
+                    <a href="{:url('/',[],false,true)}" class="btn btn-dark btn-sm rounded-pill"><i class="fa fa-reply"></i> {:lang('Return to previous page')}</a>
+                    <a href="{:url('/',[],false,true)}" class="btn btn-success btn-sm rounded-pill ml-3"><i class="fa fa-home"></i> {:lang('Back to Home')}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

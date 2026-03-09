@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="common/head"}
+</head>
+<body>
+{include file="common/menu"}
+
+    {hkcms:adv name="sub" itemid="2"}
+    <div id="banner-area" class="banner-area" style="background-image:url({$item.image})">
+        <div class="banner-text">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="banner-heading">
+                            <h1 class="banner-title">{:__('Hot tags')}</h1>
+                            <nav aria-label="breadcrumb" class="mt-4"><a href="/" class="active_a">{:__('Home')}</a> / <span>{:__('Hot tags')}</span></nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/hkcms:adv}
+
+    <section class="project-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="sidebar">
+                        <div class="widget widget-tags">
+                            <ul class="list-unstyled">
+                            {hkcms:taglist tid="0" page="1" num="10" order="views desc"}
+                                <li><a href="{$item.url}">{$item.title}</a></li>
+                            {/hkcms:taglist}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="gap-40"></div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            {hkcms:contentpage item="home,pre,pageno,next,last,info" mobile_item="pre,pageno,next" pre="&laquo;" next="&raquo;" /}
+                        </div>
+                    </div>
+                </div><!-- col-12 结束 -->
+            </div><!-- row 结束 -->
+        </div>
+    </section>
+
+{include file="common/footer"}
+</body>
+</html>
