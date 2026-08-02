@@ -6,6 +6,7 @@ use App\Models\Cms\Collector;
 use App\Models\Cms\CollectorLog;
 use App\Models\Cms\Entry;
 use App\Services\Cms\HtmlCacheService;
+use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\Result;
 use Illuminate\Support\Facades\Http;
@@ -22,7 +23,7 @@ class CollectorService
     {
         $ran = 0;
         $created = 0;
-        Collector::query()->where('is_active', true)->orderBy('id')->each(function (Collector $c) use (&$ran, &$created) {
+        Collector::query()->withoutGlobalScopes()->where('is_active', true)->orderBy('id')->each(function (Collector $c) use (&$ran, &$created) {
             if (! $c->due()) {
                 return;
             }
@@ -36,6 +37,16 @@ class CollectorService
 
     /** 运行单个采集器 */
     public function run(Collector $collector): array
+    {
+        $siteId = (int) ($collector->site_id ?: CurrentSite::idOrDefault() ?: 0);
+        if ($siteId > 0) {
+            return CurrentSite::run($siteId, fn () => $this->runInSite($collector));
+        }
+
+        return $this->runInSite($collector);
+    }
+
+    protected function runInSite(Collector $collector): array
     {
         try {
             $items = match ($collector->type) {

@@ -29,22 +29,25 @@ class CategoryApiController extends ApiController
 
     public function tree(): JsonResponse
     {
-        $all = Category::query()->active()->orderBy('sort_order')->get();
+        $all = Category::query()->active()->with('modelDef')->orderBy('sort_order')->get();
         $map = [];
         foreach ($all as $c) {
-            $map[$c->id] = $this->transform($c) + ['children' => []];
+            $map[$c->id] = $this->transform($c);
+            $map[$c->id]['children'] = [];
         }
         $roots = [];
-        foreach ($map as $id => &$node) {
-            $pid = (int) ($all->firstWhere('id', $id)?->parent_id ?? 0);
-            if ($pid && isset($map[$pid])) {
+        foreach ($all as $c) {
+            $node = &$map[$c->id];
+            $pid = (int) ($c->parent_id ?? 0);
+            if ($pid > 0 && isset($map[$pid])) {
                 $map[$pid]['children'][] = &$node;
             } else {
                 $roots[] = &$node;
             }
+            unset($node);
         }
 
-        return $this->ok($roots);
+        return $this->ok(array_values($roots));
     }
 
     public function detail(int $id): JsonResponse

@@ -5,6 +5,7 @@ namespace App\Services\Cms;
 use App\Models\Cms\Category;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Setting;
+use App\Support\CurrentSite;
 use App\Support\Locale;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -98,7 +99,9 @@ class HtmlCacheService
         $query = $this->normalizeQuery($request);
         $epoch = (int) $this->store()->get(self::EPOCH_KEY, 1);
 
-        return 'cms_html:'.$epoch.':'.$locale.':'.$theme.':'.sha1($path.'?'.$query);
+        $siteId = CurrentSite::idOrDefault() ?? 0;
+
+        return 'cms_html:'.$siteId.':'.$epoch.':'.$locale.':'.$theme.':'.sha1($path.'?'.$query);
     }
 
     public function get(Request $request): ?string

@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Web;
 
 use App\Cms\CmsViewContext;
 use App\Http\Controllers\Controller;
+use App\Models\Cms\Category;
 use App\Models\Cms\CmsForm;
+use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
 use App\Models\Cms\FormSubmission;
 use App\Models\Cms\Tag;
+use App\Services\Cms\CommentService;
 use App\Services\Cms\SiteFrontService;
 use App\Services\Cms\TagAutoLinkService;
 use App\Support\Captcha;
@@ -28,6 +31,7 @@ class SiteController extends Controller
         private readonly SiteFrontService $site,
         private readonly CmsViewContext $context,
         private readonly TagAutoLinkService $tagAutoLink,
+        private readonly CommentService $comments,
     ) {
     }
 
@@ -40,23 +44,49 @@ class SiteController extends Controller
         return view($this->site->themeView('index.index'), compact('site'));
     }
 
-    /** 搜索 */
+    /** 搜索（仅 is_searchable 模型；可按模型/栏目过滤） */
     public function search(Request $request): View
     {
         $site = $this->site->bootSite();
         $q = trim((string) $request->query('q', ''));
+        $modelId = $request->integer('model_id') ?: null;
+        $categoryId = $request->integer('category_id') ?: null;
         $this->context->setSeo('搜索 '.$q.' - '.$site['title'], '', '');
+
+        $searchModels = ContentModel::query()
+            ->where('is_active', true)
+            ->where('is_searchable', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'name', 'slug']);
+        $searchCategories = Category::query()
+            ->where('status', 'published')
+            ->when($modelId, fn ($qb) => $qb->where('model_id', $modelId))
+            ->whereHas('modelDef', fn ($m) => $m->where('is_searchable', true))
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
 
         $results = collect();
         if ($q !== '') {
             $locale = Locale::current();
-            $results = Entry::query()->with(['category', 'modelDef'])->published()
-                ->where(function ($query) use ($q, $locale) {
-                    $query->where('search_text', 'like', "%{$q}%")
+            $query = Entry::query()->with(['category', 'modelDef'])->published()
+                ->whereHas('modelDef', function ($m) use ($modelId) {
+                    $m->where('is_searchable', true);
+                    if ($modelId) {
+                        $m->where('id', $modelId);
+                    }
+                })
+                ->where(function ($inner) use ($q, $locale) {
+                    $inner->where('search_text', 'like', "%{$q}%")
                         ->orWhere("title->{$locale}", 'like', "%{$q}%")
                         ->orWhere('title->'.Locale::default(), 'like', "%{$q}%")
                         ->orWhere("excerpt->{$locale}", 'like', "%{$q}%");
-                })
+                });
+            if ($categoryId) {
+                $query->inCategories([$categoryId]);
+            }
+            $results = $query
                 ->orderByRaw('CASE WHEN search_text LIKE ? THEN 0 WHEN title LIKE ? THEN 1 ELSE 2 END', ["%{$q}%", "%{$q}%"])
                 ->orderByDesc('published_at')
                 ->paginate(12)
@@ -67,6 +97,10 @@ class SiteController extends Controller
         return view($this->site->themeView('search'), [
             'site' => $site,
             'q' => $q,
+            'modelId' => $modelId,
+            'categoryId' => $categoryId,
+            'searchModels' => $searchModels,
+            'searchCategories' => $searchCategories,
             'results' => $results,
         ]);
     }
@@ -96,14 +130,8 @@ class SiteController extends Controller
         if ($category->type === 'single' || $category->modelDef?->kind === 'single') {
             $entry = $this->site->singleEntry($category);
             abort_unless($entry, 404);
-            $this->context->setArticle($entry);
 
-            return view($this->site->resolveShowTpl($category, $entry), [
-                'site' => $site,
-                'category' => $category,
-                'entry' => $entry,
-                'article' => $entry,
-            ]);
+            return $this->renderEntry($site, $category, $entry);
         }
 
         return view($this->site->resolveListTpl($category), compact('site', 'category'));
@@ -204,6 +232,9 @@ class SiteController extends Controller
             'category' => $category,
             'entry' => $entry,
             'article' => $entry,
+            'commentsEnabled' => $this->comments->enabled(),
+            'commentsGuest' => $this->comments->guestsAllowed(),
+            'commentTree' => $this->comments->approvedTreeForEntry($entry),
         ]);
     }
 

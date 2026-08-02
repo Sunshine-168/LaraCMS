@@ -110,7 +110,15 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `/download/{entry}` | 下载计次 |
 | `/go/{entry}` | 外链点击计次 |
 | `/form/{slug}` | 表单 POST（验证码） |
-| `/search?q=` | 全站搜索 |
+| `/comment/{entry}` | 评论提交（默认待审核；站点设置可开关/游客/限流/通知） |
+| （后台配置） | 入站重定向：精确路径 301/302，命中计数，按站隔离 |
+| `/search?q=` | 全站搜索（可按模型关闭 `is_searchable`） |
+
+### 模型搬运 / 多栏目 / 磁盘静态
+
+- **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
+- **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
+- **磁盘 HTML**：`CMS_DISK_HTML=true` 后，后台「全页缓存」可生成到 `public/html/site_{id}/…/index.html`；命令 `cms:html-build` / `cms:html-purge-disk`
 | `/member/login` | 会员登录 |
 | `/member/register` | 会员注册 |
 | `/member/forgot` | 找回密码（未配邮件时页面展示重置链接） |
@@ -142,14 +150,23 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 
 后台「采集」可配置公开 RSS/Atom 或 JSON 列表源，按间隔写入文档（`source_guid` 去重）。仅采集你有权使用的公开源，勿用于未授权整站抓取。
 
-### 运行模式（多站点可切换）
+## 多站点（全站租户）
 
-每个站点用 `.env` 独立配置，互不影响：
+共享同一数据库与进程：按 **域名** 解析站点，栏目/内容/会员/设置等均带 `site_id` 隔离。
+
+- 后台「系统 → 站点管理」维护域名；顶栏切换当前编辑站
+- 超管可切全部站点；普通管理员在「管理员」里勾选可管理站点
+- 新建站点会复制默认站的基础设置 / 语言 / Flags，**不复制内容**
+- 本地多域名可用 hosts，例如：`127.0.0.1 site-a.test site-b.test`
+- `local` / `testing` 环境未知域名回落默认站；生产未知域名返回 404
+- 前台 API 同样按 `Host` 解析（`/api/site/config` 含 `site_id` / `site_domain`）
+
+### 采集与调度运行模式
 
 | `CMS_COLLECT_MODE` | 行为 | 需要进程 |
 |---|---|---|
-| `schedule`（默认） | `schedule:run` 里**同步**跑采集 | 每站 cron / `schedule:work` |
-| `queue` | 调度只**投递 Job**，worker 消费 | 每站轻量 cron + 共用 `queue:work` |
+| `schedule`（默认） | `schedule:run` 里**同步**跑采集 | cron / `schedule:work` |
+| `queue` | 调度只**投递 Job**，worker 消费 | 轻量 cron + `queue:work` |
 | `off` | 不自动跑 | 仅手动 / 后台按钮 |
 
 ```env
@@ -159,19 +176,14 @@ CMS_COLLECT_QUEUE=cms
 QUEUE_CONNECTION=database       # 或 redis；勿用 sync 若真要异步
 ```
 
-**模式 A：纯定时（站点少 / 无 Redis）**
+**模式 A：纯定时**
 ```bash
-# 每站一条 cron
-* * * * * cd /var/www/site1 && php artisan schedule:run
+* * * * * cd /var/www/cms && php artisan schedule:run
 ```
 
-**模式 B：队列（站点多，推荐）**
+**模式 B：队列（推荐）**
 ```bash
-# 每站仍要轻量 schedule:run（只负责 dispatch，几乎不占 CPU）
-* * * * * cd /var/www/site1 && php artisan schedule:run
-* * * * * cd /var/www/site2 && php artisan schedule:run
-
-# 共用 worker（可一台机跑多个）
+* * * * * cd /var/www/cms && php artisan schedule:run
 php artisan queue:work --queue=cms --sleep=1 --tries=1
 ```
 
@@ -180,9 +192,9 @@ php artisan queue:work --queue=cms --sleep=1 --tries=1
 CMS_SCHEDULE_ENABLED=false
 ```
 ```bash
-* * * * * cd /var/www/site1 && php artisan cms:collect --queue
+* * * * * cd /var/www/cms && php artisan cms:collect --queue
 # 或同步：
-* * * * * cd /var/www/site1 && php artisan cms:collect --sync
+* * * * * cd /var/www/cms && php artisan cms:collect --sync
 ```
 
 ```bash

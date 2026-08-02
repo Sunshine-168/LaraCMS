@@ -65,6 +65,22 @@
         <label>文字水印（留空关闭）</label>
         <input type="text" name="upload_watermark_text" value="{{ old('upload_watermark_text', $settings['upload_watermark_text'] ?? '') }}" placeholder="© MySite">
 
+        <h3 style="margin-top:22px">评论</h3>
+        <label class="inline"><input type="checkbox" name="comments_enabled" value="1" @checked(old('comments_enabled', $settings['comments_enabled'] ?? '1') == '1')> 启用内容评论</label>
+        <label class="inline"><input type="checkbox" name="comments_guest" value="1" @checked(old('comments_guest', $settings['comments_guest'] ?? '1') == '1')> 允许游客评论</label>
+        <label class="inline"><input type="checkbox" name="comments_auto_approve" value="1" @checked(old('comments_auto_approve', $settings['comments_auto_approve'] ?? '0') == '1')> 会员评论自动通过（游客仍需审核）</label>
+        <label>新评论通知邮箱（留空不发）</label>
+        <input type="email" name="comments_notify_email" value="{{ old('comments_notify_email', $settings['comments_notify_email'] ?? '') }}" placeholder="ops@example.com">
+        <label>同一 IP 发表间隔（秒）</label>
+        <input type="number" name="comments_rate_seconds" min="10" max="3600" value="{{ old('comments_rate_seconds', $settings['comments_rate_seconds'] ?? 60) }}">
+
+        <h3 style="margin-top:22px">地图选点默认中心</h3>
+        <p class="muted">后台 map 字段 Leaflet 选点默认经纬度（OpenStreetMap）。</p>
+        <label>默认经度</label>
+        <input type="text" name="map_default_lng" value="{{ old('map_default_lng', $settings['map_default_lng'] ?? '116.397') }}">
+        <label>默认纬度</label>
+        <input type="text" name="map_default_lat" value="{{ old('map_default_lat', $settings['map_default_lat'] ?? '39.908') }}">
+
         <h3 style="margin-top:22px">内容 SEO</h3>
         <label class="inline"><input type="checkbox" name="tag_autolink" value="1" @checked(old('tag_autolink', $settings['tag_autolink'] ?? '1') != '0')> 标签自动内链（正文命中标签标题时链接到 /tag）</label>
 

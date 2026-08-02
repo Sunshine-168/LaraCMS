@@ -44,6 +44,14 @@ class AdminUserService
 
         $user->save();
 
+        $role = AdminRole::query()->find($user->role_id);
+        if ($role?->is_super) {
+            $user->sites()->detach();
+        } elseif (array_key_exists('site_ids', $input) || array_key_exists('_has_site_scope', $input)) {
+            $siteIds = array_values(array_unique(array_filter(array_map('intval', (array) ($input['site_ids'] ?? [])))));
+            $user->sites()->sync($siteIds);
+        }
+
         return Result::ok($user, '管理员已保存');
     }
 

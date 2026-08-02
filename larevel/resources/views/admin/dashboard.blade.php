@@ -36,17 +36,20 @@
     <div class="card card-panel">
         <div class="card-header">
             <span><i class="fas fa-th"></i> 快捷导航</span>
+            <a class="btn btn-sm btn-muted" href="{{ route('admin.quick-panels.edit') }}"><i class="fas fa-cog"></i> 配置</a>
         </div>
         <div class="card-body">
             <div class="quick-grid">
-                @foreach($quickNav as $item)
+                @forelse($quickNav as $item)
                     <div class="quick">
                         <a href="{{ $item['url'] }}">
                             <span class="icon"><i class="{{ $item['icon'] }}"></i></span>
                             <span class="text">{{ $item['title'] }}</span>
                         </a>
                     </div>
-                @endforeach
+                @empty
+                    <p class="muted" style="margin:0">暂无快捷入口，请先 <a href="{{ route('admin.quick-panels.edit') }}">配置快捷面板</a>。</p>
+                @endforelse
             </div>
         </div>
     </div>

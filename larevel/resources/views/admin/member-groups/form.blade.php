@@ -12,7 +12,7 @@
         <input type="number" name="sort" value="{{ old('sort', $group->sort ?? 0) }}">
         <label><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $group->is_active ?? true))> 启用</label>
         @php
-            $permLabels = ['download' => '下载受保护资源', 'form_submit' => '提交表单', 'view_member_content' => '查看会员内容'];
+            $permLabels = ['download' => '下载受保护资源', 'form_submit' => '提交表单', 'view_member_content' => '查看会员内容', 'upload' => '分片上传'];
             $selected = old('permissions', $group->permissions ?? array_keys($permLabels));
         @endphp
         <h3 style="margin:16px 0 8px">前台权限</h3>

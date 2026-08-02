@@ -5,4 +5,6 @@
         <p class="muted">{{ $entry->t('excerpt') }}</p>
         <p><a href="{{ route('go', $entry) }}" target="_blank">访问网站</a></p>
     </div>
+
+    @include('cms.comments')
 @endsection

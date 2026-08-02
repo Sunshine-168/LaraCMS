@@ -15,7 +15,9 @@ use App\Models\Cms\RecommendItem;
 use App\Models\Cms\Setting;
 use App\Models\Cms\Member;
 use App\Models\Cms\MemberGroup;
+use App\Models\Cms\Site;
 use App\Models\Cms\Tag;
+use App\Support\CurrentSite;
 use Illuminate\Database\Seeder;
 
 class CmsSeeder extends Seeder
@@ -23,6 +25,18 @@ class CmsSeeder extends Seeder
     public function run(): void
     {
         $this->call(AdminRbacSeeder::class);
+
+        $site = Site::default();
+        if (! $site) {
+            $host = parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
+            $site = Site::query()->create([
+                'name' => '默认站点',
+                'domain' => Site::normalizeDomain((string) $host),
+                'is_default' => true,
+                'is_active' => true,
+            ]);
+        }
+        CurrentSite::set($site);
 
         $superRoleId = AdminRole::query()->where('slug', 'super_admin')->value('id');
         $editorRoleId = AdminRole::query()->where('slug', 'editor')->value('id');
@@ -36,7 +50,7 @@ class CmsSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        AdminUser::query()->updateOrCreate(
+        $editor = AdminUser::query()->updateOrCreate(
             ['email' => 'editor@example.com'],
             [
                 'name' => '编辑',
@@ -45,8 +59,10 @@ class CmsSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+        $editor->sites()->sync([$site->id]);
+
         $defaultGroup = MemberGroup::query()->updateOrCreate(
-            ['slug' => 'default'],
+            ['site_id' => $site->id, 'slug' => 'default'],
             [
                 'name' => '普通会员',
                 'sort' => 0,
@@ -55,7 +71,7 @@ class CmsSeeder extends Seeder
             ]
         );
         Member::query()->updateOrCreate(
-            ['email' => 'member@example.com'],
+            ['site_id' => $site->id, 'email' => 'member@example.com'],
             [
                 'name' => '演示会员',
                 'password' => 'Member@12345',
@@ -71,6 +87,10 @@ class CmsSeeder extends Seeder
         Setting::setValue('mobile_theme', 'mobile');
         Setting::setValue('mobile_detect', 'ua');
         Setting::setValue('url_mode', 'cat_entry');
+        Setting::setValue('comments_enabled', '1');
+        Setting::setValue('comments_guest', '1');
+        Setting::setValue('comments_auto_approve', '0');
+        Setting::setValue('comments_rate_seconds', '60');
 
         $models = $this->seedModels();
         $cats = $this->seedCategories($models);
@@ -89,7 +109,7 @@ class CmsSeeder extends Seeder
     private function seedCollectors(array $models, array $cats): void
     {
         Collector::query()->updateOrCreate(
-            ['name' => 'Laravel Blog RSS'],
+            ['site_id' => CurrentSite::id(), 'name' => 'Laravel Blog RSS'],
             [
                 'type' => 'rss',
                 'source_url' => 'https://blog.laravel.com/feed',
@@ -179,7 +199,7 @@ class CmsSeeder extends Seeder
         $sort = 0;
         foreach ($defs as $slug => $def) {
             $model = ContentModel::query()->updateOrCreate(
-                ['slug' => $slug],
+                ['site_id' => CurrentSite::id(), 'slug' => $slug],
                 [
                     'name' => $def['name'],
                     'kind' => $def['kind'],
@@ -417,7 +437,7 @@ class CmsSeeder extends Seeder
     private function seedRecommends(array $models = [], array $cats = []): void
     {
         $banner = Recommend::query()->updateOrCreate(
-            ['name' => 'home_banner'],
+            ['site_id' => CurrentSite::id(), 'name' => 'home_banner'],
             ['title' => '首页轮播', 'type' => 'image', 'is_active' => true]
         );
         RecommendItem::query()->where('recommend_id', $banner->id)->delete();
@@ -432,7 +452,7 @@ class CmsSeeder extends Seeder
         ]);
 
         $partners = Recommend::query()->updateOrCreate(
-            ['name' => 'partners'],
+            ['site_id' => CurrentSite::id(), 'name' => 'partners'],
             ['title' => '合作伙伴', 'type' => 'link', 'is_active' => true]
         );
         RecommendItem::query()->where('recommend_id', $partners->id)->delete();
@@ -448,7 +468,7 @@ class CmsSeeder extends Seeder
         }
 
         $hot = Recommend::query()->updateOrCreate(
-            ['name' => 'hot_links'],
+            ['site_id' => CurrentSite::id(), 'name' => 'hot_links'],
             ['title' => '热门导航', 'type' => 'link', 'is_active' => true]
         );
         RecommendItem::query()->where('recommend_id', $hot->id)->delete();
@@ -462,7 +482,7 @@ class CmsSeeder extends Seeder
         ]);
 
         $live = Recommend::query()->updateOrCreate(
-            ['name' => 'live_board'],
+            ['site_id' => CurrentSite::id(), 'name' => 'live_board'],
             ['title' => '今日焦点', 'type' => 'link', 'is_active' => true]
         );
         RecommendItem::query()->where('recommend_id', $live->id)->delete();
@@ -476,7 +496,7 @@ class CmsSeeder extends Seeder
         ]);
 
         Recommend::query()->updateOrCreate(
-            ['name' => 'latest_news'],
+            ['site_id' => CurrentSite::id(), 'name' => 'latest_news'],
             [
                 'title' => '最新新闻（查询型）',
                 'type' => 'query',
@@ -495,7 +515,7 @@ class CmsSeeder extends Seeder
     private function seedForms(): void
     {
         CmsForm::query()->updateOrCreate(
-            ['slug' => 'contact'],
+            ['site_id' => CurrentSite::id(), 'slug' => 'contact'],
             [
                 'name' => '联系我们',
                 'fields' => [

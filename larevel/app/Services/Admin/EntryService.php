@@ -17,7 +17,7 @@ class EntryService
 
     public function paginate(?int $modelId = null, int $perPage = 15): LengthAwarePaginator
     {
-        $q = Entry::query()->with(['category', 'modelDef'])->orderByDesc('id');
+        $q = Entry::query()->with(['category', 'categories', 'modelDef'])->orderByDesc('id');
         if ($modelId) {
             $q->where('model_id', $modelId);
         }
@@ -28,7 +28,7 @@ class EntryService
 
     public function paginateTrashed(int $perPage = 20): LengthAwarePaginator
     {
-        $q = Entry::onlyTrashed()->with(['category', 'modelDef'])->orderByDesc('deleted_at');
+        $q = Entry::onlyTrashed()->with(['category', 'categories', 'modelDef'])->orderByDesc('deleted_at');
         AdminCategoryScope::applyToEntries($q);
 
         return $q->paginate($perPage);
@@ -36,16 +36,28 @@ class EntryService
 
     public function save(?Entry $entry, array $input): array
     {
-        if ($entry?->exists && ! AdminCategoryScope::canAccess($entry->category_id ? (int) $entry->category_id : null)) {
-            return Result::fail(AdminCategoryScope::denyMessage());
+        if ($entry?->exists) {
+            $entry->loadMissing('categories');
+            $existingIds = array_merge(
+                $entry->category_id ? [(int) $entry->category_id] : [],
+                $entry->categories->pluck('id')->map(fn ($id) => (int) $id)->all()
+            );
+            if ($existingIds !== [] && ! AdminCategoryScope::canAccessAny($existingIds)) {
+                return Result::fail(AdminCategoryScope::denyMessage());
+            }
         }
 
         $categoryId = $input['category_id'] ?: null;
-        if ($categoryId && ! AdminCategoryScope::canAccess((int) $categoryId)) {
+        $extraIds = array_values(array_unique(array_filter(array_map('intval', (array) ($input['category_ids'] ?? [])))));
+        if ($categoryId) {
+            array_unshift($extraIds, (int) $categoryId);
+            $extraIds = array_values(array_unique($extraIds));
+        }
+        if ($extraIds !== [] && ! AdminCategoryScope::canAccessAny($extraIds)) {
             return Result::fail(AdminCategoryScope::denyMessage());
         }
         if (AdminCategoryScope::allowedIds() !== null && ! $categoryId) {
-            return Result::fail('请选择有权限的栏目');
+            return Result::fail('请选择有权限的主栏目');
         }
 
         $entry ??= new Entry;
@@ -76,6 +88,8 @@ class EntryService
         $entry->rebuildSearchText();
         $entry->save();
 
+        $entry->categories()->sync($extraIds);
+
         if (! empty($input['tag_ids']) && is_array($input['tag_ids'])) {
             $entry->tags()->sync(array_filter(array_map('intval', $input['tag_ids'])));
         }
@@ -103,7 +117,15 @@ class EntryService
 
     public function assertAccess(Entry $entry): ?string
     {
-        if (! AdminCategoryScope::canAccess($entry->category_id ? (int) $entry->category_id : null)) {
+        $entry->loadMissing('categories');
+        $ids = array_merge(
+            $entry->category_id ? [(int) $entry->category_id] : [],
+            $entry->categories->pluck('id')->map(fn ($id) => (int) $id)->all()
+        );
+        if ($ids !== [] && ! AdminCategoryScope::canAccessAny($ids)) {
+            return AdminCategoryScope::denyMessage();
+        }
+        if ($ids === [] && AdminCategoryScope::allowedIds() !== null) {
             return AdminCategoryScope::denyMessage();
         }
 
@@ -190,7 +212,11 @@ class EntryService
         if (! AdminCategoryScope::canAccess($categoryId)) {
             return Result::fail(AdminCategoryScope::denyMessage());
         }
-        $this->scopedEntries($ids)->update(['category_id' => $categoryId]);
+        $this->scopedEntries($ids)->get()->each(function (Entry $e) use ($categoryId) {
+            $e->category_id = $categoryId;
+            $e->save();
+            $e->categories()->sync([$categoryId]);
+        });
         $this->htmlCache->forgetAll('entry:batch-move');
 
         return Result::ok(null, '已批量移动栏目');
@@ -206,7 +232,7 @@ class EntryService
             return Result::fail(AdminCategoryScope::denyMessage());
         }
         $n = 0;
-        $this->scopedEntries($ids)->with('tags')->get()->each(function (Entry $src) use ($categoryId, &$n) {
+        $this->scopedEntries($ids)->with(['tags', 'categories'])->get()->each(function (Entry $src) use ($categoryId, &$n) {
             $copy = $src->replicate(['views', 'downloads', 'clicks']);
             $copy->status = 'draft';
             $copy->published_at = null;
@@ -223,6 +249,13 @@ class EntryService
             }
             $copy->save();
             $copy->tags()->sync($src->tags->pluck('id')->all());
+            $catIds = $categoryId
+                ? [$categoryId]
+                : array_values(array_unique(array_filter(array_merge(
+                    $src->category_id ? [(int) $src->category_id] : [],
+                    $src->categories->pluck('id')->map(fn ($id) => (int) $id)->all()
+                ))));
+            $copy->categories()->sync($catIds);
             $n++;
         });
         $this->htmlCache->forgetAll('entry:batch-copy');

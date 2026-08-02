@@ -2,15 +2,19 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Member extends Authenticatable
 {
+    use BelongsToSite;
+
     protected $table = 'cms_members';
 
     protected $fillable = [
-        'name', 'email', 'password', 'is_active', 'group_id',
+        'site_id', 'name', 'avatar', 'email', 'password', 'is_active', 'group_id',
         'reset_token', 'reset_token_expires_at',
     ];
 

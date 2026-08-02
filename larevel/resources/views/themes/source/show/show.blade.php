@@ -7,8 +7,10 @@
         <div>{!! nl2br(e($entry->t('content'))) !!}</div>
         <p style="margin-top:16px">
             @if($entry->attr('demo_url'))<a href="{{ $entry->attr('demo_url') }}" target="_blank">在线演示</a> · @endif
-            <a class="btn" href="{{ route('download', $entry) }}">下载源码包</a>
+            <a class="btn" href="{{ route('download', $entry) }}">下载源码�?/a>
         </p>
         <p>上一篇：@cmsPrev · 下一篇：@cmsNext</p>
     </div>
+
+    @include('cms.comments')
 @endsection

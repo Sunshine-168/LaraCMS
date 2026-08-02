@@ -21,6 +21,19 @@
         <input type="password" name="password" {{ $user->exists ? '' : 'required' }} minlength="8">
         <label><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $user->is_active ?? true))> 启用</label>
 
+        <h3 style="margin:18px 0 8px">可管理站点</h3>
+        <p class="muted">超级管理员忽略此项（可管理全部站点）。普通管理员至少勾选一个站点。</p>
+        <input type="hidden" name="_has_site_scope" value="1">
+        <div>
+            @foreach($sites as $site)
+                <label style="display:inline-block;min-width:180px;margin:4px 8px 4px 0">
+                    <input type="checkbox" name="site_ids[]" value="{{ $site->id }}"
+                        @checked(in_array($site->id, old('site_ids', $user->sites?->pluck('id')->all() ?? []), false))>
+                    {{ $site->name }} <span class="muted">({{ $site->domain }})</span>
+                </label>
+            @endforeach
+        </div>
+
         <h3 style="margin:18px 0 8px">栏目授权</h3>
         <p class="muted">不勾选表示可管理全部栏目；勾选后仅可管理所选栏目内容。</p>
         <input type="hidden" name="_has_category_scope" value="1">

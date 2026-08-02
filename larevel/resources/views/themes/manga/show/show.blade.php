@@ -17,4 +17,6 @@
             </ul>
         </div>
     </div>
+
+    @include('cms.comments')
 @endsection

@@ -2,20 +2,23 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use App\Support\Translatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Page extends Model
 {
+    use BelongsToSite;
+
     use Translatable;
 
     protected $table = 'cms_pages';
 
     protected $fillable = [
-        'title', 'slug', 'content', 'meta_title', 'meta_description',
-        'parent_id', 'is_homepage', 'status', 'sort_order', 'published_at',
-    ];
+        'site_id','title', 'slug', 'content', 'meta_title', 'meta_description',
+        'parent_id', 'is_homepage', 'status', 'sort_order', 'published_at',];
 
     protected function casts(): array
     {

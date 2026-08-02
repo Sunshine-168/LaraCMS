@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\ModelField;
 use App\Services\Admin\ContentModelService;
+use App\Services\Admin\FieldBindService;
 use App\Services\Admin\ModelFieldService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ModelController extends Controller
@@ -16,6 +18,7 @@ class ModelController extends Controller
     public function __construct(
         private readonly ModelFieldService $fieldService,
         private readonly ContentModelService $modelService,
+        private readonly FieldBindService $fieldBind,
     ) {
     }
 
@@ -23,7 +26,7 @@ class ModelController extends Controller
     public function index(): View
     {
         return view('admin.models.index', [
-            'models' => ContentModel::query()->with('fields')->orderBy('sort_order')->orderBy('id')->get(),
+            'models' => ContentModel::query()->with(['fields.categories'])->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 
@@ -85,12 +88,57 @@ class ModelController extends Controller
         );
     }
 
+    public function copy(ContentModel $model): RedirectResponse
+    {
+        $result = $this->modelService->copy($model);
+
+        return redirect()->route('admin.models.index')->with(
+            $result['ok'] ? 'status' : 'error',
+            $result['msg']
+        );
+    }
+
+    public function export(ContentModel $model): Response
+    {
+        $payload = $this->modelService->exportPayload($model);
+        $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="cms-model-'.$model->slug.'.json"',
+        ]);
+    }
+
+    public function importForm(): View
+    {
+        return view('admin.models.import');
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:json,txt|max:2048',
+        ]);
+        $raw = file_get_contents($request->file('file')->getRealPath() ?: '');
+        $payload = json_decode((string) $raw, true);
+        if (! is_array($payload)) {
+            return back()->with('error', '无法解析 JSON');
+        }
+        $result = $this->modelService->importPayload($payload, $request->boolean('overwrite', true));
+
+        return redirect()->route('admin.models.index')->with(
+            $result['ok'] ? 'status' : 'error',
+            $result['msg']
+        );
+    }
+
     /** 新建字段 */
     public function createField(ContentModel $model): View
     {
         return view('admin.models.field_form', [
             'model' => $model,
             'field' => new ModelField(['model_id' => $model->id, 'type' => 'text']),
+            'bindCategories' => $this->fieldBind->categoriesForModel($model->id),
         ]);
     }
 
@@ -106,8 +154,13 @@ class ModelController extends Controller
     public function editField(ContentModel $model, ModelField $field): View
     {
         abort_unless((int) $field->model_id === (int) $model->id, 404);
+        $field->load('categories');
 
-        return view('admin.models.field_form', compact('model', 'field'));
+        return view('admin.models.field_form', [
+            'model' => $model,
+            'field' => $field,
+            'bindCategories' => $this->fieldBind->categoriesForModel($model->id),
+        ]);
     }
 
     /** 更新字段 */

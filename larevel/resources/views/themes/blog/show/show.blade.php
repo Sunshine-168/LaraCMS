@@ -7,4 +7,6 @@
         <div class="content" style="margin-top:20px">{!! nl2br(e($entry->t('content'))) !!}</div>
         <p class="muted" style="margin-top:28px">上一篇：@cmsPrev · 下一篇：@cmsNext</p>
     </article>
+
+    @include('cms.comments')
 @endsection

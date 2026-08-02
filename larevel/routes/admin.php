@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CacheController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectorController;
+use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntryController;
 use App\Http\Controllers\Admin\FlagController;
@@ -20,10 +21,13 @@ use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\QuickPanelController;
 use App\Http\Controllers\Admin\RecommendController;
+use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RecycleController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StatController;
 use App\Http\Controllers\Admin\TagController;
 use Illuminate\Support\Facades\Route;
@@ -34,8 +38,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(['admin.auth', 'admin.log'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::post('site/switch', [SiteController::class, 'switch'])->name('site.switch');
         Route::get('/', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard');
         Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard.alt');
+        Route::middleware('admin.perm:dashboard')->group(function () {
+            Route::get('quick-panels', [QuickPanelController::class, 'edit'])->name('quick-panels.edit');
+            Route::put('quick-panels', [QuickPanelController::class, 'update'])->name('quick-panels.update');
+        });
+
+        Route::middleware('admin.perm:sites')->group(function () {
+            Route::resource('sites', SiteController::class)->except(['show']);
+        });
 
         Route::middleware('admin.perm:entries')->group(function () {
             Route::post('entries/batch', [EntryController::class, 'batch'])->name('entries.batch');
@@ -71,6 +84,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('form-submissions/export', [FormSubmissionController::class, 'export'])->name('form-submissions.export');
             Route::delete('form-submissions/{submission}', [FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
         });
+        Route::middleware('admin.perm:comments')->group(function () {
+            Route::get('comments', [CommentController::class, 'index'])->name('comments.index');
+            Route::post('comments/batch', [CommentController::class, 'batch'])->name('comments.batch');
+            Route::post('comments/{comment}/moderate', [CommentController::class, 'moderate'])->name('comments.moderate');
+            Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+        });
+        Route::middleware('admin.perm:redirects')->group(function () {
+            Route::post('redirects/{redirect}/toggle', [RedirectController::class, 'toggle'])->name('redirects.toggle');
+            Route::resource('redirects', RedirectController::class)->except(['show']);
+        });
         Route::middleware('admin.perm:menus')->group(function () {
             Route::resource('menus', MenuController::class)->except(['show']);
         });
@@ -95,9 +118,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('models', [ModelController::class, 'index'])->name('models.index');
             Route::get('models/create', [ModelController::class, 'create'])->name('models.create');
             Route::post('models', [ModelController::class, 'store'])->name('models.store');
+            Route::get('models/import', [ModelController::class, 'importForm'])->name('models.import');
+            Route::post('models/import', [ModelController::class, 'import'])->name('models.import.submit');
             Route::get('models/{model}/edit', [ModelController::class, 'edit'])->name('models.edit');
             Route::put('models/{model}', [ModelController::class, 'update'])->name('models.update');
             Route::delete('models/{model}', [ModelController::class, 'destroy'])->name('models.destroy');
+            Route::post('models/{model}/copy', [ModelController::class, 'copy'])->name('models.copy');
+            Route::get('models/{model}/export', [ModelController::class, 'export'])->name('models.export');
             Route::get('models/{model}/fields/create', [ModelController::class, 'createField'])->name('models.fields.create');
             Route::post('models/{model}/fields', [ModelController::class, 'storeField'])->name('models.fields.store');
             Route::get('models/{model}/fields/{field}/edit', [ModelController::class, 'editField'])->name('models.fields.edit');
@@ -135,6 +162,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('html-cache', [HtmlCacheController::class, 'update'])->name('html-cache.update');
             Route::post('html-cache/clear', [HtmlCacheController::class, 'clear'])->name('html-cache.clear');
             Route::post('html-cache/warm', [HtmlCacheController::class, 'warm'])->name('html-cache.warm');
+            Route::post('html-cache/disk-build', [HtmlCacheController::class, 'buildDisk'])->name('html-cache.disk-build');
+            Route::post('html-cache/disk-clear', [HtmlCacheController::class, 'clearDisk'])->name('html-cache.disk-clear');
         });
         Route::middleware('admin.perm:logs')->group(function () {
             Route::get('logs', [AdminLogController::class, 'index'])->name('logs.index');

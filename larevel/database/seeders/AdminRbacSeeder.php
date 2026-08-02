@@ -24,10 +24,13 @@ class AdminRbacSeeder extends Seeder
             ['key' => 'menus', 'name' => '导航菜单', 'group' => '内容', 'sort' => 100],
             ['key' => 'forms', 'name' => '表单定义', 'group' => '内容', 'sort' => 110],
             ['key' => 'form_submissions', 'name' => '留言收件箱', 'group' => '内容', 'sort' => 120],
+            ['key' => 'comments', 'name' => '评论审核', 'group' => '内容', 'sort' => 125],
+            ['key' => 'redirects', 'name' => '重定向', 'group' => '运营', 'sort' => 128],
             ['key' => 'collectors', 'name' => '采集任务', 'group' => '运营', 'sort' => 130],
             ['key' => 'members', 'name' => '会员管理', 'group' => '运营', 'sort' => 140],
             ['key' => 'member_groups', 'name' => '会员分组', 'group' => '运营', 'sort' => 150],
             ['key' => 'html_cache', 'name' => '全页缓存', 'group' => '运营', 'sort' => 160],
+            ['key' => 'sites', 'name' => '站点管理', 'group' => '系统', 'sort' => 165],
             ['key' => 'settings', 'name' => '站点设置', 'group' => '系统', 'sort' => 170],
             ['key' => 'locales', 'name' => '语言管理', 'group' => '系统', 'sort' => 175],
             ['key' => 'logs', 'name' => '操作日志', 'group' => '系统', 'sort' => 180],
@@ -58,9 +61,9 @@ class AdminRbacSeeder extends Seeder
 
         $editorKeys = [
             'dashboard', 'stats', 'entries', 'recycle', 'categories', 'tags', 'flags',
-            'media', 'menus', 'forms', 'form_submissions', 'pages', 'posts',
+            'media', 'menus', 'forms', 'form_submissions', 'comments', 'redirects', 'pages', 'posts',
         ];
-        $operatorKeys = ['dashboard', 'stats', 'form_submissions', 'media'];
+        $operatorKeys = ['dashboard', 'stats', 'form_submissions', 'comments', 'redirects', 'media'];
 
         $editor->permissions()->sync(array_values(array_intersect_key($ids, array_flip($editorKeys))));
         $operator->permissions()->sync(array_values(array_intersect_key($ids, array_flip($operatorKeys))));

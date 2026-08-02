@@ -2,19 +2,22 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Collector extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'cms_collectors';
 
     protected $fillable = [
-        'name', 'type', 'source_url', 'model_id', 'category_id',
+        'site_id','name', 'type', 'source_url', 'model_id', 'category_id',
         'interval_minutes', 'limit_items', 'is_active', 'publish_immediately',
-        'options', 'last_run_at', 'last_status', 'last_message',
-    ];
+        'options', 'last_run_at', 'last_status', 'last_message',];
 
     protected function casts(): array
     {

@@ -2,6 +2,8 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use App\Support\Locale;
 use App\Support\Translatable;
 use App\Support\UrlMode;
@@ -9,22 +11,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entry extends Model
 {
+    use BelongsToSite;
+
     use SoftDeletes;
     use Translatable;
 
     protected $table = 'cms_entries';
 
     protected $fillable = [
-        'category_id', 'model_id', 'title', 'slug', 'excerpt', 'content',
+        'site_id','category_id', 'model_id', 'title', 'slug', 'excerpt', 'content',
         'meta_title', 'meta_description', 'attrs', 'cover', 'flags', 'search_text',
         'source_guid', 'collector_id',
         'status', 'sort_order', 'views', 'downloads_count', 'clicks',
-        'is_homepage', 'published_at',
-    ];
+        'is_homepage', 'published_at',];
 
     protected $appends = ['url'];
 
@@ -48,6 +52,12 @@ class Entry extends Model
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    /** 附加栏目（含主栏目，保存时会同步） */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'cms_entry_category', 'entry_id', 'category_id');
+    }
+
     public function modelDef(): BelongsTo
     {
         return $this->belongsTo(ContentModel::class, 'model_id');
@@ -56,6 +66,25 @@ class Entry extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'cms_entry_tag', 'entry_id', 'tag_id');
+    }
+
+    /** 主栏目或附加栏目命中 */
+    public function scopeInCategories(Builder $query, array $categoryIds): Builder
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $categoryIds))));
+        if ($ids === []) {
+            return $query->whereRaw('1=0');
+        }
+
+        return $query->where(function (Builder $q) use ($ids) {
+            $q->whereIn('category_id', $ids)
+                ->orWhereHas('categories', fn (Builder $c) => $c->whereIn('cms_categories.id', $ids));
+        });
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'entry_id');
     }
 
     public function scopePublished(Builder $query): Builder

@@ -4,6 +4,7 @@ namespace App\Models\Cms;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ModelField extends Model
 {
@@ -27,5 +28,22 @@ class ModelField extends Model
     public function modelDef(): BelongsTo
     {
         return $this->belongsTo(ContentModel::class, 'model_id');
+    }
+
+    /** 绑定栏目；无绑定时表示该模型下全栏目可用 */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'cms_model_field_category', 'model_field_id', 'category_id');
+    }
+
+    /** 供表单 data-bound-cats：* = 全栏目 */
+    public function boundCatsAttr(): string
+    {
+        $this->loadMissing('categories');
+        if ($this->categories->isEmpty()) {
+            return '*';
+        }
+
+        return $this->categories->pluck('id')->implode(',');
     }
 }

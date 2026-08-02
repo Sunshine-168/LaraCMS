@@ -8,6 +8,10 @@ use App\Support\Result;
 
 class ModelFieldService
 {
+    public function __construct(private readonly FieldBindService $fieldBind)
+    {
+    }
+
     public function save(ContentModel $model, ?ModelField $field, array $input): array
     {
         $field ??= new ModelField(['model_id' => $model->id]);
@@ -30,6 +34,10 @@ class ModelFieldService
             'sort_order' => (int) ($input['sort_order'] ?? 0),
         ]);
         $field->save();
+
+        if (! empty($input['bind_categories'])) {
+            $this->fieldBind->saveBinds($field, array_values((array) ($input['category_ids'] ?? [])));
+        }
 
         return Result::ok($field, '字段已保存');
     }

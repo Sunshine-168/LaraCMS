@@ -2,6 +2,8 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use App\Support\Translatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -10,15 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    use BelongsToSite;
+
     use Translatable;
 
     protected $table = 'cms_categories';
 
     protected $fillable = [
-        'title', 'slug', 'type', 'model_id', 'parent_id', 'list_tpl', 'show_tpl',
+        'site_id','title', 'slug', 'type', 'model_id', 'parent_id', 'list_tpl', 'show_tpl',
         'category_tpl', 'is_menu', 'url', 'page_size', 'sort_order', 'status',
-        'meta_title', 'meta_description',
-    ];
+        'meta_title', 'meta_description',];
 
     protected function casts(): array
     {

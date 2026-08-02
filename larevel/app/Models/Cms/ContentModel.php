@@ -2,20 +2,28 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentModel extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'cms_models';
 
     protected $fillable = [
-        'slug', 'name', 'kind', 'list_tpl', 'show_tpl', 'sort_order', 'is_active',
+        'site_id', 'slug', 'name', 'kind', 'list_tpl', 'show_tpl',
+        'sort_order', 'is_active', 'is_searchable',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'is_searchable' => 'boolean',
+        ];
     }
 
     public function fields(): HasMany

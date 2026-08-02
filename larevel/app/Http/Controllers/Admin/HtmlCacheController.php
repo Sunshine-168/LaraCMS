@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\SettingService;
+use App\Services\Cms\DiskHtmlService;
 use App\Services\Cms\HtmlCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ class HtmlCacheController extends Controller
 {
     public function __construct(
         private readonly HtmlCacheService $htmlCache,
+        private readonly DiskHtmlService $diskHtml,
         private readonly SettingService $settings,
     ) {
     }
@@ -31,6 +33,8 @@ class HtmlCacheController extends Controller
                 : (int) config('cms.html_cache.ttl', 3600),
             'lastBust' => $this->htmlCache->lastBust(),
             'tagged' => $this->htmlCache->canTag(),
+            'diskEnabled' => $this->diskHtml->enabled(),
+            'diskRoot' => $this->diskHtml->rootPath(),
         ]);
     }
 
@@ -70,5 +74,27 @@ class HtmlCacheController extends Controller
             'status',
             "预热完成：成功 {$result['ok']}，失败 {$result['fail']}"
         );
+    }
+
+    /** 生成磁盘整站 HTML */
+    public function buildDisk(Request $request): RedirectResponse
+    {
+        if (! $this->diskHtml->enabled()) {
+            return redirect()->route('admin.html-cache.edit')->with('error', '磁盘静态化未启用（CMS_DISK_HTML）');
+        }
+        $result = $this->diskHtml->build((int) $request->input('entries', 200));
+
+        return redirect()->route('admin.html-cache.edit')->with(
+            'status',
+            "磁盘 HTML 生成：成功 {$result['ok']}，失败 {$result['fail']} → ".$this->diskHtml->rootPath()
+        );
+    }
+
+    /** 清空磁盘 HTML */
+    public function clearDisk(): RedirectResponse
+    {
+        $n = $this->diskHtml->clear();
+
+        return redirect()->route('admin.html-cache.edit')->with('status', "已删除 {$n} 个磁盘 HTML 文件");
     }
 }

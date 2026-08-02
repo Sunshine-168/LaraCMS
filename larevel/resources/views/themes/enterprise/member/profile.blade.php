@@ -11,6 +11,14 @@
     <h2>资料</h2>
     <form method="post" action="{{ route('member.profile.update') }}">
         @csrf
+        <p>
+            <img id="memberAvatarPreview" src="{{ $member->avatar }}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
+        </p>
+        <p><label>头像 URL<br><input type="text" id="memberAvatar" name="avatar" value="{{ old('avatar', $member->avatar) }}" style="width:100%;padding:8px"></label></p>
+        @if($member->canMember('upload'))
+            <p class="muted">分片上传头像（大文件自动切块）</p>
+            @include('cms.partials.member-chunk-upload', ['purpose' => 'avatar', 'targetInput' => 'memberAvatar', 'previewId' => 'memberAvatarPreview'])
+        @endif
         <p><label>昵称<br><input type="text" name="name" value="{{ old('name', $member->name) }}" required style="width:100%;padding:8px"></label></p>
         <p><button type="submit">保存资料</button></p>
     </form>

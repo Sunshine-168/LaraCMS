@@ -10,12 +10,19 @@ class Locale
 {
     protected static ?string $current = null;
 
+    protected static function cacheKey(string $name): string
+    {
+        $siteId = CurrentSite::idOrDefault() ?? 0;
+
+        return "cms_locale.{$siteId}.{$name}";
+    }
+
     /** @return array<string, array{label:string,native?:string}> */
     public static function all(): array
     {
         try {
             if (Schema::hasTable('cms_locales')) {
-                return Cache::remember('cms_locales_map', 60, function () {
+                return Cache::remember(self::cacheKey('map'), 60, function () {
                     $rows = CmsLocale::query()->where('is_active', true)->orderBy('sort')->orderBy('id')->get();
                     if ($rows->isEmpty()) {
                         return (array) config('cms.locales', []);
@@ -41,7 +48,7 @@ class Locale
     {
         try {
             if (Schema::hasTable('cms_locales')) {
-                $code = Cache::remember('cms_locale_default', 60, function () {
+                $code = Cache::remember(self::cacheKey('default'), 60, function () {
                     return CmsLocale::query()->where('is_active', true)->where('is_default', true)->value('code')
                         ?: CmsLocale::query()->where('is_active', true)->orderBy('sort')->value('code');
                 });
@@ -95,7 +102,7 @@ class Locale
     {
         try {
             if (Schema::hasTable('cms_locales')) {
-                $hide = Cache::remember('cms_locale_hide_default', 60, function () {
+                $hide = Cache::remember(self::cacheKey('hide_default'), 60, function () {
                     $row = CmsLocale::query()->where('is_default', true)->where('is_active', true)->first();
 
                     return $row?->hide_default;
@@ -112,8 +119,8 @@ class Locale
 
     public static function forgetCache(): void
     {
-        Cache::forget('cms_locales_map');
-        Cache::forget('cms_locale_default');
-        Cache::forget('cms_locale_hide_default');
+        Cache::forget(self::cacheKey('map'));
+        Cache::forget(self::cacheKey('default'));
+        Cache::forget(self::cacheKey('hide_default'));
     }
 }

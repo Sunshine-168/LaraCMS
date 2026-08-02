@@ -5,9 +5,11 @@ use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\AdminRole;
 use App\Http\Middleware\ApiToken;
 use App\Http\Middleware\CheckInstalled;
+use App\Http\Middleware\HandleCmsRedirect;
 use App\Http\Middleware\HtmlCache;
 use App\Http\Middleware\LogAdminAction;
 use App\Http\Middleware\RecordVisit;
+use App\Http\Middleware\ResolveSite;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SiteClosed;
@@ -59,10 +61,17 @@ return Application::configure(basePath: dirname(__DIR__))
             CheckInstalled::class,
         ]);
 
+        // ResolveSite 需在 StartSession 之后；重定向依赖当前站
         $middleware->web(append: [
+            ResolveSite::class,
+            HandleCmsRedirect::class,
             SecurityHeaders::class,
             SiteClosed::class,
             RecordVisit::class,
+        ]);
+
+        $middleware->api(prepend: [
+            ResolveSite::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

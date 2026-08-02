@@ -19,13 +19,29 @@
             ],
         ])
 
-        <label>栏目</label>
-        <select name="category_id">
+        <label>主栏目（决定 URL；扩展字段按栏目绑定显示）</label>
+        <select name="category_id" id="entryPrimaryCategory">
             <option value="">—</option>
             @foreach($categories as $category)
                 <option value="{{ $category->id }}" @selected(old('category_id', $entry->category_id) == $category->id)>{{ $category->t('title') }}</option>
             @endforeach
         </select>
+        @php
+            $extraCats = old('category_ids', $entry->relationLoaded('categories')
+                ? $entry->categories->pluck('id')->all()
+                : ($entry->exists ? $entry->categories()->pluck('cms_categories.id')->all() : []));
+            $extraCats = array_map('intval', (array) $extraCats);
+        @endphp
+        <label>附加栏目（可多选，列表页也会出现）</label>
+        <div>
+            @foreach($categories as $category)
+                <label style="display:inline-block;min-width:160px;margin:4px 8px 4px 0">
+                    <input type="checkbox" name="category_ids[]" value="{{ $category->id }}"
+                        @checked(in_array((int)$category->id, $extraCats, true))>
+                    {{ $category->t('title') }}
+                </label>
+            @endforeach
+        </div>
 
         <label>封面 URL</label>
         <div class="cover-row">
@@ -62,7 +78,9 @@
         <label><input type="checkbox" name="is_homepage" value="1" @checked(old('is_homepage', $entry->is_homepage))> 设为首页文档</label>
 
         <h3 style="margin-top:20px;">扩展字段（{{ $model->name }}）</h3>
+        <p class="muted" id="fieldBindHint">未绑定栏目的字段全栏目显示；已绑定字段仅在所选主栏目下出现。</p>
         @foreach($model->fields as $field)
+            <div class="cms-field-bind" data-bound-cats="{{ $field->boundCatsAttr() }}">
             <label>{{ $field->label }} ({{ $field->name }})</label>
             @php $val = old('attrs.'.$field->name, $entry->attr($field->name)); @endphp
             @if($field->type === 'editor')
@@ -100,11 +118,15 @@
                     @endforeach
                 </select>
             @elseif($field->type === 'map')
-                <input type="text" name="attrs[{{ $field->name }}]" value="{{ $val }}" placeholder="经度,纬度 或 地址">
-                <p class="muted">格式：116.397,39.908 或地址文本，前台可用地图标签</p>
+                @include('admin.partials.map-picker', [
+                    'name' => 'attrs['.$field->name.']',
+                    'value' => $val,
+                    'defaults' => $mapDefaults ?? ['lng' => 116.397, 'lat' => 39.908],
+                ])
             @else
                 <input type="text" name="attrs[{{ $field->name }}]" value="{{ $val }}">
             @endif
+            </div>
         @endforeach
 
         @if($tags->isNotEmpty())
@@ -126,4 +148,28 @@
         </p>
     </form>
     @include('admin.partials.editor-assets')
+    <script>
+    (function () {
+        const sel = document.getElementById('entryPrimaryCategory');
+        const blocks = document.querySelectorAll('.cms-field-bind');
+        if (!sel || !blocks.length) return;
+        const apply = () => {
+            const cat = String(sel.value || '');
+            blocks.forEach((el) => {
+                const bound = el.getAttribute('data-bound-cats') || '*';
+                const show = bound === '*' || (cat !== '' && bound.split(',').includes(cat));
+                el.style.display = show ? '' : 'none';
+                el.querySelectorAll('input,select,textarea,button').forEach((inp) => {
+                    if (inp.type === 'hidden' && inp.name && inp.name.indexOf('attrs[') === 0) {
+                        // map hidden 仍随显示控制 disabled，避免提交隐藏栏目字段
+                    }
+                    if (show) inp.removeAttribute('disabled');
+                    else inp.setAttribute('disabled', 'disabled');
+                });
+            });
+        };
+        sel.addEventListener('change', apply);
+        apply();
+    })();
+    </script>
 @endsection

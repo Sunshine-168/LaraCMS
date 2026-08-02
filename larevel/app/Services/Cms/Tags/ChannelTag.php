@@ -25,7 +25,7 @@ class ChannelTag
         $current = $this->context->category();
         $parentId = $this->resolveParentId($type, $name, $current);
 
-        $query = Category::query()->active()->orderBy('sort_order')->orderByDesc('id');
+        $query = Category::query()->active()->with('modelDef')->orderBy('sort_order')->orderByDesc('id');
 
         if ($parentId === 0) {
             $query->whereNull('parent_id');

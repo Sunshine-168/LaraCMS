@@ -39,11 +39,20 @@ return [
         'ttl' => (int) env('CMS_HTML_CACHE_TTL', 3600),
         'store' => env('CMS_HTML_CACHE_STORE'), // null = 默认 CACHE_STORE
         'exclude_prefixes' => [
-            'admin', 'member', 'form', 'download', 'go', 'livewire', 'storage', 'api', 'up',
+            'admin', 'member', 'form', 'comment', 'download', 'go', 'livewire', 'storage', 'api', 'up',
         ],
         'exclude_path_prefixes' => [
             'search', // 搜索结果不缓存
         ],
+    ],
+
+    /*
+    | 磁盘整站 HTML（写入 public/{path}/site_{id}/…/index.html）
+    | nginx 示例：try_files /html/site_1$uri/index.html /html/site_1$uri $uri /index.php?$query_string;
+    */
+    'disk_html' => [
+        'enabled' => (bool) env('CMS_DISK_HTML', true),
+        'path' => env('CMS_DISK_HTML_PATH', 'html'),
     ],
 ];
 

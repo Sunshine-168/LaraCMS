@@ -28,6 +28,7 @@
         <input type="number" name="sort_order" value="{{ old('sort_order', $model->sort_order ?? 0) }}">
 
         <label class="inline"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $model->is_active ?? true))> 启用</label>
+        <label class="inline"><input type="checkbox" name="is_searchable" value="1" @checked(old('is_searchable', $model->is_searchable ?? true))> 参与全站搜索</label>
 
         <div class="form-actions">
             <button class="btn" type="submit">保存</button>

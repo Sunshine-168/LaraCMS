@@ -6,6 +6,7 @@ use App\Cms\CmsViewContext;
 use App\Models\Cms\Category;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Setting;
+use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\MobileDetect;
 use Illuminate\Support\Collection;
@@ -18,7 +19,8 @@ class SiteFrontService
 
     public function bootSite(): array
     {
-        $pcTheme = (string) Setting::getValue('theme', config('cms.theme', 'enterprise'));
+        $siteModel = CurrentSite::model();
+        $pcTheme = (string) ($siteModel?->theme ?: Setting::getValue('theme', config('cms.theme', 'enterprise')));
         $isMobile = false;
         $theme = $pcTheme;
         try {
@@ -75,7 +77,7 @@ class SiteFrontService
 
         return Entry::query()->with(['category', 'modelDef', 'tags'])
             ->published()
-            ->where('category_id', $category->id)
+            ->inCategories([(int) $category->id])
             ->get()
             ->first(function (Entry $e) use ($slug, $locale) {
                 return ($e->slug[$locale] ?? null) === $slug
@@ -86,7 +88,7 @@ class SiteFrontService
     public function singleEntry(Category $category): ?Entry
     {
         return Entry::query()->published()
-            ->where('category_id', $category->id)
+            ->inCategories([(int) $category->id])
             ->orderBy('sort_order')
             ->first();
     }

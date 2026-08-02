@@ -57,7 +57,7 @@ class ContentTag
 
         $ids = $this->categoryIds($catid, $insub);
         if ($ids !== []) {
-            $query->whereIn('category_id', $ids);
+            $query->inCategories($ids);
         }
     }
 

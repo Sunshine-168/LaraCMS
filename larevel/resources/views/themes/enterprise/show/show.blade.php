@@ -8,4 +8,6 @@
         <div class="content" style="margin-top:16px">{!! $entry->linked_content ?? $entry->t('content') !!}</div>
         <p style="margin-top:24px">上一篇：@cmsPrev · 下一篇：@cmsNext</p>
     </article>
+
+    @include('cms.comments')
 @endsection

@@ -2,14 +2,18 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FormSubmission extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'cms_form_submissions';
 
-    protected $fillable = ['form_id', 'data', 'ip'];
+    protected $fillable = ['site_id', 'form_id', 'data', 'ip'];
 
     protected function casts(): array
     {

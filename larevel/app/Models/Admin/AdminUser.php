@@ -2,7 +2,9 @@
 
 namespace App\Models\Admin;
 
+use App\Models\Cms\Site;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -49,6 +51,11 @@ class AdminUser extends Authenticatable
     public function adminRole(): BelongsTo
     {
         return $this->belongsTo(AdminRole::class, 'role_id');
+    }
+
+    public function sites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class, 'admin_user_site', 'admin_user_id', 'site_id');
     }
 
     public function isSuperAdmin(): bool

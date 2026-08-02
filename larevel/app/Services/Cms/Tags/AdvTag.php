@@ -57,7 +57,7 @@ class AdvTag
         if (! empty($p['category_ids']) && is_array($p['category_ids'])) {
             $ids = array_values(array_filter(array_map('intval', $p['category_ids'])));
             if ($ids !== []) {
-                $q->whereIn('category_id', $ids);
+                $q->inCategories($ids);
             }
         }
         if (! empty($p['flag'])) {

@@ -5,20 +5,26 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Cms\Member;
 use App\Models\Cms\MemberGroup;
+use App\Services\Cms\MemberChunkUploadService;
 use App\Services\Cms\SiteFrontService;
+use App\Support\CurrentSite;
 use App\Support\MailConfig;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MemberController extends Controller
 {
-    public function __construct(private readonly SiteFrontService $site)
-    {
+    public function __construct(
+        private readonly SiteFrontService $site,
+        private readonly MemberChunkUploadService $chunkUpload,
+    ) {
     }
 
     /** 会员登录页 */
@@ -63,7 +69,10 @@ class MemberController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:50',
-            'email' => 'required|email|max:120|unique:cms_members,email',
+            'email' => [
+                'required', 'email', 'max:120',
+                Rule::unique('cms_members', 'email')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault())),
+            ],
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -197,11 +206,65 @@ class MemberController extends Controller
         }
         $data = $request->validate([
             'name' => 'required|string|max:50',
+            'avatar' => 'nullable|string|max:500',
         ]);
         $member->name = $data['name'];
+        if (array_key_exists('avatar', $data) && $data['avatar'] !== null) {
+            $member->avatar = $data['avatar'] !== '' ? $data['avatar'] : null;
+        }
         $member->save();
 
         return back()->with('status', '资料已更新');
+    }
+
+    /** 分片上传：初始化 */
+    public function uploadInit(Request $request): JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member) {
+            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+        }
+        $data = $request->validate([
+            'filename' => 'required|string|max:200',
+            'total_chunks' => 'required|integer|min:1|max:2000',
+            'total_size' => 'required|integer|min:1|max:52428800',
+        ]);
+        $result = $this->chunkUpload->init($member, $data['filename'], (int) $data['total_chunks'], (int) $data['total_size']);
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /** 分片上传：单片 */
+    public function uploadChunk(Request $request): JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member) {
+            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+        }
+        $data = $request->validate([
+            'upload_id' => 'required|string|max:64',
+            'index' => 'required|integer|min:0',
+            'chunk' => 'required|file|max:2048',
+        ]);
+        $result = $this->chunkUpload->storeChunk($member, $data['upload_id'], (int) $data['index'], $request->file('chunk'));
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /** 分片上传：合并 */
+    public function uploadComplete(Request $request): JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member) {
+            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+        }
+        $data = $request->validate([
+            'upload_id' => 'required|string|max:64',
+            'purpose' => 'nullable|in:file,avatar',
+        ]);
+        $result = $this->chunkUpload->complete($member, $data['upload_id'], (string) ($data['purpose'] ?? 'file'));
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
     }
 
     /** 修改密码 */

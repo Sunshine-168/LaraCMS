@@ -15,6 +15,14 @@ class MapTag
     {
         $point = (string) ($options['point'] ?? '');
         $address = (string) ($options['address'] ?? '');
+        // 兼容字段存盘：lng,lat|地址
+        if ($point !== '' && str_contains($point, '|')) {
+            [$coordPart, $addrPart] = array_pad(explode('|', $point, 2), 2, '');
+            $point = trim($coordPart);
+            if ($address === '' && trim($addrPart) !== '') {
+                $address = trim($addrPart);
+            }
+        }
         $width = e((string) ($options['width'] ?? '100%'));
         $height = e((string) ($options['height'] ?? '320'));
         $title = e((string) ($options['title'] ?? $address ?: '地图'));
@@ -22,9 +30,11 @@ class MapTag
         if ($point && str_contains($point, ',')) {
             [$lng, $lat] = array_map('trim', explode(',', $point, 2));
         } else {
-            // 无坐标时用地址搜索页
             $lng = '116.397';
             $lat = '39.908';
+            if ($address === '' && $point !== '') {
+                $address = $point;
+            }
         }
 
         $bboxPad = 0.02;

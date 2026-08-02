@@ -9,6 +9,13 @@
 
     <form method="post" action="{{ route('member.profile.update') }}" class="card-soft" style="margin:14px 0">
         @csrf
+        <p>
+            <img id="memberAvatarPreview" src="{{ $member->avatar }}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
+        </p>
+        <p><label>头像 URL<br><input type="text" id="memberAvatar" name="avatar" value="{{ old('avatar', $member->avatar) }}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
+        @if($member->canMember('upload'))
+            @include('cms.partials.member-chunk-upload', ['purpose' => 'avatar', 'targetInput' => 'memberAvatar', 'previewId' => 'memberAvatarPreview'])
+        @endif
         <p><label>昵称<br><input type="text" name="name" value="{{ old('name', $member->name) }}" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
         <p><button class="btn" type="submit">保存资料</button></p>
     </form>

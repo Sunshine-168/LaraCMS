@@ -2,6 +2,8 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use App\Support\Translatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,14 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Post extends Model
 {
+    use BelongsToSite;
+
     use Translatable;
 
     protected $table = 'cms_posts';
 
     protected $fillable = [
-        'category_id', 'title', 'slug', 'excerpt', 'content',
-        'meta_title', 'meta_description', 'cover', 'status', 'published_at',
-    ];
+        'site_id','category_id', 'title', 'slug', 'excerpt', 'content',
+        'meta_title', 'meta_description', 'cover', 'status', 'published_at',];
 
     protected function casts(): array
     {

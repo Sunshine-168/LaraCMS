@@ -12,6 +12,8 @@
 @php
     $admin = auth('admin')->user();
     $can = fn (string $key) => $admin?->canPerm($key);
+    $switchSites = $admin ? \App\Support\AdminSiteAccess::manageableSites($admin) : collect();
+    $currentSite = \App\Support\CurrentSite::model();
 @endphp
 <div class="shell">
     <div class="side-backdrop" id="sideBackdrop"></div>
@@ -35,7 +37,7 @@
                 @endif
             @endif
 
-            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions'))
+            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments'))
                 <div class="nav-header">内容</div>
                 @if($can('entries'))
                     <a href="{{ route('admin.entries.index') }}" class="{{ request()->routeIs('admin.entries.*') ? 'active' : '' }}">
@@ -92,10 +94,20 @@
                         <i class="fas fa-inbox"></i><span>留言收件箱</span>
                     </a>
                 @endif
+                @if($can('comments'))
+                    <a href="{{ route('admin.comments.index') }}" class="{{ request()->routeIs('admin.comments.*') ? 'active' : '' }}">
+                        <i class="fas fa-comments"></i><span>评论审核</span>
+                    </a>
+                @endif
             @endif
 
-            @if($can('collectors') || $can('members') || $can('member_groups') || $can('html_cache'))
+            @if($can('collectors') || $can('members') || $can('member_groups') || $can('html_cache') || $can('redirects'))
                 <div class="nav-header">运营</div>
+                @if($can('redirects'))
+                    <a href="{{ route('admin.redirects.index') }}" class="{{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
+                        <i class="fas fa-exchange-alt"></i><span>重定向</span>
+                    </a>
+                @endif
                 @if($can('collectors'))
                     <a href="{{ route('admin.collectors.index') }}" class="{{ request()->routeIs('admin.collectors.*') ? 'active' : '' }}">
                         <i class="fas fa-cloud-download-alt"></i><span>采集任务</span>
@@ -118,8 +130,13 @@
                 @endif
             @endif
 
-            @if($can('settings') || $can('logs') || $can('admin_users') || $can('roles'))
+            @if($can('sites') || $can('settings') || $can('logs') || $can('admin_users') || $can('roles') || $can('locales'))
                 <div class="nav-header">系统</div>
+                @if($can('sites'))
+                    <a href="{{ route('admin.sites.index') }}" class="{{ request()->routeIs('admin.sites.*') ? 'active' : '' }}">
+                        <i class="fas fa-globe"></i><span>站点管理</span>
+                    </a>
+                @endif
                 @if($can('settings'))
                     <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                         <i class="fas fa-cog"></i><span>站点设置</span>
@@ -176,6 +193,18 @@
                 <h1 class="topbar-title">@yield('title', '后台')</h1>
             </div>
             <div class="topbar-right">
+                @if($switchSites->count() > 0)
+                    <form method="post" action="{{ route('admin.site.switch') }}" style="display:inline;margin:0">
+                        @csrf
+                        <select name="site_id" onchange="this.form.submit()" title="切换站点" style="max-width:180px">
+                            @foreach($switchSites as $s)
+                                <option value="{{ $s->id }}" @selected((int)($currentSite?->id) === (int)$s->id)>
+                                    {{ $s->name }}{{ $s->is_default ? ' *' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
                 <a href="{{ url('/') }}" target="_blank" title="访问前台"><i class="fas fa-home"></i> 前台</a>
                 @if($can('html_cache'))
                     <a href="{{ route('admin.html-cache.edit') }}" title="缓存"><i class="fas fa-database"></i> 缓存</a>

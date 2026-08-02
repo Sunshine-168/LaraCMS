@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 use App\Models\Cms\Setting;
 use App\Services\Cms\Tags\AdvTag;
+use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\UrlMode;
 use Illuminate\Http\JsonResponse;
@@ -12,11 +13,15 @@ class SiteApiController extends ApiController
 {
     public function config(): JsonResponse
     {
+        $site = CurrentSite::model();
+
         return $this->ok([
+            'site_id' => $site?->id,
+            'site_domain' => $site?->domain,
             'site_name' => Setting::getValue('site_name', config('app.name')),
             'site_description' => Setting::getValue('site_description', ''),
             'site_keywords' => Setting::getValue('site_keywords', ''),
-            'theme' => Setting::getValue('theme', config('cms.theme')),
+            'theme' => $site?->theme ?: Setting::getValue('theme', config('cms.theme')),
             'url_mode' => UrlMode::current(),
             'locales' => Locale::all(),
             'default_locale' => Locale::default(),

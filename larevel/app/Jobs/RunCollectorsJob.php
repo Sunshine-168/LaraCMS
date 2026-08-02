@@ -30,7 +30,7 @@ class RunCollectorsJob implements ShouldQueue
     public function handle(CollectorService $collectorService): void
     {
         if ($this->collectorId) {
-            $collector = Collector::query()->find($this->collectorId);
+            $collector = Collector::query()->withoutGlobalScopes()->find($this->collectorId);
             if (! $collector) {
                 Log::warning('cms:collect job missing collector '.$this->collectorId);
 
@@ -47,7 +47,7 @@ class RunCollectorsJob implements ShouldQueue
 
         if ($this->force) {
             $created = 0;
-            Collector::query()->where('is_active', true)->each(function (Collector $c) use ($collectorService, &$created) {
+            Collector::query()->withoutGlobalScopes()->where('is_active', true)->each(function (Collector $c) use ($collectorService, &$created) {
                 $r = $collectorService->run($c);
                 $created += (int) ($r['data']['created'] ?? 0);
             });

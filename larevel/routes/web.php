@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\CommentController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\SiteController;
 use App\Support\Locale;
@@ -14,11 +15,11 @@ $reserved = array_map(
 );
 
 $reservedSegments = array_merge(
-    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'sitemap\\.xml'],
+    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'sitemap\\.xml'],
     $reserved
 );
 $slugExclude = '^(?!'.implode('$|', $reservedSegments).'$)[A-Za-z0-9\-_]+$';
-$catExclude = '^(?!admin|storage|livewire|api|download|go|form|search|member|login|logout|register|tag|rss|install|e|c'.($reserved ? '|'.implode('|', $reserved) : '').')[A-Za-z0-9\-_]+$';
+$catExclude = '^(?!admin|storage|livewire|api|download|go|form|comment|search|member|login|logout|register|tag|rss|install|e|c'.($reserved ? '|'.implode('|', $reserved) : '').')[A-Za-z0-9\-_]+$';
 
 $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExclude) {
     Route::get('/', [SiteController::class, 'index'])->name('home'.$nameSuffix);
@@ -42,10 +43,14 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/member/profile', [MemberController::class, 'profile'])->name('member.profile'.$nameSuffix);
     Route::post('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update'.$nameSuffix);
     Route::post('/member/password', [MemberController::class, 'updatePassword'])->name('member.password'.$nameSuffix);
+    Route::post('/member/upload/init', [MemberController::class, 'uploadInit'])->name('member.upload.init'.$nameSuffix);
+    Route::post('/member/upload/chunk', [MemberController::class, 'uploadChunk'])->name('member.upload.chunk'.$nameSuffix);
+    Route::post('/member/upload/complete', [MemberController::class, 'uploadComplete'])->name('member.upload.complete'.$nameSuffix);
     Route::post('/member/logout', [MemberController::class, 'logout'])->name('member.logout'.$nameSuffix);
     Route::get('/download/{entry}', [SiteController::class, 'download'])->name('download'.$nameSuffix);
     Route::get('/go/{entry}', [SiteController::class, 'go'])->name('go'.$nameSuffix);
     Route::post('/form/{slug}', [SiteController::class, 'submitForm'])->name('form.submit'.$nameSuffix);
+    Route::post('/comment/{entry}', [CommentController::class, 'store'])->name('comment.store'.$nameSuffix)->whereNumber('entry');
     Route::get('/{catSlug}/{slug}', [SiteController::class, 'show'])
         ->where(['catSlug' => $catExclude, 'slug' => '[A-Za-z0-9\-_]+'])
         ->name('entry.show'.$nameSuffix);

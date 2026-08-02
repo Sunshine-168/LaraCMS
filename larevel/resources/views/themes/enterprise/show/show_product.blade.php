@@ -13,4 +13,6 @@
             @endif
         </div>
     </article>
+
+    @include('cms.comments')
 @endsection

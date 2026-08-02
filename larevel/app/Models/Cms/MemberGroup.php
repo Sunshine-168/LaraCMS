@@ -2,14 +2,18 @@
 
 namespace App\Models\Cms;
 
+use App\Models\Concerns\BelongsToSite;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MemberGroup extends Model
 {
+    use BelongsToSite;
+
     protected $table = 'cms_member_groups';
 
-    protected $fillable = ['name', 'slug', 'sort', 'is_active', 'permissions'];
+    protected $fillable = ['site_id', 'name', 'slug', 'sort', 'is_active', 'permissions'];
 
     protected function casts(): array
     {
@@ -22,7 +26,7 @@ class MemberGroup extends Model
     /** @return list<string> */
     public static function permissionKeys(): array
     {
-        return ['download', 'form_submit', 'view_member_content'];
+        return ['download', 'form_submit', 'view_member_content', 'upload'];
     }
 
     public function allows(string $key): bool

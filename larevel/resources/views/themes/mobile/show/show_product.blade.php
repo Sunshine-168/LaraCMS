@@ -10,4 +10,6 @@
             <p style="margin-top:14px"><a class="btn" href="{{ $entry->attr('buylink') }}" target="_blank">立即咨询</a></p>
         @endif
     </article>
+
+    @include('cms.comments')
 @endsection

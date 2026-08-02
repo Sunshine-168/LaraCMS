@@ -37,4 +37,32 @@
         命令行：<code>php artisan cms:html-clear</code> /
         <code>php artisan cms:html-warm --entries=30</code>
     </p>
+
+    <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb">
+    <h3>磁盘整站 HTML</h3>
+    <p class="muted">
+        将前台页面渲染为静态文件（按当前站点）。
+        @if($diskEnabled)
+            目录：<code>{{ $diskRoot }}</code>
+        @else
+            未启用（设置 <code>CMS_DISK_HTML=true</code>）
+        @endif
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <form method="post" action="{{ route('admin.html-cache.disk-build') }}">
+            @csrf
+            <input type="hidden" name="entries" value="200">
+            <button class="btn" type="submit" @disabled(! $diskEnabled)>生成磁盘 HTML</button>
+        </form>
+        <form method="post" action="{{ route('admin.html-cache.disk-clear') }}" onsubmit="return confirm('确认删除当前站磁盘 HTML？')">
+            @csrf
+            <button class="btn btn-danger" type="submit" @disabled(! $diskEnabled)>清空磁盘 HTML</button>
+        </form>
+    </div>
+    <p class="muted" style="margin-top:12px">
+        命令：<code>php artisan cms:html-build --entries=200</code> /
+        <code>php artisan cms:html-purge-disk</code><br>
+        Nginx 示例：<code>try_files /html/site_1$uri/index.html $uri /index.php?$query_string;</code>
+    </p>
 @endsection
+

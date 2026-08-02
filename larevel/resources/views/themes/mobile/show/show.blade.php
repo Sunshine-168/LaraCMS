@@ -6,4 +6,6 @@
         <p class="muted">浏览 {{ $entry->views }}</p>
         <div class="content" style="margin-top:12px">{!! $entry->linked_content ?? $entry->t('content') !!}</div>
     </article>
+
+    @include('cms.comments')
 @endsection

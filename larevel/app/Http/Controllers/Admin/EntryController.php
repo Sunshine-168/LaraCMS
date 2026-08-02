@@ -53,10 +53,14 @@ class EntryController extends Controller
 
         return view('admin.entries.form', [
             'entry' => new Entry(['status' => 'draft', 'model_id' => $model->id, 'attrs' => []]),
-            'model' => $model->load('fields'),
+            'model' => $model->load(['fields.categories']),
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
+            'mapDefaults' => [
+                'lng' => (float) \App\Models\Cms\Setting::getValue('map_default_lng', '116.397'),
+                'lat' => (float) \App\Models\Cms\Setting::getValue('map_default_lat', '39.908'),
+            ],
         ]);
     }
 
@@ -72,8 +76,8 @@ class EntryController extends Controller
     /** 编辑内容 */
     public function edit(Entry $entry): View
     {
-        $entry->load('tags');
-        $model = $entry->modelDef()->with('fields')->firstOrFail();
+        $entry->load(['tags', 'categories']);
+        $model = $entry->modelDef()->with(['fields.categories'])->firstOrFail();
 
         return view('admin.entries.form', [
             'entry' => $entry,
@@ -81,6 +85,10 @@ class EntryController extends Controller
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
+            'mapDefaults' => [
+                'lng' => (float) \App\Models\Cms\Setting::getValue('map_default_lng', '116.397'),
+                'lat' => (float) \App\Models\Cms\Setting::getValue('map_default_lat', '39.908'),
+            ],
         ]);
     }
 

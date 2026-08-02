@@ -13,7 +13,7 @@ class ContentApiController extends ApiController
         $q = Entry::query()->with(['category', 'modelDef', 'tags'])->published()->orderByDesc('published_at')->orderByDesc('id');
 
         if ($request->filled('category_id')) {
-            $q->where('category_id', (int) $request->query('category_id'));
+            $q->inCategories([(int) $request->query('category_id')]);
         }
         if ($request->filled('model_id')) {
             $q->where('model_id', (int) $request->query('model_id'));
