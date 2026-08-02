@@ -1,0 +1,35 @@
+{
+    "name": "Candy",
+    "slug": "candy",
+    "version": "1.0.0",
+    "description": "Playful pastel colors with a sweet aesthetic",
+    "author": "TallCMS",
+    "daisyui": {
+        "preset": "candy",
+        "custom": true
+    },
+    "tags": ["playful", "landing-page"],
+    "supports": {
+        "dark_mode": false,
+        "theme_controller": false,
+        "responsive": true,
+        "animations": true
+    },
+    "screenshots": {
+        "primary": null
+    },
+    "build": {
+        "entries": [
+            "resources/css/app.css",
+            "resources/js/app.js"
+        ]
+    },
+    "templates": {
+        "example": {
+            "label": "Example Template",
+            "description": "A custom example template for this theme",
+            "has_sidebar": false,
+            "minimal_chrome": false
+        }
+    }
+}

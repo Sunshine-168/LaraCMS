@@ -1,0 +1,80 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/vendor
+themes/*/node_modules
+themes/*/public/build
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+# Installer lock
+installer.lock
+
+# User-created themes (keep official themes only)
+/themes/*
+!/themes/default/
+!/themes/talldaisy/
+!/themes/autumn/
+!/themes/blog/
+!/themes/candy/
+!/themes/corporate/
+!/themes/creative/
+!/themes/minimal/
+!/themes/luxury/
+/public/themes/*
+!/public/themes/default
+!/public/themes/talldaisy
+!/public/themes/autumn
+!/public/themes/blog
+!/public/themes/candy
+!/public/themes/corporate
+!/public/themes/creative
+!/public/themes/minimal
+!/public/themes/luxury
+Homestead.json
+Homestead.yaml
+Thumbs.db
+.env.backup.*
+# Plugin zip files
+*.zip
+tallcms-*.zip
+
+# Plugins are installed via the admin panel and have their own repos
+/plugins/
+
+# Internal documentation
+daisyui.md
+PRO_MENU_PLAN.md
+RELEASING.md
+ROADMAP.md
+
+# Scribe API documentation (generated)
+.scribe/
+resources/views/scribe/
+storage/app/private/scribe/
+
+# Local SQLite databases
+/database.sqlite
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# Core CMS package — installed dependencies and caches
+/packages/tallcms/cms/vendor/
+/packages/tallcms/cms/node_modules/
+/packages/tallcms/cms/composer.lock
+/packages/tallcms/cms/package-lock.json
+/packages/tallcms/cms/.phpunit.cache/

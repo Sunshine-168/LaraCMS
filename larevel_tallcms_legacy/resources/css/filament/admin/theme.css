@@ -1,0 +1,53 @@
+/**
+ * Filament Admin Theme CSS
+ *
+ * This stylesheet is for Filament chrome ONLY.
+ * daisyUI and block styles are in preview.css (loaded separately for block previews).
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@plugin "@tailwindcss/typography";
+
+/* Filament admin component sources */
+@source '../../../../app/Filament/**/*';
+@source '../../../../app/Livewire/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/livewire/**/*';
+@source '../../../../packages/tallcms/cms/src/Filament/**/*';
+@source '../../../../packages/tallcms/cms/resources/views/filament/**/*';
+
+/**
+ * RichEditor sticky panel offset
+ *
+ * The sticky rule itself lives in packages/tallcms/cms/resources/css/admin.css
+ * so it ships to plugin-mode installs via FilamentAsset. This variable docks
+ * the panel below Filament's sticky topbar (~4rem) in standalone.
+ */
+.fi-fo-rich-editor {
+    --tallcms-editor-sticky-offset: 4rem;
+}
+
+/**
+ * CMS Block Panel - Dark Mode Safe Styles
+ *
+ * Uses Filament's --gray-* CSS variables instead of Tailwind utilities
+ * because preview.css loads daisyUI on editor pages, which overrides
+ * Tailwind's --color-gray-* variables and breaks dark mode.
+ */
+.fi-cms-block-category-heading {
+    background-color: var(--gray-50);
+    color: var(--gray-600);
+
+    &:hover {
+        background-color: var(--gray-100);
+    }
+}
+
+.fi-cms-block-search {
+    border-color: var(--gray-200);
+}
+
+:where(.dark, .dark *) {
+    & .fi-cms-block-search {
+        border-color: color-mix(in oklab, var(--color-white) 10%, transparent);
+    }
+}

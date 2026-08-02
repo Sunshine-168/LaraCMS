@@ -2,25 +2,34 @@
 
 namespace App\Models\Cms;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentModel extends Model
 {
-    protected $table = 'model';
+    protected $table = 'cms_models';
 
-    public $timestamps = false;
+    protected $fillable = [
+        'slug', 'name', 'kind', 'list_tpl', 'show_tpl', 'sort_order', 'is_active',
+    ];
 
-    protected $guarded = [];
-
-    public function scopeActive(Builder $query): Builder
+    protected function casts(): array
     {
-        return $query->where('status', 'normal');
+        return ['is_active' => 'boolean'];
     }
 
-    public function archives(): HasMany
+    public function fields(): HasMany
     {
-        return $this->hasMany(Archive::class, 'model_id');
+        return $this->hasMany(ModelField::class, 'model_id')->orderBy('sort_order');
+    }
+
+    public function entries(): HasMany
+    {
+        return $this->hasMany(Entry::class, 'model_id');
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class, 'model_id');
     }
 }

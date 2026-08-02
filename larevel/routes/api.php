@@ -1,21 +1,18 @@
 <?php
 
-use App\Http\Controllers\Api\Cms\CategoryController;
-use App\Http\Controllers\Api\Cms\ContentController;
-use App\Http\Controllers\Api\Cms\RecommendController;
-use App\Http\Controllers\Api\Cms\SiteConfigController;
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\ContentApiController;
+use App\Http\Controllers\Api\SiteApiController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('category')->group(function (): void {
-    Route::match(['get', 'post'], 'listPage', [CategoryController::class, 'listPage']);
-    Route::get('detail', [CategoryController::class, 'detail']);
-    Route::get('tree', [CategoryController::class, 'tree']);
-});
+Route::prefix('api')->middleware(['api', 'api.token'])->group(function () {
+    Route::get('site/config', [SiteApiController::class, 'config']);
+    Route::get('recommend', [SiteApiController::class, 'recommend']);
 
-Route::prefix('content')->group(function (): void {
-    Route::match(['get', 'post'], 'listPage', [ContentController::class, 'listPage']);
-    Route::get('details', [ContentController::class, 'details']);
-});
+    Route::get('category/list', [CategoryApiController::class, 'listPage']);
+    Route::get('category/tree', [CategoryApiController::class, 'tree']);
+    Route::get('category/{id}', [CategoryApiController::class, 'detail'])->whereNumber('id');
 
-Route::get('siteConfig/getAll', [SiteConfigController::class, 'getAll']);
-Route::get('recommend/contentList', [RecommendController::class, 'contentList']);
+    Route::get('content/list', [ContentApiController::class, 'listPage']);
+    Route::get('content/{id}', [ContentApiController::class, 'details'])->whereNumber('id');
+});

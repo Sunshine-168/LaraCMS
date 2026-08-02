@@ -1,0 +1,26 @@
+{
+    "name": "TallDaisy",
+    "slug": "talldaisy",
+    "version": "1.0.0",
+    "description": "The official TallCMS theme with daisyUI - supports all built-in presets with runtime theme switching",
+    "author": "TallCMS",
+    "daisyui": {
+        "preset": "light",
+        "prefersDark": "dark",
+        "presets": "all"
+    },
+    "tags": ["starter", "multi-purpose"],
+    "supports": {
+        "dark_mode": true,
+        "theme_controller": true,
+        "search": true,
+        "language_switcher": true,
+        "responsive": true,
+        "animations": true
+    },
+    "build": {
+        "css": "resources/css/app.css",
+        "js": "resources/js/app.js",
+        "output": "public"
+    }
+}

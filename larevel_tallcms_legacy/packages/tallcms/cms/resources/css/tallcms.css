@@ -1,0 +1,203 @@
+/* ============================================
+   TallCMS Core Styles
+   This file contains styles that are shared across
+   all themes. Themes should import this file.
+   ============================================ */
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Offset scroll target for fixed/sticky headers */
+[id] {
+    scroll-margin-top: 5rem;
+}
+
+/* ============================================
+   CMS Content - Inline Text Styling
+   Applies prose-like typography to content typed
+   directly in the Rich Editor (not inside blocks)
+   ============================================ */
+/* ============================================
+   TallCMS Block Animations
+   Scroll-triggered entrance animations using
+   CSS keyframes + Alpine.js x-intersect.
+   Respects prefers-reduced-motion.
+   ============================================ */
+@layer utilities {
+    /* Keyframes */
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(60px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in-down {
+        from { opacity: 0; transform: translateY(-60px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in-left {
+        from { opacity: 0; transform: translateX(-80px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fade-in-right {
+        from { opacity: 0; transform: translateX(80px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes zoom-in {
+        from { opacity: 0; transform: scale(0.7); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes zoom-in-up {
+        from { opacity: 0; transform: scale(0.8) translateY(40px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Base class for ALL TallCMS animations - single point for reduced-motion */
+    .tallcms-animate {
+        animation-fill-mode: both;
+    }
+
+    /* Animation modifier classes - applied alongside .tallcms-animate */
+    .tallcms-animate.animate-fade-in {
+        animation-name: fade-in;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-up {
+        animation-name: fade-in-up;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-down {
+        animation-name: fade-in-down;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-left {
+        animation-name: fade-in-left;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-right {
+        animation-name: fade-in-right;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-zoom-in {
+        animation-name: zoom-in;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-zoom-in-up {
+        animation-name: zoom-in-up;
+        animation-timing-function: ease-out;
+    }
+
+    /* Duration utilities (prefixed to avoid Tailwind collision) */
+    .anim-duration-300 { animation-duration: 300ms; }
+    .anim-duration-500 { animation-duration: 500ms; }
+    .anim-duration-700 { animation-duration: 700ms; }
+    .anim-duration-1000 { animation-duration: 1000ms; }
+    .anim-duration-1500 { animation-duration: 1500ms; }
+
+    /* Reduced motion: SINGLE selector for all TallCMS animations */
+    @media (prefers-reduced-motion: reduce) {
+        .tallcms-animate {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+    }
+}
+
+/* ============================================
+   CMS Content - Inline Text Styling
+   Applies prose-like typography to content typed
+   directly in the Rich Editor (not inside blocks)
+   ============================================ */
+.cms-content {
+    /* Direct paragraph children */
+    & > p {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-base leading-relaxed text-base-content;
+    }
+
+    /* Direct heading children */
+    & > h1 {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 text-4xl font-bold text-base-content;
+    }
+
+    & > h2 {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 text-3xl font-bold text-base-content;
+    }
+
+    & > h3 {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-3 text-2xl font-semibold text-base-content;
+    }
+
+    & > h4 {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xl font-semibold text-base-content;
+    }
+
+    /* Direct list children */
+    & > ul, & > ol {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-base leading-relaxed text-base-content;
+    }
+
+    & > ul {
+        @apply list-disc list-inside;
+    }
+
+    & > ol {
+        @apply list-decimal list-inside;
+    }
+
+    & > ul li, & > ol li {
+        @apply mb-2;
+    }
+
+    /* Direct blockquote children */
+    & > blockquote {
+        @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 my-4 border-l-4 border-primary pl-6 italic text-base-content/80;
+    }
+
+    /* Links in inline content */
+    & > p a, & > ul a, & > ol a, & > blockquote a {
+        @apply text-primary hover:text-primary/80 underline;
+    }
+
+    /* Code in inline content */
+    & > p code, & > li code {
+        @apply bg-base-200 px-1.5 py-0.5 rounded text-sm font-mono;
+    }
+
+    /* Horizontal rules */
+    & > hr {
+        @apply max-w-4xl mx-auto my-8 border-base-300;
+    }
+}
+
+/* ============================================
+   Parallax Block - Mobile/Accessibility Fallbacks
+   Disable parallax effect on mobile, touch devices,
+   and for users who prefer reduced motion.
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .parallax-block .parallax-bg {
+        background-attachment: scroll !important;
+    }
+}
+
+@media (max-width: 768px), (hover: none) {
+    .parallax-block .parallax-bg {
+        background-attachment: scroll !important;
+    }
+}

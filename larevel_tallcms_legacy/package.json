@@ -1,0 +1,23 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@alpinejs/intersect": "^3.15.5",
+        "@tailwindcss/typography": "^0.5.19",
+        "@tailwindcss/vite": "^4.3.1",
+        "axios": "^1.16.0",
+        "concurrently": "^9.2.3",
+        "daisyui": "^5.5.14",
+        "laravel-vite-plugin": "^3.1.0",
+        "tailwindcss": "^4.1.18",
+        "vite": "^8.0.16"
+    },
+    "dependencies": {
+        "alpinejs": "^3.15.5"
+    }
+}

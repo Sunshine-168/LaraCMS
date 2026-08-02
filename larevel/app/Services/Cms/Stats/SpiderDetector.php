@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Services\Cms\Stats;
+
+class SpiderDetector
+{
+    /** @var array<string, list<string>> 蜘蛛名 => UA 关键词（小写） */
+    protected array $bots = [
+        'Baiduspider' => ['baiduspider'],
+        'Googlebot' => ['googlebot', 'google-inspectiontool', 'adsbot-google', 'mediapartners-google', 'apis-google'],
+        'Bingbot' => ['bingbot', 'msnbot', 'adidxbot'],
+        'YandexBot' => ['yandexbot', 'yandex.com/bots'],
+        'Sogou' => ['sogou'],
+        '360Spider' => ['360spider', 'haosouspider'],
+        'Bytespider' => ['bytespider'],
+        'DuckDuckBot' => ['duckduckbot'],
+        'Yahoo' => ['yahoo! slurp', 'slurp'],
+        'Applebot' => ['applebot'],
+        'Facebook' => ['facebookexternalhit', 'facebot', 'meta-externalagent'],
+        'Twitterbot' => ['twitterbot'],
+        'LinkedInBot' => ['linkedinbot'],
+        'SemrushBot' => ['semrushbot'],
+        'AhrefsBot' => ['ahrefsbot'],
+        'MJ12bot' => ['mj12bot'],
+        'DotBot' => ['dotbot'],
+        'PetalBot' => ['petalbot'],
+        'ClaudeBot' => ['claudebot', 'anthropic-ai'],
+        'GPTBot' => ['gptbot', 'chatgpt-user'],
+        'OtherBot' => ['bot', 'spider', 'crawl', 'fetcher'],
+    ];
+
+    /** @return array{0:bool,1:?string} [is_spider, name] */
+    public function detect(?string $userAgent): array
+    {
+        $ua = strtolower(trim((string) $userAgent));
+        if ($ua === '') {
+            return [false, null];
+        }
+
+        foreach ($this->bots as $name => $keywords) {
+            if ($name === 'OtherBot') {
+                continue;
+            }
+            foreach ($keywords as $kw) {
+                if (str_contains($ua, $kw)) {
+                    return [true, $name];
+                }
+            }
+        }
+
+        foreach ($this->bots['OtherBot'] as $kw) {
+            if (str_contains($ua, $kw)) {
+                return [true, 'OtherBot'];
+            }
+        }
+
+        return [false, null];
+    }
+}

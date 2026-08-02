@@ -1,176 +1,76 @@
 <?php
 
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
-use App\Http\Controllers\Admin\Cms\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\Cms\ContentController as AdminContentController;
-use App\Http\Controllers\Admin\Cms\RecommendController as AdminRecommendController;
-use App\Http\Controllers\Admin\Auth\AdminController as ManagedAdminController;
-use App\Http\Controllers\Admin\Auth\GroupController as ManagedGroupController;
-use App\Http\Controllers\Admin\Routine\ConfigController as AdminConfigController;
-use App\Http\Controllers\Admin\Routine\AttachmentController as AdminAttachmentController;
-use App\Http\Controllers\Admin\DashboardController;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use App\Http\Controllers\Addons\AddressController;
-use App\Http\Controllers\Common\UploadController;
-use App\Http\Controllers\CmsFrontendController;
+use App\Http\Controllers\Web\MemberController;
+use App\Http\Controllers\Web\SiteController;
+use App\Support\Locale;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/addons/address/index/index', [AddressController::class, 'index'])->name('addons.address.index');
-Route::post('/common/upload', UploadController::class)
-    ->withoutMiddleware([VerifyCsrfToken::class])
-    ->name('common.upload');
+$reserved = array_map(
+    fn (string $code) => preg_quote(Locale::toPublic($code), '/'),
+    array_values(array_filter(
+        Locale::codes(),
+        fn (string $code) => ! (Locale::hideDefault() && $code === Locale::default())
+    ))
+);
 
-Route::prefix('admin')->name('admin.')->group(function (): void {
-    Route::match(['get', 'post'], 'login', [AdminAuthController::class, 'login'])->name('login');
+$reservedSegments = array_merge(
+    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'sitemap\\.xml'],
+    $reserved
+);
+$slugExclude = '^(?!'.implode('$|', $reservedSegments).'$)[A-Za-z0-9\-_]+$';
+$catExclude = '^(?!admin|storage|livewire|api|download|go|form|search|member|login|logout|register|tag|rss|install|e|c'.($reserved ? '|'.implode('|', $reserved) : '').')[A-Za-z0-9\-_]+$';
 
-    Route::middleware('admin.auth')->group(function (): void {
-        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
-        Route::get('/', [DashboardController::class, 'index'])->name('home');
-        Route::get('dashboard', [DashboardController::class, 'index'])
-            ->middleware('admin.permission:index/dashboard')
-            ->name('dashboard');
-        Route::get('cms/categories', [AdminCategoryController::class, 'index'])
-            ->middleware('admin.permission:cms/category/index')
-            ->name('categories.index');
-        Route::get('cms/categories/create', [AdminCategoryController::class, 'create'])
-            ->middleware('admin.permission:cms/category/add')
-            ->name('categories.create');
-        Route::post('cms/categories', [AdminCategoryController::class, 'store'])
-            ->middleware('admin.permission:cms/category/add')
-            ->name('categories.store');
-        Route::get('cms/categories/{category}/edit', [AdminCategoryController::class, 'edit'])
-            ->middleware('admin.permission:cms/category/edit')
-            ->name('categories.edit');
-        Route::put('cms/categories/{category}', [AdminCategoryController::class, 'update'])
-            ->middleware('admin.permission:cms/category/edit')
-            ->name('categories.update');
-        Route::delete('cms/categories/{category}', [AdminCategoryController::class, 'destroy'])
-            ->middleware('admin.permission:cms/category/del')
-            ->name('categories.destroy');
-        Route::get('cms/content', [AdminContentController::class, 'index'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.index');
-        Route::get('cms/content/create', [AdminContentController::class, 'create'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.create');
-        Route::post('cms/content', [AdminContentController::class, 'store'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.store');
-        Route::get('cms/content/{content}/edit', [AdminContentController::class, 'edit'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.edit');
-        Route::put('cms/content/{content}', [AdminContentController::class, 'update'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.update');
-        Route::delete('cms/content/{content}', [AdminContentController::class, 'destroy'])
-            ->middleware('admin.permission:cms/content/index')
-            ->name('contents.destroy');
-        Route::get('cms/recommend', [AdminRecommendController::class, 'index'])
-            ->middleware('admin.permission:cms/recommend/index')
-            ->name('recommends.index');
-        Route::get('cms/recommend/create', [AdminRecommendController::class, 'create'])
-            ->middleware('admin.permission:cms/recommend/add')
-            ->name('recommends.create');
-        Route::post('cms/recommend', [AdminRecommendController::class, 'store'])
-            ->middleware('admin.permission:cms/recommend/add')
-            ->name('recommends.store');
-        Route::get('cms/recommend/{recommend}/edit', [AdminRecommendController::class, 'edit'])
-            ->middleware('admin.permission:cms/recommend/edit')
-            ->name('recommends.edit');
-        Route::put('cms/recommend/{recommend}', [AdminRecommendController::class, 'update'])
-            ->middleware('admin.permission:cms/recommend/edit')
-            ->name('recommends.update');
-        Route::delete('cms/recommend/{recommend}', [AdminRecommendController::class, 'destroy'])
-            ->middleware('admin.permission:cms/recommend/del')
-            ->name('recommends.destroy');
-        Route::get('routine/attachment', [AdminAttachmentController::class, 'index'])
-            ->middleware('admin.permission:routine/attachment/index')
-            ->name('attachments.index');
-        Route::get('routine/attachment/select', [AdminAttachmentController::class, 'select'])
-            ->middleware('admin.permission:routine/attachment/index')
-            ->name('attachments.select');
-        Route::post('routine/attachment/download', [AdminAttachmentController::class, 'download'])
-            ->middleware('admin.permission:routine/attachment/index')
-            ->name('attachments.download');
-        Route::post('routine/attachment/edit-title', [AdminAttachmentController::class, 'editTitle'])
-            ->middleware('admin.permission:routine/attachment/edit')
-            ->name('attachments.edit-title');
-        Route::post('routine/attachment/get-title', [AdminAttachmentController::class, 'getTitle'])
-            ->middleware('admin.permission:routine/attachment/index')
-            ->name('attachments.get-title');
-        Route::match(['get', 'post'], 'routine/attachment/water', [AdminAttachmentController::class, 'water'])
-            ->middleware('admin.permission:routine/attachment/water')
-            ->name('attachments.water');
-        Route::match(['get', 'post'], 'routine/attachment/thumb', [AdminAttachmentController::class, 'thumb'])
-            ->middleware('admin.permission:routine/attachment/thumb')
-            ->name('attachments.thumb');
-        Route::get('routine/attachment/{attachment}/edit', [AdminAttachmentController::class, 'edit'])
-            ->middleware('admin.permission:routine/attachment/edit')
-            ->name('attachments.edit');
-        Route::put('routine/attachment/{attachment}', [AdminAttachmentController::class, 'update'])
-            ->middleware('admin.permission:routine/attachment/edit')
-            ->name('attachments.update');
-        Route::delete('routine/attachment/{attachment}', [AdminAttachmentController::class, 'destroy'])
-            ->middleware('admin.permission:routine/attachment/del')
-            ->name('attachments.destroy');
-        Route::match(['get', 'post'], 'routine/config', [AdminConfigController::class, 'index'])
-            ->middleware('admin.permission:routine/config/index')
-            ->name('config.index');
-        Route::get('routine/config/create', [AdminConfigController::class, 'create'])
-            ->middleware('admin.permission:routine/config/index')
-            ->name('config.create');
-        Route::post('routine/config/store', [AdminConfigController::class, 'store'])
-            ->middleware('admin.permission:routine/config/index')
-            ->name('config.store');
-        Route::delete('routine/config/{config}', [AdminConfigController::class, 'destroy'])
-            ->middleware('admin.permission:routine/config/index')
-            ->name('config.destroy');
-        Route::get('auth/admin', [ManagedAdminController::class, 'index'])
-            ->middleware('admin.permission:auth/admin/index')
-            ->name('admin-users.index');
-        Route::get('auth/admin/create', [ManagedAdminController::class, 'create'])
-            ->middleware('admin.permission:auth/admin/add')
-            ->name('admin-users.create');
-        Route::post('auth/admin', [ManagedAdminController::class, 'store'])
-            ->middleware('admin.permission:auth/admin/add')
-            ->name('admin-users.store');
-        Route::get('auth/admin/{admin}/edit', [ManagedAdminController::class, 'edit'])
-            ->middleware('admin.permission:auth/admin/edit')
-            ->name('admin-users.edit');
-        Route::put('auth/admin/{admin}', [ManagedAdminController::class, 'update'])
-            ->middleware('admin.permission:auth/admin/edit')
-            ->name('admin-users.update');
-        Route::delete('auth/admin/{admin}', [ManagedAdminController::class, 'destroy'])
-            ->middleware('admin.permission:auth/admin/del')
-            ->name('admin-users.destroy');
-        Route::get('auth/group', [ManagedGroupController::class, 'index'])
-            ->middleware('admin.permission:auth/group/index')
-            ->name('auth-groups.index');
-        Route::get('auth/group/create', [ManagedGroupController::class, 'create'])
-            ->middleware('admin.permission:auth/group/add')
-            ->name('auth-groups.create');
-        Route::post('auth/group', [ManagedGroupController::class, 'store'])
-            ->middleware('admin.permission:auth/group/add')
-            ->name('auth-groups.store');
-        Route::get('auth/group/{group}/edit', [ManagedGroupController::class, 'edit'])
-            ->middleware('admin.permission:auth/group/edit')
-            ->name('auth-groups.edit');
-        Route::put('auth/group/{group}', [ManagedGroupController::class, 'update'])
-            ->middleware('admin.permission:auth/group/edit')
-            ->name('auth-groups.update');
-        Route::delete('auth/group/{group}', [ManagedGroupController::class, 'destroy'])
-            ->middleware('admin.permission:auth/group/del')
-            ->name('auth-groups.destroy');
-    });
+$registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExclude) {
+    Route::get('/', [SiteController::class, 'index'])->name('home'.$nameSuffix);
+    Route::get('/search', [SiteController::class, 'search'])->name('search'.$nameSuffix);
+    Route::get('/tag/{slug}', [SiteController::class, 'tag'])->name('tag'.$nameSuffix);
+    Route::get('/e/{entry}', [SiteController::class, 'showById'])->name('entry.id'.$nameSuffix)->whereNumber('entry');
+    Route::get('/c/{category}', [SiteController::class, 'categoryById'])->name('category.id'.$nameSuffix)->whereNumber('category');
+    Route::get('/c/{category}/{slug}', [SiteController::class, 'showByCatId'])->name('entry.catid'.$nameSuffix)
+        ->whereNumber('category')->where('slug', '[A-Za-z0-9\-_]+');
+    Route::get('/{modelSlug}/{catSlug}/{slug}', [SiteController::class, 'showByModel'])
+        ->where(['modelSlug' => $slugExclude, 'catSlug' => '[A-Za-z0-9\-_]+', 'slug' => '[A-Za-z0-9\-_]+'])
+        ->name('entry.model'.$nameSuffix);
+    Route::get('/member/login', [MemberController::class, 'showLogin'])->name('member.login'.$nameSuffix);
+    Route::post('/member/login', [MemberController::class, 'login'])->name('member.login.submit'.$nameSuffix);
+    Route::get('/member/register', [MemberController::class, 'showRegister'])->name('member.register'.$nameSuffix);
+    Route::post('/member/register', [MemberController::class, 'register'])->name('member.register.submit'.$nameSuffix);
+    Route::get('/member/forgot', [MemberController::class, 'showForgot'])->name('member.forgot'.$nameSuffix);
+    Route::post('/member/forgot', [MemberController::class, 'sendReset'])->name('member.forgot.submit'.$nameSuffix);
+    Route::get('/member/reset', [MemberController::class, 'showReset'])->name('member.reset'.$nameSuffix);
+    Route::post('/member/reset', [MemberController::class, 'resetPassword'])->name('member.reset.submit'.$nameSuffix);
+    Route::get('/member/profile', [MemberController::class, 'profile'])->name('member.profile'.$nameSuffix);
+    Route::post('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update'.$nameSuffix);
+    Route::post('/member/password', [MemberController::class, 'updatePassword'])->name('member.password'.$nameSuffix);
+    Route::post('/member/logout', [MemberController::class, 'logout'])->name('member.logout'.$nameSuffix);
+    Route::get('/download/{entry}', [SiteController::class, 'download'])->name('download'.$nameSuffix);
+    Route::get('/go/{entry}', [SiteController::class, 'go'])->name('go'.$nameSuffix);
+    Route::post('/form/{slug}', [SiteController::class, 'submitForm'])->name('form.submit'.$nameSuffix);
+    Route::get('/{catSlug}/{slug}', [SiteController::class, 'show'])
+        ->where(['catSlug' => $catExclude, 'slug' => '[A-Za-z0-9\-_]+'])
+        ->name('entry.show'.$nameSuffix);
+    Route::get('/{slug}', [SiteController::class, 'category'])
+        ->where('slug', $slugExclude)
+        ->name('category.show'.$nameSuffix);
+};
+
+Route::middleware(['locale:'.Locale::default(), 'html.cache'])->group(function () {
+    Route::get('/sitemap.xml', [SiteController::class, 'sitemap'])->name('sitemap');
+    Route::get('/rss.xml', [SiteController::class, 'rss'])->name('rss');
 });
 
-Route::get('/', [CmsFrontendController::class, 'index'])->name('cms.home');
-Route::get('/{catname}/{id}', [CmsFrontendController::class, 'show'])
-    ->where([
-        'catname' => '[A-Za-z0-9_-]+',
-        'id' => '[A-Za-z0-9_-]+',
-    ])
-    ->name('cms.content.show');
-Route::get('/{catname}', [CmsFrontendController::class, 'list'])
-    ->where('catname', '[A-Za-z0-9_-]+')
-    ->name('cms.category.show');
+foreach (Locale::codes() as $code) {
+    if ($code === Locale::default() && Locale::hideDefault()) {
+        continue;
+    }
+    $public = Locale::toPublic($code);
+    Route::prefix($public)
+        ->middleware(['locale:'.$code, 'html.cache'])
+        ->group(function () use ($registerContent, $code) {
+            $registerContent('.'.$code);
+        });
+}
+
+Route::middleware(['locale:'.Locale::default(), 'html.cache'])->group(function () use ($registerContent) {
+    $registerContent();
+});

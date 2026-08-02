@@ -2,23 +2,35 @@
 
 namespace App\Providers;
 
+use App\Models\Cms\Setting;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        Password::defaults(function () {
+            $min = (int) env('PASSWORD_MIN_LENGTH', 10);
+
+            return Password::min(max(8, $min))->letters()->numbers();
+        });
+
+        try {
+            if (Schema::hasTable('cms_settings')) {
+                $theme = Setting::getValue('theme');
+                if (is_string($theme) && $theme !== '') {
+                    config(['cms.theme' => $theme]);
+                }
+            }
+        } catch (\Throwable) {
+            // 迁移前忽略
+        }
     }
 }

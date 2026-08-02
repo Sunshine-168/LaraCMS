@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\Cms\CmsLocale;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+
+class Locale
+{
+    protected static ?string $current = null;
+
+    /** @return array<string, array{label:string,native?:string}> */
+    public static function all(): array
+    {
+        try {
+            if (Schema::hasTable('cms_locales')) {
+                return Cache::remember('cms_locales_map', 60, function () {
+                    $rows = CmsLocale::query()->where('is_active', true)->orderBy('sort')->orderBy('id')->get();
+                    if ($rows->isEmpty()) {
+                        return (array) config('cms.locales', []);
+                    }
+                    $out = [];
+                    foreach ($rows as $row) {
+                        $out[$row->code] = [
+                            'label' => $row->label,
+                            'native' => $row->native ?: $row->label,
+                        ];
+                    }
+
+                    return $out;
+                });
+            }
+        } catch (\Throwable) {
+        }
+
+        return (array) config('cms.locales', []);
+    }
+
+    public static function default(): string
+    {
+        try {
+            if (Schema::hasTable('cms_locales')) {
+                $code = Cache::remember('cms_locale_default', 60, function () {
+                    return CmsLocale::query()->where('is_active', true)->where('is_default', true)->value('code')
+                        ?: CmsLocale::query()->where('is_active', true)->orderBy('sort')->value('code');
+                });
+                if ($code) {
+                    return (string) $code;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
+        return (string) config('cms.default_locale', 'zh_cn');
+    }
+
+    public static function codes(): array
+    {
+        return array_keys(self::all());
+    }
+
+    public static function set(string $locale): void
+    {
+        $locale = self::normalize($locale);
+        if (! in_array($locale, self::codes(), true)) {
+            $locale = self::default();
+        }
+        self::$current = $locale;
+        app()->setLocale($locale === 'zh_cn' ? 'zh_CN' : $locale);
+    }
+
+    public static function current(): string
+    {
+        return self::$current ?: self::default();
+    }
+
+    public static function normalize(string $locale): string
+    {
+        return strtolower(str_replace('-', '_', $locale));
+    }
+
+    public static function toPublic(string $locale): string
+    {
+        $locale = self::normalize($locale);
+        $parts = explode('_', $locale);
+        if (count($parts) === 1) {
+            return $parts[0];
+        }
+
+        return $parts[0].'-'.strtoupper($parts[1]);
+    }
+
+    public static function hideDefault(): bool
+    {
+        try {
+            if (Schema::hasTable('cms_locales')) {
+                $hide = Cache::remember('cms_locale_hide_default', 60, function () {
+                    $row = CmsLocale::query()->where('is_default', true)->where('is_active', true)->first();
+
+                    return $row?->hide_default;
+                });
+                if ($hide !== null) {
+                    return (bool) $hide;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
+        return (bool) config('cms.hide_default_locale', true);
+    }
+
+    public static function forgetCache(): void
+    {
+        Cache::forget('cms_locales_map');
+        Cache::forget('cms_locale_default');
+        Cache::forget('cms_locale_hide_default');
+    }
+}

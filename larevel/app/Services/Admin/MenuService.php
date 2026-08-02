@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Services\Admin;
+
+use App\Models\Cms\Menu;
+use App\Models\Cms\MenuItem;
+use App\Support\Result;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+class MenuService
+{
+    /** 菜单列表 */
+    public function all(): Collection
+    {
+        return Menu::query()->with('items')->orderBy('id')->get();
+    }
+
+    /** 保存菜单及条目 */
+    public function save(?Menu $menu, array $input): array
+    {
+        return DB::transaction(function () use ($menu, $input) {
+            $menu ??= new Menu;
+            $menu->name = $input['name'] ?? '主导航';
+            $menu->location = $input['location'] ?? 'header';
+            $menu->is_active = ! empty($input['is_active']);
+            $menu->save();
+
+            MenuItem::query()->where('menu_id', $menu->id)->delete();
+
+            foreach ($input['items'] ?? [] as $i => $row) {
+                if (empty($row['title_zh_cn']) && empty($row['title_en'])) {
+                    continue;
+                }
+                MenuItem::query()->create([
+                    'menu_id' => $menu->id,
+                    'title' => [
+                        'zh_cn' => $row['title_zh_cn'] ?? '',
+                        'en' => $row['title_en'] ?? ($row['title_zh_cn'] ?? ''),
+                    ],
+                    'type' => $row['type'] ?? 'url',
+                    'url' => $row['url'] ?? '#',
+                    'reference_id' => $row['reference_id'] ?: null,
+                    'sort_order' => $i,
+                    'is_active' => true,
+                ]);
+            }
+
+            return Result::ok($menu->load('items'), '保存成功');
+        });
+    }
+
+    /** 删除菜单 */
+    public function delete(Menu $menu): array
+    {
+        $menu->delete();
+
+        return Result::ok(null, '已删除');
+    }
+}

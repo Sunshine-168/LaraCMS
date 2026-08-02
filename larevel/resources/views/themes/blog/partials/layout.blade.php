@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @cmsSeo
+    <style>
+        body{margin:0;font-family:"Literata","Noto Serif SC",serif;background:#faf8f5;color:#1c1917;line-height:1.7}
+        a{color:#9a3412;text-decoration:none}.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+        header{padding:40px 0 20px;border-bottom:1px solid #e7e5e4}.brand{font-size:32px;font-weight:700}
+        nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-family:"DM Sans",sans-serif;font-size:14px}
+        article{padding:28px 0;border-bottom:1px solid #e7e5e4}.muted{color:#78716c;font-size:13px;font-family:"DM Sans",sans-serif}
+        h1{font-size:34px;line-height:1.25} .content p{margin:0 0 1em}
+    </style>
+</head>
+<body>
+<header class="wrap">
+    <a class="brand" href="/">{{ $site['title'] ?? 'Blog' }}</a>
+    <nav>
+        @cmsChannel(['type'=>'top','ismenu'=>1])
+            <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
+        @endcmsChannel
+        <a href="{{ route('search') }}">搜索</a>
+        <a href="{{ route('rss') }}">RSS</a>
+    </nav>
+</header>
+<main class="wrap">@yield('content')</main>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace TallCms\Cms\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use TallCms\Cms\Support\MenuCache;
+
+class TallcmsMenu extends Model
+{
+    protected $table = 'tallcms_menus';
+
+    protected $fillable = [
+        'site_id',
+        'name',
+        'location',
+        'description',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    protected static function booted(): void
+    {
+        static::saved(fn (): bool => MenuCache::flush());
+        static::deleted(fn (): bool => MenuCache::flush());
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(TallcmsMenuItem::class, 'menu_id')
+            ->whereIsRoot()
+            ->defaultOrder();
+    }
+
+    public function allItems(): HasMany
+    {
+        return $this->hasMany(TallcmsMenuItem::class, 'menu_id');
+    }
+
+    public function activeItems(): HasMany
+    {
+        return $this->items()->where('is_active', true);
+    }
+
+    public static function byLocation(string $location): ?self
+    {
+        return static::where('location', $location)
+            ->where('is_active', true)
+            ->first();
+    }
+}

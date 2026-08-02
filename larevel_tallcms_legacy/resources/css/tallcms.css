@@ -1,0 +1,220 @@
+/* ============================================
+   TallCMS Core Styles
+   This file contains styles that are shared across
+   all themes. Themes should import this file.
+   ============================================ */
+
+/* ============================================
+   TallCMS Block Animations
+   Scroll-triggered entrance animations using
+   CSS keyframes + Alpine.js x-intersect.
+   Respects prefers-reduced-motion.
+   ============================================ */
+@layer utilities {
+    /* Keyframes */
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(60px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in-down {
+        from { opacity: 0; transform: translateY(-60px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in-left {
+        from { opacity: 0; transform: translateX(-80px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fade-in-right {
+        from { opacity: 0; transform: translateX(80px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes zoom-in {
+        from { opacity: 0; transform: scale(0.7); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes zoom-in-up {
+        from { opacity: 0; transform: scale(0.8) translateY(40px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Base class for ALL TallCMS animations - single point for reduced-motion */
+    .tallcms-animate {
+        animation-fill-mode: both;
+    }
+
+    /* Animation modifier classes - applied alongside .tallcms-animate */
+    .tallcms-animate.animate-fade-in {
+        animation-name: fade-in;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-up {
+        animation-name: fade-in-up;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-down {
+        animation-name: fade-in-down;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-left {
+        animation-name: fade-in-left;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-fade-in-right {
+        animation-name: fade-in-right;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-zoom-in {
+        animation-name: zoom-in;
+        animation-timing-function: ease-out;
+    }
+
+    .tallcms-animate.animate-zoom-in-up {
+        animation-name: zoom-in-up;
+        animation-timing-function: ease-out;
+    }
+
+    /* Duration utilities (prefixed to avoid Tailwind collision) */
+    .anim-duration-300 { animation-duration: 300ms; }
+    .anim-duration-500 { animation-duration: 500ms; }
+    .anim-duration-700 { animation-duration: 700ms; }
+    .anim-duration-1000 { animation-duration: 1000ms; }
+    .anim-duration-1500 { animation-duration: 1500ms; }
+
+    /* Reduced motion: SINGLE selector for all TallCMS animations */
+    @media (prefers-reduced-motion: reduce) {
+        .tallcms-animate {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+    }
+}
+
+/* ============================================
+   CMS Content - Inline Text Styling
+   Applies prose-like typography to content typed
+   directly in the Rich Editor (not inside blocks).
+   Uses same container structure as blocks for alignment.
+   ============================================ */
+.cms-content {
+    /* Width classes based on section data-content-width attribute */
+    /* Standard width (default) */
+    & > section,
+    & > section[data-content-width="standard"] {
+        & > p, & > h1, & > h2, & > h3, & > h4, & > ul, & > ol, & > blockquote, & > hr {
+            @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+        }
+    }
+
+    /* Narrow width */
+    & > section[data-content-width="narrow"] {
+        & > p, & > h1, & > h2, & > h3, & > h4, & > ul, & > ol, & > blockquote, & > hr {
+            @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8;
+        }
+    }
+
+    /* Wide width */
+    & > section[data-content-width="wide"] {
+        & > p, & > h1, & > h2, & > h3, & > h4, & > ul, & > ol, & > blockquote, & > hr {
+            @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+        }
+    }
+
+    /* Paragraphs */
+    & > section > p {
+        @apply py-3 text-base leading-relaxed text-base-content;
+    }
+
+    /* Headings */
+    & > section > h1 {
+        @apply pt-8 pb-4 text-4xl font-bold text-base-content;
+    }
+
+    & > section > h2 {
+        @apply pt-8 pb-4 text-3xl font-bold text-base-content;
+    }
+
+    & > section > h3 {
+        @apply pt-6 pb-3 text-2xl font-semibold text-base-content;
+    }
+
+    & > section > h4 {
+        @apply pt-4 pb-2 text-xl font-semibold text-base-content;
+    }
+
+    /* Lists */
+    & > section > ul,
+    & > section > ol {
+        @apply py-3 text-base leading-relaxed text-base-content;
+    }
+
+    & > section > ul {
+        @apply list-disc pl-6;
+    }
+
+    & > section > ol {
+        @apply list-decimal pl-6;
+    }
+
+    & > section > ul li,
+    & > section > ol li {
+        @apply mb-2;
+    }
+
+    /* Blockquotes */
+    & > section > blockquote {
+        @apply py-4 my-4 border-l-4 border-primary pl-6 italic text-base-content/80;
+    }
+
+    /* Links in inline content */
+    & > section > p a,
+    & > section > ul a,
+    & > section > ol a,
+    & > section > blockquote a {
+        @apply text-primary hover:text-primary/80 underline;
+    }
+
+    /* Inline code */
+    & > section > p code,
+    & > section > li code {
+        @apply bg-base-200 px-1.5 py-0.5 rounded text-sm font-mono;
+    }
+
+    /* Horizontal rules */
+    & > section > hr {
+        @apply my-8 border-base-300;
+    }
+}
+
+/* ============================================
+   Parallax - Mobile/Accessibility Fallbacks
+   Disable background-attachment: fixed on iOS
+   Safari (which renders it incorrectly), touch
+   devices, and reduced-motion users.
+   Applied to Hero and Parallax blocks.
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .parallax-block .parallax-bg {
+        background-attachment: scroll !important;
+    }
+}
+
+@media (max-width: 768px), (hover: none) {
+    .parallax-block .parallax-bg {
+        background-attachment: scroll !important;
+    }
+}

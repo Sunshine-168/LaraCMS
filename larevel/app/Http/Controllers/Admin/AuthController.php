@@ -2,49 +2,57 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Services\Admin\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class AuthController extends BaseAdminController
+class AuthController extends Controller
 {
-    public function login(Request $request): View|RedirectResponse
+    public function __construct(private readonly AuthService $authService)
     {
-        if ($this->auth->check()) {
+    }
+
+    /** 登录页 */
+    public function showLogin(): View|RedirectResponse
+    {
+        if (auth('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
 
-        if ($request->isMethod('post')) {
-            $data = $request->validate([
-                'username' => ['required', 'alpha_dash', 'min:3', 'max:16'],
-                'password' => ['required', 'min:6'],
-            ]);
-
-            if ($this->auth->tooManyFailures($data['username'])) {
-                return back()->withErrors(['username' => '登录失败次数过多，请稍后再试'])->withInput();
-            }
-
-            $loggedIn = $this->auth->attempt($data['username'], $data['password'], (string) $request->ip());
-
-            if ($loggedIn === true) {
-                return redirect()->to('/'.ltrim((string) $request->input('url', route('admin.dashboard', absolute: false)), '/'));
-            }
-
-            if ($loggedIn === 0) {
-                return back()->withErrors(['username' => '账号已被禁用'])->withInput();
-            }
-
-            return back()->withErrors(['username' => '用户名或密码错误'])->withInput();
-        }
-
-        return view('admin.auth.login', [
-            'redirectUrl' => $request->query('url', ''),
-        ]);
+        return view('admin.auth.login');
     }
 
-    public function logout(): RedirectResponse
+    /** 提交登录 */
+    public function login(Request $request): RedirectResponse
     {
-        $this->auth->logout();
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        $result = $this->authService->login(
+            $data['email'],
+            $data['password'],
+            $request->boolean('remember')
+        );
+
+        if (! $result['ok']) {
+            return back()->withErrors(['email' => $result['msg']])->withInput();
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('admin.dashboard'));
+    }
+
+    /** 退出登录 */
+    public function logout(Request $request): RedirectResponse
+    {
+        $this->authService->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('admin.login');
     }

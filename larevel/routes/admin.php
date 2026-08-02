@@ -1,0 +1,149 @@
+<?php
+
+use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CacheController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CollectorController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EntryController;
+use App\Http\Controllers\Admin\FlagController;
+use App\Http\Controllers\Admin\FormController;
+use App\Http\Controllers\Admin\FormSubmissionController;
+use App\Http\Controllers\Admin\HtmlCacheController;
+use App\Http\Controllers\Admin\LocaleController;
+use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\MemberGroupController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\ModelController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\RecommendController;
+use App\Http\Controllers\Admin\RecycleController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StatController;
+use App\Http\Controllers\Admin\TagController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+
+    Route::middleware(['admin.auth', 'admin.log'])->group(function () {
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard.alt');
+
+        Route::middleware('admin.perm:entries')->group(function () {
+            Route::post('entries/batch', [EntryController::class, 'batch'])->name('entries.batch');
+            Route::resource('entries', EntryController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:recycle')->group(function () {
+            Route::get('recycle', [RecycleController::class, 'index'])->name('recycle.index');
+            Route::post('recycle/{entry}/restore', [RecycleController::class, 'restore'])->name('recycle.restore');
+            Route::delete('recycle/{entry}', [RecycleController::class, 'forceDestroy'])->name('recycle.force');
+        });
+        Route::middleware('admin.perm:categories')->group(function () {
+            Route::resource('categories', CategoryController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:tags')->group(function () {
+            Route::resource('tags', TagController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:flags')->group(function () {
+            Route::resource('flags', FlagController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:locales')->group(function () {
+            Route::resource('locales', LocaleController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:forms')->group(function () {
+            Route::get('forms', [FormController::class, 'index'])->name('forms.index');
+            Route::get('forms/create', [FormController::class, 'create'])->name('forms.create');
+            Route::post('forms', [FormController::class, 'store'])->name('forms.store');
+            Route::get('forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
+            Route::put('forms/{form}', [FormController::class, 'update'])->name('forms.update');
+            Route::delete('forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
+        });
+        Route::middleware('admin.perm:form_submissions')->group(function () {
+            Route::get('form-submissions', [FormSubmissionController::class, 'index'])->name('form-submissions.index');
+            Route::get('form-submissions/export', [FormSubmissionController::class, 'export'])->name('form-submissions.export');
+            Route::delete('form-submissions/{submission}', [FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
+        });
+        Route::middleware('admin.perm:menus')->group(function () {
+            Route::resource('menus', MenuController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:media')->group(function () {
+            Route::get('media', [MediaController::class, 'index'])->name('media.index');
+            Route::get('media/json', [MediaController::class, 'json'])->name('media.json');
+            Route::post('media', [MediaController::class, 'store'])->name('media.store');
+            Route::delete('media/{medium}', [MediaController::class, 'destroy'])->name('media.destroy');
+        });
+        Route::middleware('admin.perm:pages')->group(function () {
+            Route::resource('pages', PageController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:posts')->group(function () {
+            Route::resource('posts', PostController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:stats')->group(function () {
+            Route::get('stats', [StatController::class, 'index'])->name('stats.index');
+            Route::get('stats/spiders', [StatController::class, 'spiders'])->name('stats.spiders');
+            Route::get('stats/logs', [StatController::class, 'logs'])->name('stats.logs');
+        });
+        Route::middleware('admin.perm:models')->group(function () {
+            Route::get('models', [ModelController::class, 'index'])->name('models.index');
+            Route::get('models/create', [ModelController::class, 'create'])->name('models.create');
+            Route::post('models', [ModelController::class, 'store'])->name('models.store');
+            Route::get('models/{model}/edit', [ModelController::class, 'edit'])->name('models.edit');
+            Route::put('models/{model}', [ModelController::class, 'update'])->name('models.update');
+            Route::delete('models/{model}', [ModelController::class, 'destroy'])->name('models.destroy');
+            Route::get('models/{model}/fields/create', [ModelController::class, 'createField'])->name('models.fields.create');
+            Route::post('models/{model}/fields', [ModelController::class, 'storeField'])->name('models.fields.store');
+            Route::get('models/{model}/fields/{field}/edit', [ModelController::class, 'editField'])->name('models.fields.edit');
+            Route::put('models/{model}/fields/{field}', [ModelController::class, 'updateField'])->name('models.fields.update');
+            Route::delete('models/fields/{field}', [ModelController::class, 'destroyField'])->name('models.fields.destroy');
+        });
+        Route::middleware('admin.perm:recommends')->group(function () {
+            Route::resource('recommends', RecommendController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:members')->group(function () {
+            Route::resource('members', MemberController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:member_groups')->group(function () {
+            Route::resource('member-groups', MemberGroupController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:collectors')->group(function () {
+            Route::get('collectors', [CollectorController::class, 'index'])->name('collectors.index');
+            Route::get('collectors/create', [CollectorController::class, 'create'])->name('collectors.create');
+            Route::post('collectors', [CollectorController::class, 'store'])->name('collectors.store');
+            Route::get('collectors/logs', [CollectorController::class, 'logs'])->name('collectors.logs');
+            Route::get('collectors/{collector}/edit', [CollectorController::class, 'edit'])->name('collectors.edit');
+            Route::put('collectors/{collector}', [CollectorController::class, 'update'])->name('collectors.update');
+            Route::delete('collectors/{collector}', [CollectorController::class, 'destroy'])->name('collectors.destroy');
+            Route::post('collectors/{collector}/run', [CollectorController::class, 'run'])->name('collectors.run');
+        });
+        Route::middleware('admin.perm:settings')->group(function () {
+            Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+            Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::get('cache', [CacheController::class, 'edit'])->name('cache.edit');
+            Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
+            Route::post('cache/seed-demo', [CacheController::class, 'seedDemo'])->name('cache.seed-demo');
+        });
+        Route::middleware('admin.perm:html_cache')->group(function () {
+            Route::get('html-cache', [HtmlCacheController::class, 'edit'])->name('html-cache.edit');
+            Route::put('html-cache', [HtmlCacheController::class, 'update'])->name('html-cache.update');
+            Route::post('html-cache/clear', [HtmlCacheController::class, 'clear'])->name('html-cache.clear');
+            Route::post('html-cache/warm', [HtmlCacheController::class, 'warm'])->name('html-cache.warm');
+        });
+        Route::middleware('admin.perm:logs')->group(function () {
+            Route::get('logs', [AdminLogController::class, 'index'])->name('logs.index');
+        });
+        Route::middleware('admin.perm:admin_users')->group(function () {
+            Route::resource('admin-users', AdminUserController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:roles')->group(function () {
+            Route::resource('roles', RoleController::class)->except(['show']);
+        });
+    });
+});
