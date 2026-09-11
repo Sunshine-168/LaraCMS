@@ -12,6 +12,7 @@ use App\Services\Cms\CommentService;
 use App\Services\Cms\FormSubmitService;
 use App\Services\Cms\SiteFrontService;
 use App\Services\Cms\TagAutoLinkService;
+use App\Support\Cdn;
 use App\Support\Locale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -230,7 +231,7 @@ class SiteController extends Controller
         }
 
         $this->context->setPreview($preview);
-        $entry->setAttribute('linked_content', $this->tagAutoLink->linkify($entry->t('content')));
+        $entry->setAttribute('linked_content', Cdn::rewriteHtml($this->tagAutoLink->linkify($entry->t('content'))));
         $this->context->setCategory($category);
         $this->context->setArticle($entry);
         $this->context->setSeo(

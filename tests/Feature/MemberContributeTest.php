@@ -81,6 +81,39 @@ class MemberContributeTest extends TestCase
         $this->get($entry->url)->assertOk()->assertSee('会员投来的新闻');
     }
 
+    public function test_saving_pending_entry_as_draft_keeps_it_pending(): void
+    {
+        $member = Member::query()->where('email', 'member@example.com')->first();
+        $article = ContentModel::query()->where('slug', 'article')->first();
+        $news = Category::query()->get()->first(fn (Category $c) => $c->t('slug') === 'news');
+
+        $this->actingAs($member, 'member')
+            ->post(route('member.entries.store'), [
+                'model_id' => $article->id,
+                'category_id' => $news->id,
+                'title' => '先交审再改',
+                'content' => '正文',
+                'action' => 'submit',
+            ])
+            ->assertRedirect();
+
+        $entry = Entry::query()->where('member_id', $member->id)->orderByDesc('id')->first();
+        $this->assertSame('pending', $entry->status);
+
+        $this->actingAs($member, 'member')
+            ->put(route('member.entries.update', $entry), [
+                'model_id' => $article->id,
+                'category_id' => $news->id,
+                'title' => '先交审再改',
+                'content' => '改了一点',
+                'action' => 'draft',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('pending', $entry->fresh()->status);
+        $this->assertSame('改了一点', $entry->fresh()->t('content'));
+    }
+
     public function test_group_without_contribute_cannot_open_editor(): void
     {
         $group = MemberGroup::query()->create([

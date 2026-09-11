@@ -21,7 +21,7 @@
     @endif
 
     <h3 style="margin-top:28px">整站备份</h3>
-    <p class="muted">打包数据库 SQL（及 sqlite 文件）与 <code>storage/app/public</code> 上传文件，不含 .env。保留最近 5 份。命令：<code>php artisan cms:backup</code></p>
+    <p class="muted">打包数据库 SQL（含建表语句；sqlite 另附库文件）与 <code>storage/app/public</code> 上传文件，不含 .env。可还原。保留最近 5 份。命令：<code>php artisan cms:backup</code></p>
     <form method="post" action="{{ route('admin.cache.backup') }}" style="margin-bottom:16px">
         @csrf
         <button class="btn" type="submit"><i class="fas fa-archive"></i> 立即备份</button>
@@ -35,7 +35,13 @@
                     <td>{{ $b['file'] }}</td>
                     <td>{{ number_format(($b['size'] ?? 0) / 1024, 1) }} KB</td>
                     <td>{{ date('Y-m-d H:i:s', $b['mtime'] ?? 0) }}</td>
-                    <td><a href="{{ route('admin.cache.backup.download', $b['file']) }}">下载</a></td>
+                    <td>
+                        <a href="{{ route('admin.cache.backup.download', $b['file']) }}">下载</a>
+                        <form method="post" action="{{ route('admin.cache.backup.restore', $b['file']) }}" style="display:inline" onsubmit="return confirm('还原会覆盖当前数据库内容，确认？')">
+                            @csrf
+                            <button class="btn btn-muted" type="submit">还原</button>
+                        </form>
+                    </td>
                 </tr>
             @endforeach
             </tbody>

@@ -74,6 +74,26 @@ class PublishBackupCdnTest extends TestCase
         $this->assertTrue($entry->fresh()->isLive());
     }
 
+    public function test_editor_saving_published_entry_keeps_it_live(): void
+    {
+        $editor = AdminUser::query()->where('email', 'editor@example.com')->first();
+        $live = Entry::query()->published()->first();
+        $this->assertNotNull($live);
+        $this->actingAs($editor, 'admin');
+        $svc = app(EntryService::class);
+        $payload = $this->newEntryPayload((int) $live->model_id, (int) $live->category_id, (string) $live->t('title'));
+        $payload['status'] = 'published';
+        foreach (array_keys($payload['locales']) as $code) {
+            $payload['locales'][$code]['slug'] = (string) $live->t('slug');
+            $payload['locales'][$code]['title'] = (string) $live->t('title');
+            $payload['locales'][$code]['content'] = (string) $live->t('content');
+        }
+        $result = $svc->save($live, $payload);
+        $this->assertTrue($result['ok']);
+        $this->assertSame('published', $live->fresh()->status);
+        $this->assertTrue($live->fresh()->isLive());
+    }
+
     public function test_cdn_rewrites_storage_and_app_url_covers(): void
     {
         Setting::setValue('cdn_url', 'https://cdn.example.test');
@@ -102,6 +122,16 @@ class PublishBackupCdnTest extends TestCase
         $this->getJson('/api/content/'.$entry->id)
             ->assertOk()
             ->assertJsonPath('data.cover', 'https://cdn.example.test/storage/cms/demo.jpg');
+
+        $this->assertStringNotContainsString('cdn.example.test', asset('css/admin.css'));
+
+        $html = '<p><img src="'.$app.'/storage/cms/body.jpg" alt=""></p>';
+        $entry->setTranslation('content', 'zh_cn', $html);
+        $entry->attrs = ['file' => $app.'/storage/cms/file.zip'];
+        $entry->save();
+        $detail = $this->getJson('/api/content/'.$entry->id)->assertOk()->json('data');
+        $this->assertStringContainsString('https://cdn.example.test/storage/cms/body.jpg', (string) $detail['content']);
+        $this->assertSame('https://cdn.example.test/storage/cms/file.zip', $detail['attrs']['file'] ?? null);
     }
 
     public function test_backup_zip_contains_sql_and_can_download(): void
@@ -123,9 +153,24 @@ class PublishBackupCdnTest extends TestCase
         $sql = $zip->getFromName('database.sql');
         $this->assertIsString($sql);
         $this->assertStringContainsString('INSERT INTO', $sql);
+        $this->assertStringContainsString('CREATE TABLE', $sql);
         $zip->close();
 
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        CurrentSite::set(Site::default());
+        Setting::setValue('site_name', '还原前改过');
+        $this->assertSame('还原前改过', Setting::getValue('site_name'));
+
+        $restored = app(SiteBackupService::class)->restore($listed[0]['file']);
+        $this->assertTrue($restored['ok'], $restored['msg'] ?? 'restore failed');
+
+        CurrentSite::set(Site::default());
+        $this->assertNotSame('还原前改过', Setting::getValue('site_name'));
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.cache.backup.restore', $listed[0]['file']))
+            ->assertRedirect()
+            ->assertSessionHas('status');
 
         $this->actingAs($admin, 'admin')
             ->get(route('admin.cache.backup.download', $listed[0]['file']))

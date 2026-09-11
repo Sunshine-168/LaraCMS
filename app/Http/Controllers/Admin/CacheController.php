@@ -70,4 +70,12 @@ class CacheController extends Controller
 
         return response()->download($path, $file);
     }
+
+    public function restoreBackup(string $file): RedirectResponse
+    {
+        $result = $this->backups->restore($file);
+
+        return redirect()->route('admin.cache.edit')
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
 }

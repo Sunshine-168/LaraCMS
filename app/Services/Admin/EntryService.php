@@ -74,6 +74,7 @@ class EntryService
         }
 
         $entry ??= new Entry;
+        $wasPublished = $entry->exists && $entry->status === 'published';
         if ($entry->exists) {
             $entry->loadMissing(['categories', 'tags']);
             $this->snapshotRevision($entry);
@@ -87,7 +88,7 @@ class EntryService
         $entry->cover = $input['cover'] ?? null;
         $entry->flags = $this->normalizeFlags($input);
         $status = (string) ($input['status'] ?? 'draft');
-        if ($status === 'published' && ! $this->canPublish()) {
+        if ($status === 'published' && ! $this->canPublish() && ! $wasPublished) {
             $status = 'pending';
             $input['published_at'] = '';
         }
@@ -349,6 +350,7 @@ class EntryService
             return Result::fail('版本不属于该文档');
         }
         $entry->loadMissing(['categories', 'tags']);
+        $wasPublished = $entry->status === 'published';
         $this->snapshotRevision($entry);
 
         $snap = $revision->snapshot ?? [];
@@ -358,7 +360,7 @@ class EntryService
             }
         }
         $entry->published_at = ! empty($snap['published_at']) ? $snap['published_at'] : null;
-        if (($entry->status ?? '') === 'published' && ! $this->canPublish()) {
+        if (($entry->status ?? '') === 'published' && ! $this->canPublish() && ! $wasPublished) {
             $entry->status = 'pending';
             $entry->published_at = null;
         }

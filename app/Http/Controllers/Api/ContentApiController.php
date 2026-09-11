@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Cms\Entry;
+use App\Support\Cdn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -94,8 +95,8 @@ class ContentApiController extends ApiController
             'tags' => $e->tags->map(fn ($t) => ['id' => $t->id, 'title' => $t->t('title'), 'slug' => $t->t('slug')])->values(),
         ];
         if ($detail) {
-            $data['content'] = $e->t('content');
-            $data['attrs'] = $e->attrs ?? [];
+            $data['content'] = Cdn::rewriteHtml((string) $e->t('content'));
+            $data['attrs'] = Cdn::rewriteValue($e->attrs ?? []);
             $data['meta_title'] = $e->t('meta_title');
             $data['meta_description'] = $e->t('meta_description');
         }

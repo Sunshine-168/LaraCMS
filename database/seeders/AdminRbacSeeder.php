@@ -4,7 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Admin\AdminPermission;
 use App\Models\Admin\AdminRole;
+use App\Models\Cms\ContentModel;
+use App\Models\Cms\MemberGroup;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class AdminRbacSeeder extends Seeder
 {
@@ -67,5 +70,31 @@ class AdminRbacSeeder extends Seeder
         $editor->permissions()->sync(array_values(array_intersect_key($ids, array_flip($editorKeys))));
         $operator->permissions()->sync(array_values(array_intersect_key($ids, array_flip($operatorKeys))));
         $super->permissions()->detach(); // 超管用 is_super，无需挂权限
+
+        $this->enableContributeOnExistingSites();
+    }
+
+    /** 给已有站点补上投稿权限与文章模型开关 */
+    protected function enableContributeOnExistingSites(): void
+    {
+        if (! Schema::hasTable('cms_member_groups')) {
+            return;
+        }
+        foreach (MemberGroup::query()->withoutGlobalScopes()->get() as $group) {
+            $perms = $group->permissions;
+            if (! is_array($perms) || $perms === []) {
+                continue;
+            }
+            if (! in_array('contribute', $perms, true)) {
+                $perms[] = 'contribute';
+                $group->permissions = array_values(array_unique($perms));
+                $group->save();
+            }
+        }
+        if (Schema::hasColumn('cms_models', 'allow_contribute')) {
+            ContentModel::query()->withoutGlobalScopes()
+                ->where('slug', 'article')
+                ->update(['allow_contribute' => true]);
+        }
     }
 }

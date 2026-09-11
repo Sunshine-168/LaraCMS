@@ -6,6 +6,7 @@ use App\Models\Cms\Category;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Member;
+use App\Services\Admin\FieldBindService;
 use App\Support\Locale;
 use App\Support\Result;
 use Illuminate\Support\Collection;
@@ -13,7 +14,10 @@ use Illuminate\Support\Str;
 
 class MemberContributeService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache) {}
+    public function __construct(
+        private readonly HtmlCacheService $htmlCache,
+        private readonly FieldBindService $fieldBind,
+    ) {}
 
     public function modelsFor(Member $member): Collection
     {
@@ -89,12 +93,20 @@ class MemberContributeService
             $entry->setTranslation('content', $locale, (string) ($input['content'] ?? ''));
         }
         $entry->member_id = $member->id;
+        $attrs = $this->mergeAttrs($entry, $model, (int) $category->id, $input);
+        if (is_string($attrs)) {
+            return Result::fail($attrs);
+        }
+        $entry->attrs = $attrs;
 
         if ($submit) {
             $entry->status = 'pending';
             $entry->published_at = null;
         } elseif ($entry->status === 'published') {
             return Result::fail('已发布内容请联系管理员修改');
+        } elseif ($entry->exists && $entry->status === 'pending') {
+            $entry->status = 'pending';
+            $entry->published_at = null;
         } else {
             $entry->status = 'draft';
             $entry->published_at = null;
@@ -118,6 +130,7 @@ class MemberContributeService
             'excerpt' => $entry->t('excerpt'),
             'content' => $entry->t('content'),
             'cover' => $entry->cover,
+            'attrs' => $entry->attrs ?? [],
         ], true);
     }
 
@@ -162,5 +175,49 @@ class MemberContributeService
         }
 
         return $try;
+    }
+
+    /**
+     * 只接受当前栏目可见的模型字段，避免投稿写入任意 attrs。
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>|string
+     */
+    protected function mergeAttrs(Entry $entry, ContentModel $model, int $categoryId, array $input): array|string
+    {
+        $current = is_array($entry->attrs) ? $entry->attrs : [];
+        $posted = $input['attrs'] ?? [];
+        if (! is_array($posted)) {
+            $posted = [];
+        }
+        foreach ($this->fieldBind->resolveFields($model, $categoryId) as $field) {
+            $name = (string) $field->name;
+            if ($name === '' || ! preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $name)) {
+                continue;
+            }
+            $type = (string) $field->type;
+            if (in_array($type, ['checkbox', 'switch'], true)) {
+                $current[$name] = ! empty($posted[$name]) ? '1' : '0';
+            } elseif (array_key_exists($name, $posted)) {
+                $val = $posted[$name];
+                if (is_array($val)) {
+                    $val = implode(',', array_map(fn ($v) => is_scalar($v) ? (string) $v : '', $val));
+                } elseif (is_bool($val)) {
+                    $val = $val ? '1' : '0';
+                } else {
+                    $val = is_scalar($val) ? trim((string) $val) : '';
+                }
+                if (mb_strlen($val) > 20000) {
+                    $val = mb_substr($val, 0, 20000);
+                }
+                $current[$name] = $val;
+            }
+            if ($field->is_required && ! in_array($type, ['checkbox', 'switch'], true)
+                && trim((string) ($current[$name] ?? '')) === '') {
+                return $field->label.'不能为空';
+            }
+        }
+
+        return $current;
     }
 }

@@ -9,13 +9,9 @@ class Cdn
     public static function applyRuntime(): void
     {
         $base = self::base();
-        if ($base === '') {
-            return;
-        }
-
+        $fallback = rtrim((string) config('app.url'), '/').'/storage';
         config([
-            'app.asset_url' => $base,
-            'filesystems.disks.public.url' => $base.'/storage',
+            'filesystems.disks.public.url' => $base !== '' ? $base.'/storage' : $fallback,
         ]);
     }
 
@@ -33,8 +29,8 @@ class Cdn
     public static function url(?string $path): string
     {
         $path = trim((string) $path);
-        if ($path === '') {
-            return '';
+        if ($path === '' || ! self::isMediaPath($path)) {
+            return $path;
         }
 
         $cdn = self::base();
@@ -59,5 +55,46 @@ class Cdn
         }
 
         return $cdn.'/'.ltrim($path, '/');
+    }
+
+    public static function rewriteHtml(?string $html): string
+    {
+        $html = (string) $html;
+        if ($html === '' || self::base() === '') {
+            return $html;
+        }
+
+        return (string) preg_replace_callback(
+            '#\b(src|href)=([\'"])([^\'"]+)\2#i',
+            fn (array $m) => $m[1].'='.$m[2].self::url($m[3]).$m[2],
+            $html
+        );
+    }
+
+    public static function rewriteValue(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return array_map([self::class, 'rewriteValue'], $value);
+        }
+        if (! is_string($value) || $value === '') {
+            return $value;
+        }
+        if (str_contains($value, '<')) {
+            return self::rewriteHtml($value);
+        }
+
+        return self::url($value);
+    }
+
+    public static function isMediaPath(string $path): bool
+    {
+        if (str_starts_with($path, '/storage/') || str_starts_with($path, 'storage/')) {
+            return true;
+        }
+        if (str_contains($path, '/storage/')) {
+            return true;
+        }
+
+        return (bool) preg_match('#^https?://#i', $path);
     }
 }

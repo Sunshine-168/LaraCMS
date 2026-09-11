@@ -154,7 +154,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
             Route::post('cache/seed-demo', [CacheController::class, 'seedDemo'])->name('cache.seed-demo');
             Route::post('cache/backup', [CacheController::class, 'backup'])->name('cache.backup');
-            Route::get('cache/backups/{file}', [CacheController::class, 'downloadBackup'])->name('cache.backup.download');
+            Route::post('cache/backups/{file}/restore', [CacheController::class, 'restoreBackup'])->name('cache.backup.restore')
+                ->where('file', 'cms-backup-\d{8}-\d{6}\.zip');
+            Route::get('cache/backups/{file}', [CacheController::class, 'downloadBackup'])->name('cache.backup.download')
+                ->where('file', 'cms-backup-\d{8}-\d{6}\.zip');
         });
         Route::middleware('admin.perm:html_cache')->group(function () {
             Route::get('html-cache', [HtmlCacheController::class, 'edit'])->name('html-cache.edit');

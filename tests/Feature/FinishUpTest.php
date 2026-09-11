@@ -108,6 +108,7 @@ class FinishUpTest extends TestCase
         CurrentSite::set(Site::default());
         Setting::setValue('theme', 'blog');
 
+        $this->get('/member/login')->assertOk()->assertSee('会员登录');
         $this->get('/member/register')->assertOk()->assertSee('会员注册');
         $this->get('/member/forgot')->assertOk()->assertSee('找回密码');
         $this->get('/tag/laravel')->assertOk()->assertSee('标签');

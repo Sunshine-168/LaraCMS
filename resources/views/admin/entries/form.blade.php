@@ -72,19 +72,16 @@
         @php
             $canPublish = $canPublish ?? auth('admin')->user()?->canPerm('publish');
             $statusVal = old('status', $entry->status);
-            if (! $canPublish && $statusVal === 'published') {
-                $statusVal = 'pending';
-            }
         @endphp
         <select name="status">
             <option value="draft" @selected($statusVal === 'draft')>草稿</option>
             <option value="pending" @selected($statusVal === 'pending')>待审</option>
-            @if($canPublish)
+            @if($canPublish || $entry->status === 'published')
                 <option value="published" @selected($statusVal === 'published')>已发布</option>
             @endif
         </select>
         @if(! $canPublish)
-            <p class="muted">无发布权限：保存为待审后由超管发布。{{ $entry->status === 'published' ? '当前已发布，保存后将重新进入待审。' : '' }}</p>
+            <p class="muted">无发布权限：草稿/新建不能直接发布，会进入待审。已发布内容保存后仍保持发布；改成待审才会下架。</p>
         @endif
         <label>定时发布时间（可空；未来时间则到点才前台可见）</label>
         <input type="datetime-local" name="published_at" value="{{ $pubAt }}">
