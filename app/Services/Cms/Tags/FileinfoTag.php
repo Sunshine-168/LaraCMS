@@ -58,7 +58,7 @@ class FileinfoTag
         }
 
         $filename = $media?->filename ?: basename(parse_url($path, PHP_URL_PATH) ?: $path);
-        $downloadUrl = route('download', $entry).'?field='.urlencode($field);
+        $downloadUrl = cms_route('download', $entry).'?field='.urlencode($field);
 
         return (object) [
             'field' => $field,

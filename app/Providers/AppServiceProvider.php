@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Password::defaults(function () {
-            $min = (int) env('PASSWORD_MIN_LENGTH', 10);
+            $min = (int) config('security.password.min', 10);
 
             return Password::min(max(8, $min))->letters()->numbers();
         });

@@ -15,7 +15,7 @@
                 <td><code>{{ $tag->t('slug') }}</code></td>
                 <td>{{ $tag->entries_count }}</td>
                 <td class="actions">
-                    <a href="{{ url('/tag/'.$tag->t('slug')) }}" target="_blank">前台</a>
+                    <a href="{{ cms_front_url('tag/'.$tag->t('slug')) }}" target="_blank">前台</a>
                     <a href="{{ route('admin.tags.edit', $tag) }}">编辑</a>
                     <form action="{{ route('admin.tags.destroy', $tag) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')

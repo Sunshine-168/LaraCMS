@@ -1,6 +1,8 @@
 @extends('themes.blog.partials.layout')
 @section('content')
-    <p class="muted" style="margin-top:24px">简单博客主题 · 文章来自 article 模型</p>
+    @include('cms.partials.front-hero-copy', [
+        'fallbackSub' => '简单博客主题 · 文章来自 article 模型',
+    ])
     @cmsContent(['model'=>'article','num'=>10,'page'=>true,'order'=>'published_at desc'])
         <article>
             <div class="muted">@cmsDate(['name'=>$item->published_at])</div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,19 +17,15 @@
         .btn{display:inline-block;padding:8px 14px;background:var(--accent);color:#fff;border-radius:6px} .content{line-height:1.75;font-size:16px}
         .banner-slide{min-height:280px;border-radius:12px;background:#1b4f72 center/cover;color:#fff;display:flex;align-items:flex-end;padding:24px;margin-bottom:16px}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header>
     <div class="wrap">
-        <a class="brand" href="{{ cms_front_url() }}">{{ $site['title'] ?? config('app.name') }}</a>
+        @include('cms.partials.front-brand')
         <nav>
             @include('cms.partials.header-nav')
-            <a href="{{ cms_front_url('search') }}">搜索</a>
-            @auth('member')
-                <form method="post" action="{{ route('member.logout') }}" style="display:inline">@csrf<button type="submit" style="background:none;border:0;color:inherit;cursor:pointer">退出</button></form>
-            @else
-                <a href="{{ cms_front_url('member/login') }}">会员</a>
-            @endauth
+            @include('cms.partials.front-toolbar', ['frontToolbarLogout' => true])
             <span class="lang"><a href="/">中文</a> · <a href="/en">EN</a></span>
         </nav>
     </div>
@@ -37,7 +33,6 @@
 <main class="wrap">
     @yield('content')
 </main>
-<footer><div class="wrap">&copy; {{ date('Y') }} {{ $site['title'] ?? config('app.name') }}</div></footer>
-{!! $site['analytics_code'] ?? '' !!}
+@include('cms.partials.front-footer')
 </body>
 </html>

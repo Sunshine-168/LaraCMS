@@ -20,6 +20,35 @@
             @endforeach
         </select>
 
+        <h3 style="margin-top:22px">外观与品牌</h3>
+        <p class="muted">运营可改 Logo、主色、页脚和首页文案，无需改主题模板。主色留空则沿用主题自带配色。首页主/副标题在未填时仍用各主题默认文案；企业/移动主题有推荐位 Banner 时 Banner 优先。</p>
+        <label>Logo</label>
+        @if(!empty($settings['logo']))
+            <p>
+                <img src="{{ \App\Support\ThemeAppearance::mediaUrl($settings['logo']) }}" alt="" style="max-height:48px;background:#eee;padding:4px">
+                <label class="inline"><input type="checkbox" name="logo_clear" value="1"> 清除 Logo</label>
+            </p>
+        @endif
+        <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <label>Favicon</label>
+        @if(!empty($settings['favicon']))
+            <p>
+                <img src="{{ \App\Support\ThemeAppearance::mediaUrl($settings['favicon']) }}" alt="" style="max-height:32px;background:#eee;padding:4px">
+                <label class="inline"><input type="checkbox" name="favicon_clear" value="1"> 清除 Favicon</label>
+            </p>
+        @endif
+        <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon">
+        <label>主色（如 #1b4f72，留空用主题默认）</label>
+        <input type="text" name="primary_color" value="{{ old('primary_color', $settings['primary_color'] ?? '') }}" placeholder="#1b4f72" maxlength="7">
+        <label>首页主标题</label>
+        <input type="text" name="hero_title" value="{{ old('hero_title', $settings['hero_title'] ?? '') }}" maxlength="120">
+        <label>首页副标题</label>
+        <input type="text" name="hero_subtitle" value="{{ old('hero_subtitle', $settings['hero_subtitle'] ?? '') }}" maxlength="200">
+        <label>页脚补充文案</label>
+        <input type="text" name="footer_text" value="{{ old('footer_text', $settings['footer_text'] ?? '') }}" maxlength="500" placeholder="地址 / 电话 / 版权说明">
+        <label>ICP / 备案号</label>
+        <input type="text" name="icp" value="{{ old('icp', $settings['icp'] ?? '') }}" maxlength="80" placeholder="京ICP备00000000号-1">
+
         <h3 style="margin-top:22px">站点状态</h3>
         <label class="inline"><input type="checkbox" name="site_closed" value="1" @checked(old('site_closed', $settings['site_closed'] ?? '0') == '1')> 关闭前台（维护模式）</label>
         <label>关站提示文案</label>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -17,26 +17,21 @@
         .btn{display:inline-block;padding:10px 14px;background:var(--accent);color:#fff;border-radius:8px} .content{line-height:1.7}
         .banner-slide{min-height:160px;border-radius:10px;background:#0369a1 center/cover;color:#fff;display:flex;align-items:flex-end;padding:16px;margin-bottom:12px}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header>
     <div class="wrap">
-        <a class="brand" href="{{ cms_front_url() }}">{{ $site['title'] ?? config('app.name') }}</a>
+        @include('cms.partials.front-brand')
         <nav>
             @include('cms.partials.header-nav')
-            <a href="{{ cms_front_url('search') }}">搜索</a>
-            @auth('member')
-                <a href="{{ cms_front_url('member/profile') }}">我的</a>
-            @else
-                <a href="{{ cms_front_url('member/login') }}">会员</a>
-            @endauth
+            @include('cms.partials.front-toolbar')
         </nav>
     </div>
 </header>
 <main class="wrap">
     @yield('content')
 </main>
-<footer><div class="wrap">移动版 · &copy; {{ date('Y') }} {{ $site['title'] ?? config('app.name') }}</div></footer>
-{!! $site['analytics_code'] ?? '' !!}
+@include('cms.partials.front-footer', ['prefix' => '移动版 · '])
 </body>
 </html>

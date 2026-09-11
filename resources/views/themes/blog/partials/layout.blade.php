@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,16 +15,18 @@
         .btn{display:inline-block;background:#9a3412;color:#fff;padding:8px 14px;border-radius:6px}
         input,textarea,select{font:inherit;padding:8px;border:1px solid #e7e5e4;border-radius:6px}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header class="wrap">
-    <a class="brand" href="/">{{ $site['title'] ?? 'Blog' }}</a>
+    @include('cms.partials.front-brand', ['fallback' => 'Blog'])
     <nav>
         @include('cms.partials.header-nav')
-        <a href="{{ cms_front_url('search') }}">搜索</a>
-        <a href="{{ route('rss') }}">RSS</a>
+        @include('cms.partials.front-toolbar')
+        <a href="{{ cms_route('rss') }}">RSS</a>
     </nav>
 </header>
 <main class="wrap">@yield('content')</main>
+@include('cms.partials.front-footer')
 </body>
 </html>

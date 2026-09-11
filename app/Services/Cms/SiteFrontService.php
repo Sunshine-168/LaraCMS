@@ -10,6 +10,7 @@ use App\Models\Cms\Tag;
 use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\MobileDetect;
+use App\Support\ThemeAppearance;
 use App\Support\UrlMode;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -33,7 +34,7 @@ class SiteFrontService
             // console / 无 request
         }
 
-        $site = [
+        $site = array_merge([
             'title' => (string) Setting::getValue('site_name', config('app.name')),
             'keyword' => (string) Setting::getValue('site_keywords', ''),
             'description' => (string) Setting::getValue('site_description', ''),
@@ -42,7 +43,7 @@ class SiteFrontService
             'is_mobile' => $isMobile,
             'analytics_code' => (string) Setting::getValue('analytics_code', ''),
             'url_mode' => UrlMode::current(),
-        ];
+        ], ThemeAppearance::forFront());
         $this->context->setSite($site);
         config([
             'cms.theme' => $theme,

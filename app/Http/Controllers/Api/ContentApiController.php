@@ -13,7 +13,7 @@ class ContentApiController extends ApiController
     public function listPage(Request $request): JsonResponse
     {
         $limit = max(1, min(100, (int) $request->query('limit', 20)));
-        $q = Entry::query()->with(['category', 'modelDef', 'tags'])->published()->orderByDesc('published_at')->orderByDesc('id');
+        $q = Entry::query()->with(['category', 'modelDef', 'tags'])->published()->visibleToGuests()->orderByDesc('published_at')->orderByDesc('id');
 
         if ($request->filled('category_id')) {
             $q->inCategories([(int) $request->query('category_id')]);
@@ -75,6 +75,7 @@ class ContentApiController extends ApiController
         $limit = max(1, min(100, (int) $request->query('limit', 20)));
         $q = Entry::query()->with(['category', 'modelDef', 'tags'])->published()
             ->whereHas('modelDef', fn ($m) => $m->where('is_searchable', true))
+            ->visibleToGuests()
             ->orderByDesc('published_at')->orderByDesc('id');
 
         if ($request->filled('category_id')) {

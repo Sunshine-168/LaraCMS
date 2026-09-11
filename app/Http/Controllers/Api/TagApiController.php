@@ -34,6 +34,7 @@ class TagApiController extends ApiController
 
         $limit = max(1, min(100, (int) request()->query('limit', 20)));
         $entries = $tag->entries()->with(['category', 'modelDef', 'tags'])->published()
+            ->visibleToGuests()
             ->orderByDesc('published_at')->orderByDesc('id')
             ->paginate($limit);
 

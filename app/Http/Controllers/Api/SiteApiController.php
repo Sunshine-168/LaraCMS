@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Models\Cms\Setting;
 use App\Services\Cms\Tags\AdvTag;
 use App\Support\CurrentSite;
 use App\Support\Locale;
+use App\Support\ThemeAppearance;
 use App\Support\UrlMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ class SiteApiController extends ApiController
     public function config(): JsonResponse
     {
         $site = CurrentSite::model();
+
+        $look = ThemeAppearance::forFront();
 
         return $this->ok([
             'site_id' => $site?->id,
@@ -26,6 +30,13 @@ class SiteApiController extends ApiController
             'locales' => Locale::all(),
             'default_locale' => Locale::default(),
             'api_enable' => (bool) (int) Setting::getValue('api_enable', '0'),
+            'logo_url' => $look['logo_url'],
+            'favicon_url' => $look['favicon_url'],
+            'primary_color' => $look['primary_color'],
+            'footer_text' => $look['footer_text'],
+            'icp' => $look['icp'],
+            'hero_title' => $look['hero_title'],
+            'hero_subtitle' => $look['hero_subtitle'],
         ]);
     }
 

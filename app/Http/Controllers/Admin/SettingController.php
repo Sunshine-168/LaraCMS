@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\SettingService;
+use App\Support\ThemeAppearance;
 use App\Support\UrlMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class SettingController extends Controller
             'comments_notify_email', 'comments_rate_seconds',
             'map_default_lng', 'map_default_lat',
             'cdn_url',
+            'logo', 'favicon', 'primary_color', 'footer_text', 'icp', 'hero_title', 'hero_subtitle',
         ];
 
         return view('admin.settings.edit', [
@@ -46,6 +48,7 @@ class SettingController extends Controller
             'mobile_theme', 'mobile_domain', 'mobile_detect', 'api_token',
             'comments_notify_email', 'map_default_lng', 'map_default_lat',
             'cdn_url',
+            'footer_text', 'icp', 'hero_title', 'hero_subtitle', 'primary_color',
         ]);
         $data['upload_thumb_width'] = (string) max(0, (int) $request->input('upload_thumb_width', 0));
         $data['map_default_lng'] = (string) $request->input('map_default_lng', '116.397');
@@ -79,6 +82,25 @@ class SettingController extends Controller
             $cdn = '';
         }
         $data['cdn_url'] = rtrim($cdn, '/');
+        $data['primary_color'] = ThemeAppearance::sanitizeColor((string) ($data['primary_color'] ?? ''));
+        $data['icp'] = mb_substr(trim((string) ($data['icp'] ?? '')), 0, 80);
+        $data['footer_text'] = mb_substr(trim((string) ($data['footer_text'] ?? '')), 0, 500);
+        $data['hero_title'] = mb_substr(trim((string) ($data['hero_title'] ?? '')), 0, 120);
+        $data['hero_subtitle'] = mb_substr(trim((string) ($data['hero_subtitle'] ?? '')), 0, 200);
+        if ($request->boolean('logo_clear')) {
+            $data['logo'] = '';
+        }
+        if ($request->boolean('favicon_clear')) {
+            $data['favicon'] = '';
+        }
+        if ($request->hasFile('logo_file')) {
+            $request->validate(['logo_file' => 'image|max:2048']);
+            $data['logo'] = $request->file('logo_file')->store('cms/brand', 'public');
+        }
+        if ($request->hasFile('favicon_file')) {
+            $request->validate(['favicon_file' => 'image|max:512']);
+            $data['favicon'] = $request->file('favicon_file')->store('cms/brand', 'public');
+        }
 
         $result = $this->settingService->save($data);
 

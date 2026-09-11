@@ -1,6 +1,8 @@
 @extends('themes.sports.partials.layout')
 @section('content')
-    <h1>体育信号 / 资讯聚合</h1>
+    @include('cms.partials.front-hero-copy', [
+        'fallbackTitle' => '体育信号 / 资讯聚合',
+    ])
     @cmsAdv(['name'=>'live_board'])
         @if($item->html)
             {!! $item->html !!}
@@ -33,7 +35,7 @@
             @if($item->hasFlag('live'))<span class="live">LIVE</span>@endif
             <h3 style="display:inline;margin-left:6px">{{ $item->t('title') }}</h3>
             <p class="muted">{{ $item->attr('sport') }} · {{ $item->attr('kickoff') }} · {{ $item->attr('quality') }}</p>
-            <a class="btn" href="{{ route('go', $item) }}" target="_blank" rel="noopener">打开源</a>
+            <a class="btn" href="{{ cms_route('go', $item) }}" target="_blank" rel="noopener">打开源</a>
             <a href="{{ $item->url }}" style="margin-left:10px">详情</a>
         </div>
     @endcmsContent

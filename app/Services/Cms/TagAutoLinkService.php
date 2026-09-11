@@ -52,7 +52,7 @@ class TagAutoLinkService
 
         foreach ($tags as $tag) {
             $title = $tag['title'];
-            $url = route('tag', ['slug' => $tag['slug']]);
+            $url = cms_route('tag', ['slug' => $tag['slug']]);
             $pattern = '/(?!<[^>]*)('.preg_quote($title, '/').')(?![^<]*>)/u';
             $replacement = '<a href="'.e($url).'" class="cms-tag-link">$1</a>';
             $html = preg_replace($pattern, $replacement, $html, 1) ?? $html;

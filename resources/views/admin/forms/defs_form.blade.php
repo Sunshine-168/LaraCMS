@@ -9,7 +9,7 @@
         <label>名称</label>
         <input type="text" name="name" value="{{ old('name', $form->name) }}" required>
 
-        <label>标识 slug（英文/数字/横线，用于 @cmsForm 与 /form/{slug}）</label>
+        <label>标识 slug（英文/数字/横线，用于 @@cmsForm 与 /form/{slug}）</label>
         <input type="text" name="slug" value="{{ old('slug', $form->slug) }}" placeholder="contact">
 
         <label class="inline"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $form->is_active ?? true))> 启用</label>

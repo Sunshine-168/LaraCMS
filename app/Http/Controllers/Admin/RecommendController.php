@@ -13,9 +13,7 @@ use Illuminate\View\View;
 
 class RecommendController extends Controller
 {
-    public function __construct(private readonly RecommendService $recommendService)
-    {
-    }
+    public function __construct(private readonly RecommendService $recommendService) {}
 
     /** 推荐位列表 */
     public function index(): View
@@ -45,6 +43,9 @@ class RecommendController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $result = $this->recommendService->save(null, $request->all());
+        if (! $result['ok']) {
+            return back()->with('error', $result['msg'])->withInput();
+        }
 
         return redirect()->route('admin.recommends.index')->with('status', $result['msg']);
     }
@@ -61,6 +62,9 @@ class RecommendController extends Controller
     public function update(Request $request, Recommend $recommend): RedirectResponse
     {
         $result = $this->recommendService->save($recommend, $request->all());
+        if (! $result['ok']) {
+            return back()->with('error', $result['msg'])->withInput();
+        }
 
         return redirect()->route('admin.recommends.index')->with('status', $result['msg']);
     }

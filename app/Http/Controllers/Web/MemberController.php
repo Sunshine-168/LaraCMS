@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class MemberController extends Controller
@@ -58,7 +59,7 @@ class MemberController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('member.profile'))->with('status', '登录成功');
+        return redirect()->intended(cms_route('member.profile'))->with('status', '登录成功');
     }
 
     /** 注册页 */
@@ -76,7 +77,7 @@ class MemberController extends Controller
                 'required', 'email', 'max:120',
                 Rule::unique('cms_members', 'email')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault())),
             ],
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::defaults()],
             'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
         ]);
         Captcha::assertValid($request->input('captcha'));
@@ -97,7 +98,7 @@ class MemberController extends Controller
         Auth::guard('member')->login($member);
         $request->session()->regenerate();
 
-        return redirect()->route('member.profile')->with('status', '注册成功');
+        return redirect()->to(cms_route('member.profile'))->with('status', '注册成功');
     }
 
     /** 找回密码页 */
@@ -118,7 +119,7 @@ class MemberController extends Controller
             $member->reset_token_expires_at = now()->addHour();
             $member->save();
 
-            $url = route('member.reset', ['token' => $token, 'email' => $member->email]);
+            $url = cms_route('member.reset', ['token' => $token, 'email' => $member->email]);
 
             $mailed = false;
             try {
@@ -165,7 +166,7 @@ class MemberController extends Controller
         $data = $request->validate([
             'email' => 'required|email',
             'token' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         $member = Member::query()->where('email', $data['email'])->where('is_active', true)->first();
@@ -184,19 +185,19 @@ class MemberController extends Controller
         $member->reset_token_expires_at = null;
         $member->save();
 
-        return redirect()->route('member.login')->with('status', '密码已重置，请登录');
+        return redirect()->to(cms_route('member.login'))->with('status', '密码已重置，请登录');
     }
 
     /** 会员中心 */
     public function profile(): View|RedirectResponse
     {
         if (! Auth::guard('member')->check()) {
-            return redirect()->route('member.login');
+            return redirect()->to(cms_route('member.login'));
         }
         $site = $this->site->bootSite();
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return redirect()->route('member.login');
+            return redirect()->to(cms_route('member.login'));
         }
         $member->loadMissing('group');
 
@@ -227,7 +228,7 @@ class MemberController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return redirect()->route('member.login');
+            return redirect()->to(cms_route('member.login'));
         }
         $data = $request->validate([
             'name' => 'required|string|max:50',
@@ -305,7 +306,7 @@ class MemberController extends Controller
                 return response()->json(['ok' => false, 'msg' => '未登录'], 401);
             }
 
-            return redirect()->route('member.login')->with('url.intended', url()->previous());
+            return redirect()->to(cms_route('member.login'))->with('url.intended', url()->previous());
         }
 
         if ($entry->isMemberGated() && ! $member->canMember('view_member_content')) {
@@ -325,12 +326,12 @@ class MemberController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return redirect()->route('member.login');
+            return redirect()->to(cms_route('member.login'));
         }
 
         $data = $request->validate([
             'current_password' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         if (! Hash::check($data['current_password'], $member->password)) {

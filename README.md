@@ -1,6 +1,6 @@
 # 综合 Laravel CMS（JYS 分层 + Blade 模板标签）
 
-Controller → Service → Model。能力对标 HkCms「栏目 + 动态模型 + 推荐位 + 主题」，前台用 **Blade `@cms*` 标签**，不依赖 Filament / `{hkcms:}`，不迁旧库数据。
+Controller → Service → Model。能力对标「栏目 + 动态模型 + 推荐位 + 主题」，前台只用 **Blade `@cms*` 标签**（不用 `{hkcms:}`），不依赖 Filament，不迁旧库数据。
 
 ## 站点形态（主题包）
 
@@ -109,26 +109,12 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `/api/*` | REST API（见下方） |
 | `/install` | 安装向导（无 install.lock 时） |
 | `/download/{entry}` | 下载计次 |
-| `/go/{entry}` | 外链点击计次 |
+| `/go/{entry}` | 外链点击计次；链接模型前台 URL 走此前缀（带语言前缀如 `/en/go/{id}`） |
 | `/form/{slug}` | 表单 POST（验证码；后台收件箱可已读/备注/邮件回复） |
 | `/comment/{entry}` | 评论提交（默认待审核；站点设置可开关/游客/限流/通知） |
 | （后台配置） | 入站重定向：精确路径 301/302，命中计数，按站隔离 |
 | `/preview/{token}` | 草稿/未到点发布预览（后台生成，默认 7 天；不计入浏览、不进 HTML 缓存） |
-| `/search?q=` | 全站搜索（可按模型关闭 `is_searchable`） |
-
-### 模型搬运 / 多栏目 / 磁盘静态
-
-- **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
-- **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
-- **磁盘 HTML**：默认关闭。设 `CMS_DISK_HTML=true` 后，后台可生成到 `public/html/site_{id}/…/index.html`，需 nginx `try_files`；`php artisan serve` 不会读这些文件。命令 `cms:html-build` / `cms:html-purge-disk`
-- **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
-- **上传水印**：站点设置可配文字/图片水印及位置（右下/左下/右上/左上/居中）；中文文字依赖系统 TTF，建议用透明 PNG
-- **定时发布**：`published_at` 未到点时前台 `/e/{id}`、下载、外链跳转均为 404；后台列表显示「定时」
-- **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，可填写该模型扩展字段；后台内容列表可筛待审并发布
-- **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能发布，也不能把已发布改回草稿/待审
-- **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
-- **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
-- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入。`/sitemap.xml` 与 `/rss.xml` 在语言前缀下同样可用（如 `/en/sitemap.xml`）
+| `/search?q=` | 全站搜索（可按模型关闭 `is_searchable`；游客不含会员门槛文档） |
 | `/member/login` | 会员登录（算术验证码 + 每分钟 5 次） |
 | `/member/register` | 会员注册（算术验证码 + 每分钟 5 次） |
 | `/member/forgot` | 找回密码（POST 每分钟 5 次；未配邮件时页面展示重置链接） |
@@ -137,6 +123,23 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `/tag/{slug}` | 标签聚合 |
 | `/rss.xml` | RSS（不含会员门槛文档） |
 | `/sitemap.xml` | 站点地图 |
+
+### 模型搬运 / 多栏目 / 磁盘静态
+
+- **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
+- **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
+- **磁盘 HTML**：默认关闭。设 `CMS_DISK_HTML=true` 后，后台可生成到 `public/html/site_{id}/…/index.html`（目录已 gitignore），需 nginx `try_files`；`php artisan serve` 不会读这些文件。命令 `cms:html-build` / `cms:html-purge-disk`
+- **语言前缀**：非默认语言走 `/en/...`。会员/下载/外链/表单/评论/RSS 用 `cms_route()` 指向带前缀的同名路由；隐藏默认语言时中文仍无前缀
+- **会员密码**：最少 `PASSWORD_MIN_LENGTH`（默认 10）且需字母+数字；反向代理设 `TRUST_PROXIES`（默认空，不信任 `X-Forwarded-*`）
+- **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
+- **主题外观**：站点设置可上传 Logo / Favicon，填写主色、页脚文案、ICP 备案号、首页主/副标题。留空则沿用各主题自带配色与文案；企业/移动主题有 `home_banner` 推荐位时 Banner 优先于首页标题
+- **上传水印**：站点设置可配文字/图片水印及位置（右下/左下/右上/左上/居中）；中文文字依赖系统 TTF，建议用透明 PNG
+- **定时发布**：`published_at` 未到点时前台 `/e/{id}`、下载、外链跳转均为 404；后台列表显示「定时」
+- **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，可填写该模型扩展字段；后台内容列表可筛待审并发布
+- **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能发布，也不能把已发布改回草稿/待审
+- **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
+- **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
+- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入。`/sitemap.xml` 与 `/rss.xml` 在语言前缀下同样可用（如 `/en/sitemap.xml`）
 
 ## REST API
 
@@ -150,15 +153,15 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/site/config` | 站点名/主题/语言/url_mode |
+| GET | `/api/site/config` | 站点名/主题/语言/url_mode/外观（logo_url、主色、ICP、首页文案） |
 | GET | `/api/category/list?limit=&model_id=&parent_id=` | 栏目分页 |
 | GET | `/api/category/tree` | 栏目树 |
 | GET | `/api/category/{id}` | 栏目详情 |
-| GET | `/api/content/list?limit=&category_id=&model_id=&flag=&q=` | 内容分页 |
+| GET | `/api/content/list?limit=&category_id=&model_id=&flag=&q=` | 内容分页（游客不含会员门槛） |
 | GET | `/api/content/{id}` | 内容详情（含正文/attrs；会员门槛需会员令牌） |
-| GET | `/api/search?q=` | 内容搜索（仅 `is_searchable` 模型） |
+| GET | `/api/search?q=` | 内容搜索（仅 `is_searchable`；游客不含会员门槛） |
 | GET | `/api/tag/list` | 标签分页 |
-| GET | `/api/tag/{slug}` | 标签及文档列表 |
+| GET | `/api/tag/{slug}` | 标签及文档列表（游客不含会员门槛） |
 | GET | `/api/recommend?name=&num=` | 推荐位（含查询型） |
 | POST | `/api/form/{slug}` | 提交表单（字段同前台） |
 | POST | `/api/comment/{id}` | 提交评论 |
@@ -256,12 +259,12 @@ php artisan cms:collect --sync
 
 默认用 CACHE 驱动的 epoch 全站失效；Redis/Memcached 时可按标签精细失效。
 
-## 不会迁入的旧能力
+## 明确不做
 
-本仓库只保留 Laravel CMS。ThinkPHP HkCms、TallCMS/Filament、旧 `hkcms_*` 桥接代码已移除，下列能力也**不会**再迁：
+前台模板标签只有 `@cms*`，**不会**解析 `{hkcms:}`。下列能力也**不会**做：
 
-- `{hkcms:}` 标签、运行时按模型建物理表、App Center / 在线升级、Filament 区块编辑器、旧库数据导入、遗留 `cms_pages` / `cms_posts` 表
-- HkCms 自由伪静态规则矩阵、短信验证码、微信/OAuth 登录、支付
-- TallCMS Webhooks、Scout 全文检索、作者归档页
+- 应用中心 / 在线升级、运行时按模型建物理表、Filament、旧库数据导入、遗留 `cms_pages` / `cms_posts` 表
+- 自由伪静态规则矩阵、短信、微信/OAuth 登录、支付
+- Webhooks、Scout 全文检索、作者归档页
 
-站点运行不依赖上述项。会员权限、前台投稿（待审后发布）、表单、评论、收藏、采集、统计、多站点、缓存、预览/修订、CDN 资源域名、整站备份均已在本目录实现。
+会员权限、前台投稿（待审后发布）、表单、评论、收藏、采集、统计、多站点、缓存、预览/修订、CDN 资源域名、整站备份均已在本目录实现。

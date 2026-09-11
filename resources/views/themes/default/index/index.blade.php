@@ -1,7 +1,9 @@
 @extends('themes.default.layout')
 @section('content')
-    <h1>{{ $site['title'] ?? config('app.name') }}</h1>
-    <p class="muted">{{ $site['description'] ?? '' }}</p>
+    @include('cms.partials.front-hero-copy', [
+        'fallbackTitle' => $site['title'] ?? config('app.name'),
+        'fallbackSub' => $site['description'] ?? '',
+    ])
     @cmsContent(['model' => 'article', 'num' => 8])
         <article class="card-soft">
             <div class="meta">@cmsDate(['name' => $item->published_at])</div>

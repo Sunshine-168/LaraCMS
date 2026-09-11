@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,14 +16,17 @@
         .btn{display:inline-block;background:#0f766e;color:#fff;padding:8px 12px;border-radius:6px}
         input,textarea,select{font:inherit;padding:8px;border:1px solid #e7e5e4;border-radius:6px}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header><div class="wrap">
-    <a class="brand" href="/">{{ $site['title'] ?? '导航' }}</a>
+    @include('cms.partials.front-brand', ['fallback' => '导航'])
     <nav>
         @include('cms.partials.header-nav')
+        @include('cms.partials.front-toolbar')
     </nav>
 </div></header>
 <main class="wrap">@yield('content')</main>
+@include('cms.partials.front-footer')
 </body>
 </html>

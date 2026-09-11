@@ -8,7 +8,7 @@
     @if($errors->any())<p style="color:#c00">{{ $errors->first() }}</p>@endif
 
     <h2>资料</h2>
-    <form method="post" action="{{ route('member.profile.update') }}">
+    <form method="post" action="{{ cms_route('member.profile.update') }}">
         @csrf
         <p>
             <img id="memberAvatarPreview" src="{{ cms_media($member->avatar) }}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
@@ -25,15 +25,15 @@
     </form>
 
     <h2>修改密码</h2>
-    <form method="post" action="{{ route('member.password') }}">
+    <form method="post" action="{{ cms_route('member.password') }}">
         @csrf
         <p><label>当前密码<br><input type="password" name="current_password" required style="width:100%;padding:8px"></label></p>
-        <p><label>新密码<br><input type="password" name="password" required minlength="6" style="width:100%;padding:8px"></label></p>
+        <p><label>新密码<br><input type="password" name="password" required minlength="10" style="width:100%;padding:8px"></label></p>
         <p><label>确认新密码<br><input type="password" name="password_confirmation" required style="width:100%;padding:8px"></label></p>
         <p><button type="submit">保存密码</button></p>
     </form>
     @include('cms.partials.member-hub')
-    <form method="post" action="{{ route('member.logout') }}" style="margin-top:20px">@csrf
+    <form method="post" action="{{ cms_route('member.logout') }}" style="margin-top:20px">@csrf
         <button type="submit">退出登录</button>
     </form>
 </section>

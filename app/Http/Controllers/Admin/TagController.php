@@ -11,9 +11,7 @@ use Illuminate\View\View;
 
 class TagController extends Controller
 {
-    public function __construct(private readonly TagAdminService $tags)
-    {
-    }
+    public function __construct(private readonly TagAdminService $tags) {}
 
     public function index(): View
     {
@@ -31,7 +29,7 @@ class TagController extends Controller
     {
         $result = $this->tags->save(null, $request->all());
 
-        return redirect()->route('admin.tags.index')->with('status', $result['msg']);
+        return redirect()->route('admin.tags.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
     public function edit(Tag $tag): View
@@ -43,7 +41,7 @@ class TagController extends Controller
     {
         $result = $this->tags->save($tag, $request->all());
 
-        return redirect()->route('admin.tags.index')->with('status', $result['msg']);
+        return redirect()->route('admin.tags.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
     public function destroy(Tag $tag): RedirectResponse

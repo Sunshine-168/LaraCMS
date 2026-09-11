@@ -46,7 +46,7 @@ class MemberEntryController extends Controller
         $member = Auth::guard('member')->user();
         $models = $this->contribute->modelsFor($member);
         if ($models->isEmpty()) {
-            return redirect()->route('member.profile')->with('error', '当前没有开放投稿的模型');
+            return redirect()->to(cms_route('member.profile'))->with('error', '当前没有开放投稿的模型');
         }
         $model = $models->firstWhere('id', $request->integer('model_id')) ?? $models->first();
         $model->load(['fields.categories']);
@@ -72,7 +72,7 @@ class MemberEntryController extends Controller
             return back()->withErrors(['title' => $result['msg']])->withInput();
         }
 
-        return redirect()->route('member.entries.edit', $result['data'])->with('status', $result['msg']);
+        return redirect()->to(cms_route('member.entries.edit', $result['data']))->with('status', $result['msg']);
     }
 
     public function edit(Entry $entry): View|RedirectResponse
@@ -83,12 +83,12 @@ class MemberEntryController extends Controller
         }
         $member = Auth::guard('member')->user();
         if ($msg = $this->contribute->assertOwnedEditable($member, $entry)) {
-            return redirect()->route('member.entries.index')->with('error', $msg);
+            return redirect()->to(cms_route('member.entries.index'))->with('error', $msg);
         }
         $models = $this->contribute->modelsFor($member);
         $model = $models->firstWhere('id', $entry->model_id) ?? $entry->modelDef;
         if (! $model) {
-            return redirect()->route('member.entries.index')->with('error', '模型不存在');
+            return redirect()->to(cms_route('member.entries.index'))->with('error', '模型不存在');
         }
         $model->load(['fields.categories']);
 
@@ -113,17 +113,17 @@ class MemberEntryController extends Controller
             return back()->withErrors(['title' => $result['msg']])->withInput();
         }
 
-        return redirect()->route('member.entries.edit', $entry)->with('status', $result['msg']);
+        return redirect()->to(cms_route('member.entries.edit', $entry))->with('status', $result['msg']);
     }
 
     private function guardMember(): RedirectResponse|true
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return redirect()->route('member.login');
+            return redirect()->to(cms_route('member.login'));
         }
         if (! $member->canMember('contribute')) {
-            return redirect()->route('member.profile')->with('error', '当前会员组无权投稿');
+            return redirect()->to(cms_route('member.profile'))->with('error', '当前会员组无权投稿');
         }
 
         return true;

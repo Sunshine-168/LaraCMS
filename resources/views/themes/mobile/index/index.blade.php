@@ -1,6 +1,9 @@
 @extends('themes.mobile.partials.layout')
 @section('content')
-    @cmsAdv(['name' => 'home_banner'])
+    @php
+        $homeBanners = app(\App\Services\Cms\Tags\AdvTag::class)->get(['name' => 'home_banner']);
+    @endphp
+    @forelse($homeBanners as $item)
         @if($item->html)
             {!! $item->html !!}
         @else
@@ -12,7 +15,15 @@
             </div>
         </div>
         @endif
-    @endcmsAdv
+    @empty
+        @if(!empty($site['hero_title']) || !empty($site['hero_subtitle']))
+            <div class="hero">
+                <div>
+                    @include('cms.partials.front-hero-copy')
+                </div>
+            </div>
+        @endif
+    @endforelse
 
     <section style="margin:20px 0">
         <h2>最新新闻</h2>

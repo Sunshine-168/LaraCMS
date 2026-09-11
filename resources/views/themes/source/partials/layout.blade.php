@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,19 +14,22 @@
         .card-soft{border:1px solid #333;border-radius:8px;padding:14px;margin:12px 0;background:#171717}
         input,textarea,select{font:inherit;padding:8px;border:1px solid #333;border-radius:6px;background:#111;color:#f5f5f5}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header><div class="wrap">
-    <a class="brand" href="/">{{ $site['title'] ?? '源码站' }}</a>
+    @include('cms.partials.front-brand', ['fallback' => '源码站'])
     <nav>
         @include('cms.partials.header-nav')
+        @include('cms.partials.front-toolbar')
         <span class="muted">
             @cmsTaglist(['num'=>8])
-                <a class="tag" href="{{ url('/tag/'.$item->t('slug')) }}">{{ $item->t('title') }}</a>
+                <a class="tag" href="{{ cms_front_url('tag/'.$item->t('slug')) }}">{{ $item->t('title') }}</a>
             @endcmsTaglist
         </span>
     </nav>
 </div></header>
 <main class="wrap" style="padding:20px 0">@yield('content')</main>
+@include('cms.partials.front-footer')
 </body>
 </html>

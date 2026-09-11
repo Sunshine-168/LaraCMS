@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,15 +18,17 @@
         .card-soft{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:14px;margin:10px 0}
         input,textarea,select{font:inherit;padding:8px;border:1px solid #2a2a2a;border-radius:6px;background:#121212;color:#f5f5f5}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header><div class="wrap">
-    <a class="brand" href="/">{{ $site['title'] ?? 'Manga' }}</a>
+    @include('cms.partials.front-brand', ['fallback' => 'Manga'])
     <nav>
         @include('cms.partials.header-nav')
-        <a href="{{ cms_front_url('search') }}">搜索</a>
+        @include('cms.partials.front-toolbar')
     </nav>
 </div></header>
 <main class="wrap" style="padding:20px 0">@yield('content')</main>
+@include('cms.partials.front-footer')
 </body>
 </html>

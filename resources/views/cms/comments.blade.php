@@ -37,7 +37,7 @@
     @endforelse
 
     @if($canPost)
-        <form method="post" action="{{ url(\App\Support\UrlMode::localePrefix().'/comment/'.$entry->id) }}" style="margin-top:24px;max-width:560px">
+        <form method="post" action="{{ cms_route('comment.store', $entry) }}" style="margin-top:24px;max-width:560px">
             @csrf
             @unless($member)
                 <label>昵称</label>

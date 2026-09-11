@@ -1,12 +1,5 @@
-@php
-    use App\Support\Locale;
-    $locale = Locale::current();
-    $prefix = (! Locale::hideDefault() || $locale !== Locale::default())
-        ? '/'.Locale::toPublic($locale)
-        : '';
-@endphp
 <!DOCTYPE html>
-<html lang="{{ $locale === 'zh_cn' ? 'zh-CN' : $locale }}">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -41,14 +34,15 @@
         .muted { color:#64748b; font-size:13px; }
         footer { border-top:1px solid var(--line); padding:24px 0; color:#64748b; font-size:13px; }
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header>
     <div class="wrap">
-        <a class="brand" href="{{ $prefix ?: '/' }}">{{ $seo['site'] ?? config('app.name') }}</a>
+        @include('cms.partials.front-brand')
         <nav>
             @include('cms.partials.header-nav')
-            <a href="{{ $prefix }}/search">{{ $locale === 'en' ? 'Search' : '搜索' }}</a>
+            @include('cms.partials.front-toolbar')
             <span class="lang">
                 <a href="/">中文</a> · <a href="/en">EN</a>
             </span>
@@ -58,8 +52,6 @@
 <main class="wrap">
     @yield('content')
 </main>
-<footer>
-    <div class="wrap">&copy; {{ date('Y') }} {{ $seo['site'] ?? config('app.name') }}</div>
-</footer>
+@include('cms.partials.front-footer')
 </body>
 </html>

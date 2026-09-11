@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Entry extends Model
 {
@@ -165,6 +166,35 @@ class Entry extends Model
             || $this->hasFlag('member');
     }
 
+    /** 游客/无权限会员看不到门槛文档（栏目列表仍可展示，搜索/标签/API/推荐查询会用此范围） */
+    public function scopeVisibleToGuests(Builder $query): Builder
+    {
+        $member = Auth::guard('member')->user();
+        if ($member instanceof Member && $member->canMember('view_member_content')) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) {
+            $q->where(function (Builder $f) {
+                $f->whereNull('flags')
+                    ->orWhere('flags', '')
+                    ->orWhere(function (Builder $x) {
+                        $x->where('flags', '!=', 'member')
+                            ->where('flags', 'not like', 'member,%')
+                            ->where('flags', 'not like', '%,member,%')
+                            ->where('flags', 'not like', '%,member');
+                    });
+            });
+            foreach (['member_only', 'require_login', 'islogin'] as $key) {
+                $q->where(function (Builder $a) use ($key) {
+                    $a->whereNull('attrs')
+                        ->orWhereRaw("json_extract(attrs, '$.{$key}') IS NULL")
+                        ->orWhereRaw("json_extract(attrs, '$.{$key}') IN (0, '0', 'false', '')");
+                });
+            }
+        });
+    }
+
     public function scopeHomepage(Builder $query): Builder
     {
         return $query->where('is_homepage', true);
@@ -181,7 +211,11 @@ class Entry extends Model
 
         $modelSlug = $this->modelDef?->slug;
         if (in_array($modelSlug, ['link'], true)) {
-            return (string) ($this->attr('url') ?: '#');
+            if (! ($this->attr('url') || $this->attr('source_url'))) {
+                return '#';
+            }
+
+            return $prefix.'/go/'.$this->id;
         }
 
         $catSlug = $this->category?->t('slug') ?: 'item';

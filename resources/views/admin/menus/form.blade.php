@@ -12,7 +12,7 @@
 
         <label>位置</label>
         <input type="text" name="location" value="{{ old('location', $menu->location ?: 'header') }}">
-        <p class="muted">前台用 <code>@cmsMenu(['location' => 'header'])</code> 读取；无菜单时回退到栏目导航。</p>
+        <p class="muted">前台用 <code>@@cmsMenu(['location' => 'header'])</code> 读取；无菜单时回退到栏目导航。</p>
 
         <label><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $menu->is_active ?? true))> 启用</label>
 

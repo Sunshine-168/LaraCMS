@@ -21,7 +21,7 @@ class ApiSmokeTest extends TestCase
         $this->getJson('/api/site/config')
             ->assertOk()
             ->assertJsonPath('code', 200)
-            ->assertJsonStructure(['code', 'msg', 'data' => ['site_name', 'locales', 'url_mode']]);
+            ->assertJsonStructure(['code', 'msg', 'data' => ['site_name', 'locales', 'url_mode', 'logo_url', 'icp', 'primary_color']]);
     }
 
     public function test_category_and_content_list(): void

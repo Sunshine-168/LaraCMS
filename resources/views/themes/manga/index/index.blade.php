@@ -1,7 +1,9 @@
 @extends('themes.manga.partials.layout')
 @section('content')
-    <h1>漫画库</h1>
-    <p class="muted">筛选地区 / 状态</p>
+    @include('cms.partials.front-hero-copy', [
+        'fallbackTitle' => '漫画库',
+        'fallbackSub' => '筛选地区 / 状态',
+    ])
     <div style="margin:12px 0">
         @cmsFilter(['model'=>'manga'])
             @foreach(($item->choices ?? []) as $val => $label)

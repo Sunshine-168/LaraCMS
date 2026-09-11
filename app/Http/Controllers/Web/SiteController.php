@@ -67,7 +67,7 @@ class SiteController extends Controller
         $results = collect();
         if ($q !== '') {
             $locale = Locale::current();
-            $query = Entry::query()->with(['category', 'modelDef'])->published()
+            $query = Entry::query()->with(['category', 'modelDef'])->published()->visibleToGuests()
                 ->whereHas('modelDef', function ($m) use ($modelId) {
                     $m->where('is_searchable', true);
                     if ($modelId) {
@@ -320,6 +320,7 @@ class SiteController extends Controller
 
         $this->context->setSeo($tag->t('title').' - '.$site['title'], '', '');
         $entries = $tag->entries()->with(['category', 'modelDef'])->published()
+            ->visibleToGuests()
             ->orderByDesc('published_at')->paginate(12);
 
         return $this->site->renderThemePage('tag', compact('site', 'tag', 'entries'));
@@ -330,10 +331,8 @@ class SiteController extends Controller
     {
         $site = $this->site->bootSite();
         $entries = Entry::query()->with(['category', 'modelDef'])->published()
-            ->orderByDesc('published_at')->limit(80)->get()
-            ->reject(fn (Entry $e) => $e->isMemberGated())
-            ->take(30)
-            ->values();
+            ->visibleToGuests()
+            ->orderByDesc('published_at')->limit(30)->get();
         $xml = view('themes.default.rss', compact('site', 'entries'))->render();
 
         return response($xml, 200)->header('Content-Type', 'application/rss+xml; charset=UTF-8');
@@ -368,12 +367,12 @@ class SiteController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return redirect()->route('member.login')
+            return redirect()->to(cms_route('member.login'))
                 ->with('error', $loginMsg)
                 ->with('url.intended', $request->fullUrl());
         }
         if (! $member->canMember($permission)) {
-            return redirect()->route('member.profile')->with('error', $permMsg);
+            return redirect()->to(cms_route('member.profile'))->with('error', $permMsg);
         }
 
         return null;

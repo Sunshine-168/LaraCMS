@@ -31,6 +31,19 @@ class TagAdminService
         }
 
         $tag->fill($packed);
+        foreach (Locale::codes() as $code) {
+            $slug = (string) ($packed['slug'][$code] ?? '');
+            if ($slug === '') {
+                continue;
+            }
+            $dup = Tag::query()
+                ->when($tag->exists, fn ($q) => $q->where('id', '!=', $tag->id))
+                ->where("slug->{$code}", $slug)
+                ->exists();
+            if ($dup) {
+                return Result::fail('Slug「'.$slug.'」已被使用');
+            }
+        }
         $tag->save();
 
         return Result::ok($tag, '标签已保存');

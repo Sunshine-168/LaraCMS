@@ -98,6 +98,13 @@ class Locale
         return $parts[0].'-'.strtoupper($parts[1]);
     }
 
+    public static function htmlLang(): string
+    {
+        $code = self::current();
+
+        return $code === 'zh_cn' ? 'zh-CN' : self::toPublic($code);
+    }
+
     public static function isEnglish(): bool
     {
         return str_starts_with(self::current(), 'en');

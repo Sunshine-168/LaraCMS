@@ -5,7 +5,7 @@
         <p><a href="{{ session('reset_url') }}">{{ session('reset_url') }}</a></p>
     @endif
     @if($errors->any())<p style="color:#c00">{{ $errors->first() }}</p>@endif
-    <form method="post" action="{{ route('member.forgot.submit') }}" class="card-soft" style="max-width:480px;margin-top:16px">
+    <form method="post" action="{{ cms_route('member.forgot.submit') }}" class="card-soft" style="max-width:480px;margin-top:16px">
         @csrf
         <p><label>注册邮箱<br><input type="email" name="email" value="{{ old('email') }}" required style="width:100%;padding:8px"></label></p>
         <p><button class="btn" type="submit">生成重置链接</button>

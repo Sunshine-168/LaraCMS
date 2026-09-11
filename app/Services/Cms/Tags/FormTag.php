@@ -48,7 +48,7 @@ class FormTag
         $captcha = array_key_exists('captcha', $options)
             ? ! empty($options['captcha'])
             : (bool) config('cms.form_captcha', true);
-        $action = route('form.submit', $form->slug);
+        $action = cms_route('form.submit', $form->slug);
         $html = '<form method="post" action="'.e($action).'" class="cms-form" data-form="'.e($form->slug).'">';
         $html .= '<input type="hidden" name="_token" value="'.e(csrf_token()).'">';
 

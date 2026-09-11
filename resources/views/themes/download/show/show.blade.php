@@ -11,7 +11,7 @@
                 <a class="btn" href="{{ $item->download_url }}">下载</a>
             </p>
         @endcmsFileinfo
-        <p style="margin-top:16px"><a class="btn" href="{{ route('download', $entry) }}">立即下载 ({{ $entry->downloads_count }})</a></p>
+        <p style="margin-top:16px"><a class="btn" href="{{ cms_route('download', $entry) }}">立即下载 ({{ $entry->downloads_count }})</a></p>
     </div>
 
     @include('cms.comments')

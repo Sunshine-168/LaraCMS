@@ -1,9 +1,9 @@
 @if(!empty($canContribute))
     <h2 style="margin-top:28px">我的投稿</h2>
     <p>
-        <a href="{{ route('member.entries.index') }}">全部投稿</a>
+        <a href="{{ cms_route('member.entries.index') }}">全部投稿</a>
         @if(($contributeModels ?? collect())->isNotEmpty())
-            · <a href="{{ route('member.entries.create', ['model_id' => $contributeModels->first()->id]) }}">写新稿</a>
+            · <a href="{{ cms_route('member.entries.create', ['model_id' => $contributeModels->first()->id]) }}">写新稿</a>
         @endif
     </p>
     @if(($myEntries ?? null) && $myEntries->isNotEmpty())
@@ -15,7 +15,7 @@
                     @if($item->status === 'published')
                         · <a href="{{ $item->url }}">查看</a>
                     @else
-                        · <a href="{{ route('member.entries.edit', $item) }}">编辑</a>
+                        · <a href="{{ cms_route('member.entries.edit', $item) }}">编辑</a>
                     @endif
                 </li>
             @endforeach

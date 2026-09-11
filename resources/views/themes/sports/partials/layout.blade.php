@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,16 +17,18 @@
         .filters a{margin-right:8px;padding:4px 10px;border:1px solid #065f46;border-radius:999px;font-size:13px}
         .filters a.active{background:#059669;border-color:#059669;color:#fff}
     </style>
+    @include('cms.partials.front-appearance')
 </head>
 <body>
 <header><div class="wrap">
-    <a class="brand" href="/">{{ $site['title'] ?? 'Sports' }}</a>
+    @include('cms.partials.front-brand', ['fallback' => 'Sports'])
     <nav>
         @include('cms.partials.header-nav')
-        <a href="{{ cms_front_url('search') }}">搜索</a>
+        @include('cms.partials.front-toolbar')
     </nav>
 </div></header>
 <main class="wrap" style="padding:20px 0">@yield('content')</main>
 <p class="wrap muted" style="padding-bottom:24px">仅作体育资讯/公开源目录演示，请遵守当地法律法规与版权要求。</p>
+@include('cms.partials.front-footer')
 </body>
 </html>

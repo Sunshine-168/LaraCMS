@@ -8,7 +8,7 @@
     <form method="post" action="{{ $recommend->exists ? route('admin.recommends.update', $recommend) : route('admin.recommends.store') }}">
         @csrf
         @if($recommend->exists) @method('PUT') @endif
-        <label>标识 name（主题里 @cmsAdv name）</label>
+        <label>标识 name（主题里 @@cmsAdv name）</label>
         <input type="text" name="name" value="{{ old('name', $recommend->name) }}" required>
         <label>标题</label>
         <input type="text" name="title" value="{{ old('title', $recommend->title) }}">

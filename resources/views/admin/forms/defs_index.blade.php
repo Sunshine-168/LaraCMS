@@ -6,7 +6,7 @@
         <a class="btn" href="{{ route('admin.forms.create') }}"><i class="fas fa-plus"></i> 新建表单</a>
         <a class="btn btn-muted" href="{{ route('admin.form-submissions.index') }}"><i class="fas fa-inbox"></i> 留言收件箱</a>
     </div>
-    <p class="muted">前台用 <code>@cmsForm(['slug' => 'contact'])</code> 或 POST <code>/form/{slug}</code>。标识 slug 用于模板与路由。</p>
+    <p class="muted">前台用 <code>@@cmsForm(['slug' => 'contact'])</code> 或 POST <code>/form/{slug}</code>。标识 slug 用于模板与路由。</p>
     <table class="data">
         <thead>
         <tr><th>ID</th><th>名称</th><th>Slug</th><th>字段数</th><th>留言</th><th>状态</th><th>操作</th></tr>

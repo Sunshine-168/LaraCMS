@@ -3,9 +3,9 @@
     @if(session('status'))<p style="color:green">{{ session('status') }}</p>@endif
     @if(session('error'))<p style="color:#c00">{{ session('error') }}</p>@endif
     <p>
-        <a href="{{ route('member.profile') }}">返回会员中心</a>
+        <a href="{{ cms_route('member.profile') }}">返回会员中心</a>
         @if(($models ?? collect())->isNotEmpty())
-            · <a href="{{ route('member.entries.create', ['model_id' => $models->first()->id]) }}">写新稿</a>
+            · <a href="{{ cms_route('member.entries.create', ['model_id' => $models->first()->id]) }}">写新稿</a>
         @endif
     </p>
     @if(($entries ?? null) && $entries->isNotEmpty())
@@ -19,7 +19,7 @@
                     @if($item->status === 'published')
                         · <a href="{{ $item->url }}">查看</a>
                     @else
-                        · <a href="{{ route('member.entries.edit', $item) }}">编辑</a>
+                        · <a href="{{ cms_route('member.entries.edit', $item) }}">编辑</a>
                     @endif
                 </li>
             @endforeach

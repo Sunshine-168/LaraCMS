@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class RecommendService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache)
-    {
-    }
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
     public function all(): Collection
     {
@@ -24,7 +22,15 @@ class RecommendService
     {
         return DB::transaction(function () use ($recommend, $input) {
             $recommend ??= new Recommend;
-            $recommend->name = $input['name'] ?? 'block';
+            $name = trim((string) ($input['name'] ?? 'block'));
+            $dup = Recommend::query()
+                ->where('name', $name)
+                ->when($recommend->exists, fn ($q) => $q->where('id', '!=', $recommend->id))
+                ->exists();
+            if ($dup) {
+                return Result::fail('推荐位标识已存在');
+            }
+            $recommend->name = $name;
             $recommend->title = $input['title'] ?? $recommend->name;
             $type = (string) ($input['type'] ?? 'image');
             if (! in_array($type, ['image', 'link', 'html', 'entry', 'query'], true)) {

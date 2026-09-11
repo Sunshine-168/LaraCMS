@@ -13,6 +13,8 @@ use App\Models\Cms\Site;
 use App\Support\CurrentSite;
 use Database\Seeders\CmsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class FrontGateAndThemeTest extends TestCase
@@ -135,5 +137,112 @@ class FrontGateAndThemeTest extends TestCase
             ->getJson('/api/member/entries/'.$id)
             ->assertOk()
             ->assertJsonPath('data.content', '<p>详情正文</p>');
+    }
+
+    public function test_guest_search_and_api_omit_gated_and_links_use_go(): void
+    {
+        $gated = Entry::query()->find(4);
+        $this->assertNotNull($gated);
+
+        $this->get('/search?q=Windows')
+            ->assertOk()
+            ->assertDontSee($gated->t('title'), false);
+
+        $listIds = array_column($this->getJson('/api/content/list')->assertOk()->json('data.list'), 'id');
+        $this->assertNotContains(4, $listIds);
+
+        $searchIds = array_column($this->getJson('/api/search?q=Windows')->assertOk()->json('data.list'), 'id');
+        $this->assertNotContains(4, $searchIds);
+
+        $link = Entry::query()->with('modelDef')->find(5);
+        $this->assertNotNull($link);
+        $this->assertStringContainsString('/go/'.$link->id, $link->url);
+
+        $this->get('/en/member/login')
+            ->assertOk()
+            ->assertSee('/en/member/login', false);
+
+        $this->get('/en/search')
+            ->assertOk()
+            ->assertSee('Search', false);
+    }
+
+    public function test_admin_create_pages_do_not_compile_help_text_as_tags(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->assertNotNull($admin);
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->get(route('admin.recommends.create'))
+            ->assertOk()
+            ->assertSee('@cmsAdv', false);
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->get(route('admin.menus.create'))
+            ->assertOk()
+            ->assertSee('@cmsMenu', false);
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->get(route('admin.forms.create'))
+            ->assertOk()
+            ->assertSee('@cmsForm', false);
+    }
+
+    public function test_theme_appearance_saves_and_renders_on_front(): void
+    {
+        Storage::fake('public');
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->assertNotNull($admin);
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->get(route('admin.settings.edit'))
+            ->assertOk()
+            ->assertSee('外观与品牌')
+            ->assertSee('备案号');
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->put(route('admin.settings.update'), [
+                'site_name' => '外观测试站',
+                'theme' => 'download',
+                'primary_color' => '#112233',
+                'icp' => '京ICP备00000000号',
+                'footer_text' => '页脚自定义行',
+                'hero_title' => '自定义下载首页',
+                'hero_subtitle' => '运营副标题',
+                'logo_file' => UploadedFile::fake()->image('logo.png', 80, 40),
+                'comments_enabled' => '1',
+                'comments_guest' => '1',
+                'tag_autolink' => '1',
+            ])
+            ->assertRedirect(route('admin.settings.edit'));
+
+        $this->assertSame('#112233', Setting::getValue('primary_color'));
+        $this->assertSame('京ICP备00000000号', Setting::getValue('icp'));
+        $this->assertNotEmpty(Setting::getValue('logo'));
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('#112233', false)
+            ->assertSee('京ICP备00000000号')
+            ->assertSee('页脚自定义行')
+            ->assertSee('自定义下载首页')
+            ->assertSee('运营副标题')
+            ->assertDontSee('软件下载中心')
+            ->assertSee('外观测试站')
+            ->assertSee('/storage/cms/brand', false);
+
+        $this->getJson('/api/site/config')
+            ->assertOk()
+            ->assertJsonPath('data.icp', '京ICP备00000000号')
+            ->assertJsonPath('data.primary_color', '#112233')
+            ->assertJsonPath('data.hero_title', '自定义下载首页');
+
+        Setting::setValue('primary_color', 'red');
+        $this->get('/')->assertOk()->assertDontSee('--accent: red', false);
     }
 }

@@ -21,7 +21,7 @@
         <div class="card">
             <h3><a href="{{ $item->url }}">{{ $item->t('title') }}</a></h3>
             <p class="muted">{{ $item->attr('platform') }} · {{ $item->attr('version') }} · 下载 {{ $item->downloads_count }}</p>
-            <a class="btn" href="{{ route('download', $item) }}">下载</a>
+            <a class="btn" href="{{ cms_route('download', $item) }}">下载</a>
         </div>
     @endcmsContent
     @cmsPaginate

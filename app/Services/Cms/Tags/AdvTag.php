@@ -59,7 +59,7 @@ class AdvTag
         $limit = (int) ($options['num'] ?? $p['limit'] ?? 10);
         $limit = max(1, min(100, $limit));
 
-        $q = Entry::query()->with(['category', 'modelDef'])->published();
+        $q = Entry::query()->with(['category', 'modelDef'])->published()->visibleToGuests();
 
         if (! empty($p['model_id'])) {
             $q->where('model_id', (int) $p['model_id']);

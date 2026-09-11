@@ -25,9 +25,9 @@
         || document.querySelector('input[name="_token"]')?.value
         || '';
     const urls = {
-        init: @json(route('member.upload.init')),
-        chunk: @json(route('member.upload.chunk')),
-        complete: @json(route('member.upload.complete')),
+        init: @json(cms_route('member.upload.init')),
+        chunk: @json(cms_route('member.upload.chunk')),
+        complete: @json(cms_route('member.upload.complete')),
     };
     const setMsg = (t) => { if (progress) progress.textContent = t; };
     fileInput.addEventListener('change', async () => {

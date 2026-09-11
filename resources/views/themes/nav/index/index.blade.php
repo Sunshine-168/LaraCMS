@@ -1,7 +1,9 @@
 @extends('themes.nav.partials.layout')
 @section('content')
-    <h1>网址导航</h1>
-    <p class="muted">精选常用站点，点击直达。</p>
+    @include('cms.partials.front-hero-copy', [
+        'fallbackTitle' => '网址导航',
+        'fallbackSub' => '精选常用站点，点击直达。',
+    ])
     <section class="section">
         <h2>热门推荐</h2>
         <div class="grid">
@@ -23,7 +25,7 @@
             <h3 style="margin-top:20px">{{ $cat->t('title') }}</h3>
             <div class="grid">
                 @cmsContent(['catid'=>$cat->id,'model'=>'link','num'=>24,'insub'=>false, 'as' => 'link'])
-                    <a class="link" href="{{ route('go', $link) }}" target="_blank" rel="noopener">
+                    <a class="link" href="{{ cms_route('go', $link) }}" target="_blank" rel="noopener">
                         @if($link->cover || $link->attr('icon'))
                             <img src="{{ cms_media($link->cover ?: $link->attr('icon')) }}" alt="">
                         @endif

@@ -2,19 +2,19 @@
     <h1>{{ $entry->exists ? '编辑投稿' : '写新稿' }}</h1>
     @if(session('status'))<p style="color:green">{{ session('status') }}</p>@endif
     @if($errors->any())<p style="color:#c00">{{ $errors->first() }}</p>@endif
-    <p><a href="{{ route('member.entries.index') }}">返回列表</a>
+    <p><a href="{{ cms_route('member.entries.index') }}">返回列表</a>
         @if($entry->exists)
             <span class="muted"> · {{ \App\Models\Cms\Entry::statusLabel($entry->status) }}</span>
         @endif
     </p>
 
-    <form method="post" action="{{ $entry->exists ? route('member.entries.update', $entry) : route('member.entries.store') }}">
+    <form method="post" action="{{ $entry->exists ? cms_route('member.entries.update', $entry) : cms_route('member.entries.store') }}">
         @csrf
         @if($entry->exists) @method('PUT') @endif
 
         @if(!$entry->exists && ($models ?? collect())->count() > 1)
             <p><label>模型<br>
-                <select name="model_id" onchange="location='{{ route('member.entries.create') }}?model_id='+this.value" style="width:100%;padding:8px">
+                <select name="model_id" onchange="location='{{ cms_route('member.entries.create') }}?model_id='+this.value" style="width:100%;padding:8px">
                     @foreach($models as $m)
                         <option value="{{ $m->id }}" @selected((int)$model->id === (int)$m->id)>{{ $m->name }}</option>
                     @endforeach
