@@ -3,6 +3,12 @@
 @section('icon', 'trash-alt')
 @section('content')
     <p class="muted">内容删除后进入回收站，可还原或彻底删除。</p>
+    @if($entries->total() > 0)
+        <form action="{{ route('admin.recycle.empty') }}" method="post" style="margin:12px 0" onsubmit="return confirm('清空回收站将彻底删除全部条目，不可恢复。确认？')">
+            @csrf
+            <button class="btn btn-danger" type="submit">清空回收站</button>
+        </form>
+    @endif
     <table class="data">
         <thead><tr><th>ID</th><th>标题</th><th>模型</th><th>删除时间</th><th>操作</th></tr></thead>
         <tbody>

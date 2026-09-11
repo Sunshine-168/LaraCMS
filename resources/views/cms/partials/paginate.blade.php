@@ -1,15 +1,19 @@
 @if($paginator->hasPages())
+    @php
+        $prev = \App\Support\Locale::isEnglish() ? 'Previous' : '上一页';
+        $next = \App\Support\Locale::isEnglish() ? 'Next' : '下一页';
+    @endphp
     <div class="muted">
         @if($paginator->onFirstPage())
-            <span>上一页</span>
+            <span>{{ $prev }}</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}">上一页</a>
+            <a href="{{ $paginator->previousPageUrl() }}">{{ $prev }}</a>
         @endif
         <span style="margin:0 12px">{{ $paginator->currentPage() }} / {{ $paginator->lastPage() }}</span>
         @if($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}">下一页</a>
+            <a href="{{ $paginator->nextPageUrl() }}">{{ $next }}</a>
         @else
-            <span>下一页</span>
+            <span>{{ $next }}</span>
         @endif
     </div>
 @endif

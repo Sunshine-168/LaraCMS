@@ -24,7 +24,7 @@
     <a class="brand" href="/">{{ $site['title'] ?? 'Manga' }}</a>
     <nav>
         @include('cms.partials.header-nav')
-        <a href="{{ route('search') }}">搜索</a>
+        <a href="{{ cms_front_url('search') }}">搜索</a>
     </nav>
 </div></header>
 <main class="wrap" style="padding:20px 0">@yield('content')</main>

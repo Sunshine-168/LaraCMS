@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cms\CmsLocale;
+use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\Result;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class LocaleController extends Controller
@@ -29,7 +31,7 @@ class LocaleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'code' => 'required|string|max:16|unique:cms_locales,code|regex:/^[a-z]{2}(_[a-z]{2})?$/',
+            'code' => ['required', 'string', 'max:16', 'regex:/^[a-z]{2}(_[a-z]{2})?$/', Rule::unique('cms_locales', 'code')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))],
             'label' => 'required|string|max:80',
             'native' => 'nullable|string|max:80',
             'sort' => 'nullable|integer|min:0|max:9999',
@@ -47,7 +49,7 @@ class LocaleController extends Controller
     public function update(Request $request, CmsLocale $locale): RedirectResponse
     {
         $request->validate([
-            'code' => 'required|string|max:16|unique:cms_locales,code,'.$locale->id.'|regex:/^[a-z]{2}(_[a-z]{2})?$/',
+            'code' => ['required', 'string', 'max:16', 'regex:/^[a-z]{2}(_[a-z]{2})?$/', Rule::unique('cms_locales', 'code')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))->ignore($locale->id)],
             'label' => 'required|string|max:80',
         ]);
         $result = $this->save($locale, $request->all());

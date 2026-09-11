@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Middleware\ApiToken;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Member;
 use App\Services\Cms\MemberContributeService;
 use App\Services\Cms\MemberFavoriteService;
+use App\Support\Captcha;
+use App\Support\Cdn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +23,16 @@ class MemberApiController extends ApiController
 
     public function login(Request $request): JsonResponse
     {
+        $skipCaptcha = ApiToken::providedTokenIsValid($request);
+        $needCaptcha = Captcha::enabled() && ! $skipCaptcha;
         $data = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'captcha' => $needCaptcha ? 'required' : 'nullable',
         ]);
+        if ($needCaptcha) {
+            Captcha::assertValid($request->input('captcha'));
+        }
 
         $member = Member::query()->where('email', $data['email'])->where('is_active', true)->first();
         if (! $member || ! Hash::check($data['password'], $member->password)) {
@@ -151,7 +160,7 @@ class MemberApiController extends ApiController
         $page = $member->contributedEntries()->with(['category', 'modelDef'])->orderByDesc('id')->paginate($limit);
 
         return $this->ok([
-            'list' => $page->getCollection()->map(fn (Entry $e) => $this->entryPayload($e))->values(),
+            'list' => $page->getCollection()->map(fn (Entry $e) => $this->entryPayload($e, false))->values(),
             'total' => $page->total(),
             'page' => $page->currentPage(),
             'limit' => $page->perPage(),
@@ -170,7 +179,7 @@ class MemberApiController extends ApiController
             return $this->fail($result['msg']);
         }
 
-        return $this->ok($this->entryPayload($result['data']), $result['msg']);
+        return $this->ok($this->entryPayload($result['data'], true), $result['msg']);
     }
 
     public function updateEntry(Request $request, int $entry): JsonResponse
@@ -189,7 +198,7 @@ class MemberApiController extends ApiController
             return $this->fail($result['msg']);
         }
 
-        return $this->ok($this->entryPayload($result['data']), $result['msg']);
+        return $this->ok($this->entryPayload($result['data'], true), $result['msg']);
     }
 
     public function submitEntry(int $entry): JsonResponse
@@ -207,22 +216,47 @@ class MemberApiController extends ApiController
             return $this->fail($result['msg']);
         }
 
-        return $this->ok($this->entryPayload($result['data']), $result['msg']);
+        return $this->ok($this->entryPayload($result['data'], true), $result['msg']);
+    }
+
+    public function showEntry(int $entry): JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member instanceof Member) {
+            return $this->fail('请先登录会员', 401);
+        }
+        if (! $member->canMember('contribute')) {
+            return $this->fail('当前会员组无权投稿', 403);
+        }
+        $model = $member->contributedEntries()->with(['category', 'modelDef'])->find($entry);
+        if (! $model) {
+            return $this->fail('内容不存在', 404);
+        }
+
+        return $this->ok($this->entryPayload($model, true));
     }
 
     /** @return array<string, mixed> */
-    protected function entryPayload(Entry $e): array
+    protected function entryPayload(Entry $e, bool $detail = false): array
     {
-        return [
+        $data = [
             'id' => $e->id,
             'title' => $e->t('title'),
             'slug' => $e->t('slug'),
+            'excerpt' => $e->t('excerpt'),
+            'cover' => cms_media($e->cover),
             'status' => $e->status,
             'category_id' => $e->category_id,
             'model_id' => $e->model_id,
             'url' => $e->status === 'published' ? $e->url : null,
             'attrs' => $e->attrs ?? [],
         ];
+        if ($detail) {
+            $data['content'] = Cdn::rewriteHtml((string) $e->t('content'));
+            $data['attrs'] = Cdn::rewriteValue($e->attrs ?? []);
+        }
+
+        return $data;
     }
 
     /** @return array<string, mixed> */

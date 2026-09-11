@@ -31,8 +31,15 @@
             @endforeach
         </select>
 
-        <label>父栏目 ID</label>
-        <input type="number" name="parent_id" value="{{ old('parent_id', $category->parent_id) }}">
+        <label>父栏目</label>
+        <select name="parent_id">
+            <option value="">— 无（顶级） —</option>
+            @foreach($parents ?? [] as $parent)
+                <option value="{{ $parent->id }}" @selected((int) old('parent_id', $category->parent_id) === (int) $parent->id)>
+                    {{ $parent->t('title') }} (#{{ $parent->id }})
+                </option>
+            @endforeach
+        </select>
         <label>列表模板（如 list.list_product）</label>
         <input type="text" name="list_tpl" value="{{ old('list_tpl', $category->list_tpl) }}">
         <label>详情模板</label>

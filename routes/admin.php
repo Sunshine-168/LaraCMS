@@ -56,6 +56,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
         Route::middleware('admin.perm:recycle')->group(function () {
             Route::get('recycle', [RecycleController::class, 'index'])->name('recycle.index');
+            Route::post('recycle/empty', [RecycleController::class, 'empty'])->name('recycle.empty');
             Route::post('recycle/{entry}/restore', [RecycleController::class, 'restore'])->name('recycle.restore');
             Route::delete('recycle/{entry}', [RecycleController::class, 'forceDestroy'])->name('recycle.force');
         });

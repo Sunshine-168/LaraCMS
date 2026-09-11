@@ -13,9 +13,7 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    public function __construct(private readonly CategoryService $categoryService)
-    {
-    }
+    public function __construct(private readonly CategoryService $categoryService) {}
 
     /** 栏目列表 */
     public function index(): View
@@ -32,6 +30,7 @@ class CategoryController extends Controller
             'category' => new Category(['status' => 'published', 'type' => 'list', 'is_menu' => true, 'page_size' => 10]),
             'locales' => Locale::codes(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'parents' => Category::query()->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 
@@ -50,6 +49,7 @@ class CategoryController extends Controller
             'category' => $category,
             'locales' => Locale::codes(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'parents' => Category::query()->where('id', '!=', $category->id)->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 

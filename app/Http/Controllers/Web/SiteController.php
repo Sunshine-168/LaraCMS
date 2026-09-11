@@ -215,16 +215,15 @@ class SiteController extends Controller
     protected function renderEntry(array $site, $category, Entry $entry, bool $preview = false): View|RedirectResponse
     {
         if (! $preview) {
-            $needMemberView = $entry->isMemberGated();
-            if ($needMemberView) {
-                $member = Auth::guard('member')->user();
-                if (! $member) {
-                    return redirect()->route('member.login')
-                        ->with('error', '该内容需会员登录后查看')
-                        ->with('url.intended', request()->fullUrl());
-                }
-                if (! $member->canMember('view_member_content')) {
-                    return redirect()->route('member.profile')->with('error', '当前会员组无权查看此内容');
+            if ($entry->isMemberGated()) {
+                $blocked = $this->memberAccessOrRedirect(
+                    request(),
+                    'view_member_content',
+                    '该内容需会员登录后查看',
+                    '当前会员组无权查看此内容'
+                );
+                if ($blocked) {
+                    return $blocked;
                 }
             }
             $entry->increment('views');
@@ -257,17 +256,15 @@ class SiteController extends Controller
     {
         abort_unless($entry->isLive(), 404);
 
-        $needLogin = filter_var($entry->attr('require_login', false), FILTER_VALIDATE_BOOLEAN)
-            || filter_var($entry->attr('islogin', false), FILTER_VALIDATE_BOOLEAN);
-        if ($needLogin) {
-            $member = Auth::guard('member')->user();
-            if (! $member) {
-                return redirect()->route('member.login')
-                    ->with('error', '该资源需会员登录后下载')
-                    ->with('url.intended', $request->fullUrl());
-            }
-            if (! $member->canMember('download')) {
-                return redirect()->route('member.profile')->with('error', '当前会员组无权下载');
+        if ($entry->isMemberGated()) {
+            $blocked = $this->memberAccessOrRedirect(
+                $request,
+                'download',
+                '该资源需会员登录后下载',
+                '当前会员组无权下载'
+            );
+            if ($blocked) {
+                return $blocked;
             }
         }
 
@@ -289,9 +286,20 @@ class SiteController extends Controller
     }
 
     /** 外链点击计次后跳转 */
-    public function go(Entry $entry): RedirectResponse
+    public function go(Request $request, Entry $entry): RedirectResponse
     {
         abort_unless($entry->isLive(), 404);
+        if ($entry->isMemberGated()) {
+            $blocked = $this->memberAccessOrRedirect(
+                $request,
+                'view_member_content',
+                '该外链需会员登录后访问',
+                '当前会员组无权访问此外链'
+            );
+            if ($blocked) {
+                return $blocked;
+            }
+        }
         $url = $entry->attr('url') ?: $entry->attr('source_url');
         abort_unless($url, 404);
         $entry->increment('clicks');
@@ -322,7 +330,10 @@ class SiteController extends Controller
     {
         $site = $this->site->bootSite();
         $entries = Entry::query()->with(['category', 'modelDef'])->published()
-            ->orderByDesc('published_at')->limit(30)->get();
+            ->orderByDesc('published_at')->limit(80)->get()
+            ->reject(fn (Entry $e) => $e->isMemberGated())
+            ->take(30)
+            ->values();
         $xml = view('themes.default.rss', compact('site', 'entries'))->render();
 
         return response($xml, 200)->header('Content-Type', 'application/rss+xml; charset=UTF-8');
@@ -351,5 +362,20 @@ class SiteController extends Controller
         $xml = view($this->site->themeView('sitemap'), compact('urls'))->render();
 
         return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    protected function memberAccessOrRedirect(Request $request, string $permission, string $loginMsg, string $permMsg): ?RedirectResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member) {
+            return redirect()->route('member.login')
+                ->with('error', $loginMsg)
+                ->with('url.intended', $request->fullUrl());
+        }
+        if (! $member->canMember($permission)) {
+            return redirect()->route('member.profile')->with('error', $permMsg);
+        }
+
+        return null;
     }
 }

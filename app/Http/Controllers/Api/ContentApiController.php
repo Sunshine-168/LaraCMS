@@ -72,7 +72,31 @@ class ContentApiController extends ApiController
             return $this->fail('缺少 q');
         }
 
-        return $this->listPage($request);
+        $limit = max(1, min(100, (int) $request->query('limit', 20)));
+        $q = Entry::query()->with(['category', 'modelDef', 'tags'])->published()
+            ->whereHas('modelDef', fn ($m) => $m->where('is_searchable', true))
+            ->orderByDesc('published_at')->orderByDesc('id');
+
+        if ($request->filled('category_id')) {
+            $q->inCategories([(int) $request->query('category_id')]);
+        }
+        if ($request->filled('model_id')) {
+            $q->where('model_id', (int) $request->query('model_id'));
+        }
+        $kw = trim((string) $request->query('q'));
+        $q->where(function ($w) use ($kw) {
+            $w->where('search_text', 'like', "%{$kw}%")
+                ->orWhere('title', 'like', "%{$kw}%");
+        });
+
+        $page = $q->paginate($limit);
+
+        return $this->ok([
+            'list' => $page->getCollection()->map(fn (Entry $e) => $this->transform($e, false))->values(),
+            'total' => $page->total(),
+            'page' => $page->currentPage(),
+            'limit' => $page->perPage(),
+        ]);
     }
 
     /** @return array<string, mixed> */

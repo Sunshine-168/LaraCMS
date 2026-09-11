@@ -67,7 +67,7 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `@cmsMenu` / `@endcmsMenu` | 后台导航菜单（location=header；无菜单时回退栏目导航） |
 | `@cmsContent` / `@endcmsContent` | 文档列表（catid/model/flag/page/filter；`related`+`related_field` 可跨栏目取关联文档） |
 | `@cmsPaginate` | 分页 |
-| `@cmsAdv` / `@endcmsAdv` | 推荐位 name= |
+| `@cmsAdv` / `@endcmsAdv` | 推荐位 name=；条目可设 `html` 类型，主题循环里 `{!! $item->html !!}` |
 | `@cmsArcone` | 单条 |
 | `@cmsBreadcrumb` | 面包屑 |
 | `@cmsPrev` / `@cmsNext` | 上下篇 |
@@ -127,20 +127,20 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 - **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，可填写该模型扩展字段；后台内容列表可筛待审并发布
 - **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能发布，也不能把已发布改回草稿/待审
 - **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
-- **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份
-- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入
-| `/member/login` | 会员登录 |
-| `/member/register` | 会员注册 |
-| `/member/forgot` | 找回密码（未配邮件时页面展示重置链接） |
+- **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
+- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入。`/sitemap.xml` 与 `/rss.xml` 在语言前缀下同样可用（如 `/en/sitemap.xml`）
+| `/member/login` | 会员登录（算术验证码 + 每分钟 5 次） |
+| `/member/register` | 会员注册（算术验证码 + 每分钟 5 次） |
+| `/member/forgot` | 找回密码（POST 每分钟 5 次；未配邮件时页面展示重置链接） |
 | `/member/profile` | 会员中心（资料含手机/简介、改密、投稿、收藏、评论、留言、会员内容） |
 | `/member/entries` | 我的投稿 / 写新稿 |
 | `/tag/{slug}` | 标签聚合 |
-| `/rss.xml` | RSS |
+| `/rss.xml` | RSS（不含会员门槛文档） |
 | `/sitemap.xml` | 站点地图 |
 
 ## REST API
 
-默认 **GET 公开只读**（可开 Token 校验）。`POST` 写入在携带有效站点 Token 时可免验证码；无 Token 时仍走会话验证码。会员接口另需登录后下发的 `Authorization: Bearer`（或 `X-Member-Token`），不依赖 Sanctum。
+默认 **GET 公开只读**（可开 Token 校验）。`POST` 写入在携带有效站点 Token 时可免验证码；无 Token 时仍走会话验证码。会员登录限流每分钟 5 次；带站点 Token 时可免登录验证码。会员接口另需登录后下发的 `Authorization: Bearer`（或 `X-Member-Token`），不依赖 Sanctum。
 
 响应格式：`{ "code": 200, "msg": "ok", "data": ... }`
 
@@ -156,19 +156,20 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | GET | `/api/category/{id}` | 栏目详情 |
 | GET | `/api/content/list?limit=&category_id=&model_id=&flag=&q=` | 内容分页 |
 | GET | `/api/content/{id}` | 内容详情（含正文/attrs；会员门槛需会员令牌） |
-| GET | `/api/search?q=` | 内容搜索（同 list + 必填 q） |
+| GET | `/api/search?q=` | 内容搜索（仅 `is_searchable` 模型） |
 | GET | `/api/tag/list` | 标签分页 |
 | GET | `/api/tag/{slug}` | 标签及文档列表 |
 | GET | `/api/recommend?name=&num=` | 推荐位（含查询型） |
 | POST | `/api/form/{slug}` | 提交表单（字段同前台） |
 | POST | `/api/comment/{id}` | 提交评论 |
-| POST | `/api/member/login` | 会员登录，返回一次性 token |
+| POST | `/api/member/login` | 会员登录（限流；返回一次性 token） |
 | GET | `/api/member/me` | 当前会员资料 |
 | PUT | `/api/member/profile` | 更新昵称/头像/手机/简介 |
 | POST | `/api/member/logout` | 注销会员令牌 |
 | GET | `/api/member/favorites` | 收藏列表 |
 | POST | `/api/member/favorite/{id}` | 收藏/取消收藏 |
 | GET | `/api/member/entries` | 我的投稿 |
+| GET | `/api/member/entries/{id}` | 投稿详情（含正文） |
 | POST | `/api/member/entries` | 新建投稿（`submit=1` 直接待审） |
 | PUT | `/api/member/entries/{id}` | 更新草稿 |
 | POST | `/api/member/entries/{id}/submit` | 提交审核 |
@@ -183,7 +184,7 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 
 - 后台「系统 → 站点管理」维护域名；顶栏切换当前编辑站
 - 超管可切全部站点；普通管理员在「管理员」里勾选可管理站点
-- 新建站点会复制默认站的基础设置 / 语言 / Flags，**不复制内容**
+- 新建站点会复制默认站的基础设置 / 语言 / Flags / 会员组，**不复制内容**
 - 本地多域名可用 hosts，例如：`127.0.0.1 site-a.test site-b.test`
 - `local` / `testing` 环境未知域名回落默认站；生产未知域名返回 404
 - 前台 API 同样按 `Host` 解析（`/api/site/config` 含 `site_id` / `site_domain`）
@@ -248,7 +249,7 @@ php artisan cms:collect --sync
 不改 URL、不写 `public/html/`。命中后直接返回整页 HTML；内容/栏目/推荐/设置/采集变更后自动失效。
 
 - 后台「全页缓存」：开关、TTL、清空、预热
-- 环境变量：`CMS_HTML_CACHE=true`、`CMS_HTML_CACHE_TTL=3600`
+- 环境变量：`CMS_HTML_CACHE=true`、`CMS_HTML_CACHE_TTL=3600`；登录/注册算术验证码 `CMS_AUTH_CAPTCHA`（默认开）；磁盘静态 `CMS_DISK_HTML`（默认关）
 - 命令：`php artisan cms:html-clear` / `php artisan cms:html-warm --entries=30`
 - 不缓存：后台、会员、表单、下载、外链跳转、搜索、预览、已登录会员
 - 响应头：`X-CMS-Html-Cache: HIT|MISS`
@@ -259,7 +260,7 @@ php artisan cms:collect --sync
 
 本仓库只保留 Laravel CMS。ThinkPHP HkCms、TallCMS/Filament、旧 `hkcms_*` 桥接代码已移除，下列能力也**不会**再迁：
 
-- `{hkcms:}` 标签、运行时按模型建物理表、App Center / 在线升级、Filament 区块编辑器、旧库数据导入
+- `{hkcms:}` 标签、运行时按模型建物理表、App Center / 在线升级、Filament 区块编辑器、旧库数据导入、遗留 `cms_pages` / `cms_posts` 表
 - HkCms 自由伪静态规则矩阵、短信验证码、微信/OAuth 登录、支付
 - TallCMS Webhooks、Scout 全文检索、作者归档页
 

@@ -21,7 +21,7 @@
     <a class="brand" href="/">{{ $site['title'] ?? 'Blog' }}</a>
     <nav>
         @include('cms.partials.header-nav')
-        <a href="{{ route('search') }}">搜索</a>
+        <a href="{{ cms_front_url('search') }}">搜索</a>
         <a href="{{ route('rss') }}">RSS</a>
     </nav>
 </header>

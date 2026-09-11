@@ -10,5 +10,5 @@
         <p><label>确认密码<br><input type="password" name="password_confirmation" required style="width:100%;padding:8px"></label></p>
         @include('cms.partials.auth-captcha')
         <p><button class="btn" type="submit">注册</button>
-            <a href="{{ route('member.login') }}">已有账号？登录</a></p>
+            <a href="{{ cms_front_url('member/login') }}">已有账号？登录</a></p>
     </form>

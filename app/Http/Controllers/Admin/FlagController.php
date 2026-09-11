@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cms\CmsFlag;
+use App\Support\CurrentSite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FlagController extends Controller
@@ -27,7 +29,7 @@ class FlagController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => 'required|string|max:40|unique:cms_flags,name|regex:/^[A-Za-z][A-Za-z0-9_\-]*$/',
+            'name' => ['required', 'string', 'max:40', 'regex:/^[A-Za-z][A-Za-z0-9_\-]*$/', Rule::unique('cms_flags', 'name')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))],
             'title' => 'required|string|max:80',
             'sort' => 'nullable|integer|min:0|max:9999',
         ]);
@@ -49,7 +51,7 @@ class FlagController extends Controller
     public function update(Request $request, CmsFlag $flag): RedirectResponse
     {
         $data = $request->validate([
-            'name' => 'required|string|max:40|unique:cms_flags,name,'.$flag->id.'|regex:/^[A-Za-z][A-Za-z0-9_\-]*$/',
+            'name' => ['required', 'string', 'max:40', 'regex:/^[A-Za-z][A-Za-z0-9_\-]*$/', Rule::unique('cms_flags', 'name')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))->ignore($flag->id)],
             'title' => 'required|string|max:80',
             'sort' => 'nullable|integer|min:0|max:9999',
         ]);

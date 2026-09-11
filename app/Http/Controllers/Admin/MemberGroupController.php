@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cms\MemberGroup;
 use App\Services\Admin\MemberGroupService;
+use App\Support\CurrentSite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MemberGroupController extends Controller
 {
-    public function __construct(private readonly MemberGroupService $groups)
-    {
-    }
+    public function __construct(private readonly MemberGroupService $groups) {}
 
     public function index(): View
     {
@@ -33,7 +33,7 @@ class MemberGroupController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:80',
-            'slug' => 'nullable|string|max:80|unique:cms_member_groups,slug',
+            'slug' => ['nullable', 'string', 'max:80', Rule::unique('cms_member_groups', 'slug')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))],
         ]);
         $result = $this->groups->save(null, $request->all());
 
@@ -49,7 +49,7 @@ class MemberGroupController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:80',
-            'slug' => 'nullable|string|max:80|unique:cms_member_groups,slug,'.$member_group->id,
+            'slug' => ['nullable', 'string', 'max:80', Rule::unique('cms_member_groups', 'slug')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))->ignore($member_group->id)],
         ]);
         $result = $this->groups->save($member_group, $request->all());
 

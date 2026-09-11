@@ -23,10 +23,10 @@ Route::prefix('api')->middleware(['api', 'api.token', 'member.api'])->group(func
     Route::get('tag/list', [TagApiController::class, 'listPage']);
     Route::get('tag/{slug}', [TagApiController::class, 'detail']);
 
-    Route::post('form/{slug}', [WriteApiController::class, 'form']);
-    Route::post('comment/{entry}', [WriteApiController::class, 'comment'])->whereNumber('entry');
+    Route::post('form/{slug}', [WriteApiController::class, 'form'])->middleware('throttle:10,1');
+    Route::post('comment/{entry}', [WriteApiController::class, 'comment'])->middleware('throttle:10,1')->whereNumber('entry');
 
-    Route::post('member/login', [MemberApiController::class, 'login']);
+    Route::post('member/login', [MemberApiController::class, 'login'])->middleware('throttle:5,1');
     Route::middleware('member.api:required')->group(function () {
         Route::post('member/logout', [MemberApiController::class, 'logout']);
         Route::get('member/me', [MemberApiController::class, 'me']);
@@ -35,6 +35,7 @@ Route::prefix('api')->middleware(['api', 'api.token', 'member.api'])->group(func
         Route::post('member/favorite/{entry}', [MemberApiController::class, 'toggleFavorite'])->whereNumber('entry');
         Route::get('member/entries', [MemberApiController::class, 'entries']);
         Route::post('member/entries', [MemberApiController::class, 'storeEntry']);
+        Route::get('member/entries/{entry}', [MemberApiController::class, 'showEntry'])->whereNumber('entry');
         Route::put('member/entries/{entry}', [MemberApiController::class, 'updateEntry'])->whereNumber('entry');
         Route::post('member/entries/{entry}/submit', [MemberApiController::class, 'submitEntry'])->whereNumber('entry');
     });

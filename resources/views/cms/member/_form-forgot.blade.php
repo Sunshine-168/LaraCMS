@@ -9,5 +9,5 @@
         @csrf
         <p><label>注册邮箱<br><input type="email" name="email" value="{{ old('email') }}" required style="width:100%;padding:8px"></label></p>
         <p><button class="btn" type="submit">生成重置链接</button>
-            <a href="{{ route('member.login') }}">返回登录</a></p>
+            <a href="{{ cms_front_url('member/login') }}">返回登录</a></p>
     </form>

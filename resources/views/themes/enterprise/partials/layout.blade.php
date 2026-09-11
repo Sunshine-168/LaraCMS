@@ -21,14 +21,14 @@
 <body>
 <header>
     <div class="wrap">
-        <a class="brand" href="/">{{ $site['title'] ?? config('app.name') }}</a>
+        <a class="brand" href="{{ cms_front_url() }}">{{ $site['title'] ?? config('app.name') }}</a>
         <nav>
             @include('cms.partials.header-nav')
-            <a href="{{ route('search') }}">搜索</a>
+            <a href="{{ cms_front_url('search') }}">搜索</a>
             @auth('member')
                 <form method="post" action="{{ route('member.logout') }}" style="display:inline">@csrf<button type="submit" style="background:none;border:0;color:inherit;cursor:pointer">退出</button></form>
             @else
-                <a href="{{ route('member.login') }}">会员</a>
+                <a href="{{ cms_front_url('member/login') }}">会员</a>
             @endauth
             <span class="lang"><a href="/">中文</a> · <a href="/en">EN</a></span>
         </nav>

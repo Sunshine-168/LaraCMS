@@ -10,9 +10,7 @@ use Illuminate\View\View;
 
 class RecycleController extends Controller
 {
-    public function __construct(private readonly EntryService $entries)
-    {
-    }
+    public function __construct(private readonly EntryService $entries) {}
 
     public function index(): View
     {
@@ -33,6 +31,13 @@ class RecycleController extends Controller
     {
         $model = Entry::onlyTrashed()->findOrFail($entry);
         $result = $this->entries->forceDelete($model);
+
+        return redirect()->route('admin.recycle.index')->with('status', $result['msg']);
+    }
+
+    public function empty(): RedirectResponse
+    {
+        $result = $this->entries->emptyTrash();
 
         return redirect()->route('admin.recycle.index')->with('status', $result['msg']);
     }

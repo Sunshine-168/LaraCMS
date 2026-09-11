@@ -103,7 +103,7 @@ class Member extends Authenticatable
         }
         $this->loadMissing('group');
         if (! $this->group) {
-            return true;
+            return false;
         }
 
         return $this->group->allows($permission);

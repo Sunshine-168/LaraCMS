@@ -16,7 +16,7 @@ $reserved = array_map(
 );
 
 $reservedSegments = array_merge(
-    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'preview', 'sitemap\\.xml'],
+    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'rss\\.xml', 'install', 'e', 'c', 'preview', 'sitemap\\.xml'],
     $reserved
 );
 $slugExclude = '^(?!'.implode('$|', $reservedSegments).'$)[A-Za-z0-9\-_]+$';
@@ -26,6 +26,8 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/', [SiteController::class, 'index'])->name('home'.$nameSuffix);
     Route::get('/search', [SiteController::class, 'search'])->name('search'.$nameSuffix);
     Route::get('/tag/{slug}', [SiteController::class, 'tag'])->name('tag'.$nameSuffix);
+    Route::get('/sitemap.xml', [SiteController::class, 'sitemap'])->name('sitemap'.$nameSuffix);
+    Route::get('/rss.xml', [SiteController::class, 'rss'])->name('rss'.$nameSuffix);
     Route::get('/preview/{token}', [SiteController::class, 'preview'])->name('entry.preview'.$nameSuffix)->where('token', '[A-Za-z0-9]{16,64}');
     Route::get('/e/{entry}', [SiteController::class, 'showById'])->name('entry.id'.$nameSuffix)->whereNumber('entry');
     Route::get('/c/{category}', [SiteController::class, 'categoryById'])->name('category.id'.$nameSuffix)->whereNumber('category');
@@ -36,9 +38,9 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/member/register', [MemberController::class, 'showRegister'])->name('member.register'.$nameSuffix);
     Route::post('/member/register', [MemberController::class, 'register'])->middleware('throttle:5,1')->name('member.register.submit'.$nameSuffix);
     Route::get('/member/forgot', [MemberController::class, 'showForgot'])->name('member.forgot'.$nameSuffix);
-    Route::post('/member/forgot', [MemberController::class, 'sendReset'])->name('member.forgot.submit'.$nameSuffix);
+    Route::post('/member/forgot', [MemberController::class, 'sendReset'])->middleware('throttle:5,1')->name('member.forgot.submit'.$nameSuffix);
     Route::get('/member/reset', [MemberController::class, 'showReset'])->name('member.reset'.$nameSuffix);
-    Route::post('/member/reset', [MemberController::class, 'resetPassword'])->name('member.reset.submit'.$nameSuffix);
+    Route::post('/member/reset', [MemberController::class, 'resetPassword'])->middleware('throttle:5,1')->name('member.reset.submit'.$nameSuffix);
     Route::get('/member/profile', [MemberController::class, 'profile'])->name('member.profile'.$nameSuffix);
     Route::post('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update'.$nameSuffix);
     Route::get('/member/entries', [MemberEntryController::class, 'index'])->name('member.entries.index'.$nameSuffix);
@@ -57,8 +59,8 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
         ->name('entry.model'.$nameSuffix);
     Route::get('/download/{entry}', [SiteController::class, 'download'])->name('download'.$nameSuffix);
     Route::get('/go/{entry}', [SiteController::class, 'go'])->name('go'.$nameSuffix);
-    Route::post('/form/{slug}', [SiteController::class, 'submitForm'])->name('form.submit'.$nameSuffix);
-    Route::post('/comment/{entry}', [CommentController::class, 'store'])->name('comment.store'.$nameSuffix)->whereNumber('entry');
+    Route::post('/form/{slug}', [SiteController::class, 'submitForm'])->middleware('throttle:10,1')->name('form.submit'.$nameSuffix);
+    Route::post('/comment/{entry}', [CommentController::class, 'store'])->middleware('throttle:10,1')->name('comment.store'.$nameSuffix)->whereNumber('entry');
     Route::get('/{catSlug}/{slug}', [SiteController::class, 'show'])
         ->where(['catSlug' => $catExclude, 'slug' => '[A-Za-z0-9\-_]+'])
         ->name('entry.show'.$nameSuffix);
@@ -66,11 +68,6 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
         ->where('slug', $slugExclude)
         ->name('category.show'.$nameSuffix);
 };
-
-Route::middleware(['locale:'.Locale::default(), 'html.cache'])->group(function () {
-    Route::get('/sitemap.xml', [SiteController::class, 'sitemap'])->name('sitemap');
-    Route::get('/rss.xml', [SiteController::class, 'rss'])->name('rss');
-});
 
 foreach (Locale::codes() as $code) {
     if ($code === Locale::default() && Locale::hideDefault()) {

@@ -40,6 +40,9 @@
         @endforeach
     </ul>
     {{ $favorites->links() }}
+@else
+    <h2 style="margin-top:28px">我的收藏</h2>
+    <p class="muted">还没有收藏。</p>
 @endif
 
 @if(($comments ?? null) && $comments->isNotEmpty())

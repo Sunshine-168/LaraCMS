@@ -192,6 +192,22 @@ class EntryService
         return Result::ok(null, '已彻底删除');
     }
 
+    public function emptyTrash(): array
+    {
+        $q = Entry::onlyTrashed();
+        AdminCategoryScope::applyToEntries($q);
+        $count = 0;
+        $q->orderBy('id')->chunkById(50, function ($rows) use (&$count) {
+            foreach ($rows as $entry) {
+                $this->htmlCache->forgetByEntry($entry);
+                $entry->forceDelete();
+                $count++;
+            }
+        });
+
+        return Result::ok(null, '已清空回收站（'.$count.'）');
+    }
+
     /** @param  list<int>  $ids */
     protected function scopedEntries(array $ids)
     {

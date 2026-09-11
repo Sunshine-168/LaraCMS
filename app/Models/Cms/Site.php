@@ -98,7 +98,7 @@ class Site extends Model
         return $this->belongsToMany(AdminUser::class, 'admin_user_site', 'site_id', 'admin_user_id');
     }
 
-    /** 从源站复制基础 settings / locales / flags（不含内容） */
+    /** 从源站复制基础 settings / locales / flags / member groups（不含内容） */
     public function copyBasicsFrom(Site $source): void
     {
         $now = now();
@@ -135,6 +135,19 @@ class Site extends Model
                     'title' => $row->title,
                     'sort' => $row->sort,
                     'is_active' => $row->is_active,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
+        foreach (MemberGroup::query()->withoutGlobalScopes()->where('site_id', $source->id)->get() as $row) {
+            MemberGroup::query()->withoutGlobalScopes()->updateOrCreate(
+                ['site_id' => $this->id, 'slug' => $row->slug],
+                [
+                    'name' => $row->name,
+                    'sort' => $row->sort,
+                    'is_active' => $row->is_active,
+                    'permissions' => $row->permissions,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]

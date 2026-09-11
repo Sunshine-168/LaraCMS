@@ -36,6 +36,7 @@
         .post-list li { padding:16px 0; border-bottom:1px solid var(--line); }
         .meta { color:#64748b; font-size:13px; margin-bottom:8px; }
         .card-soft { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; margin:12px 0; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
         .btn { display:inline-block; background:var(--accent); color:#fff; padding:8px 14px; border-radius:6px; }
         .muted { color:#64748b; font-size:13px; }
         footer { border-top:1px solid var(--line); padding:24px 0; color:#64748b; font-size:13px; }

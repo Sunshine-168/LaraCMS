@@ -59,7 +59,7 @@
             </p>
         </form>
     @elseif(!$member)
-        <p class="muted">请 <a href="{{ route('member.login') }}">登录</a> 后发表评论。</p>
+        <p class="muted">请 <a href="{{ cms_front_url('member/login') }}">登录</a> 后发表评论。</p>
     @endif
 </section>
 @endif

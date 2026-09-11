@@ -10,7 +10,7 @@
             <button type="submit">{{ $favMember->hasFavorited($entry->id) ? '取消收藏' : '收藏本文' }}</button>
         </form>
     @else
-        <p class="muted"><a href="{{ route('member.login') }}">登录</a> 后可收藏本文</p>
+        <p class="muted"><a href="{{ cms_front_url('member/login') }}">登录</a> 后可收藏本文</p>
     @endif
 </section>
 @endif

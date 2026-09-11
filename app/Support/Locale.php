@@ -98,6 +98,11 @@ class Locale
         return $parts[0].'-'.strtoupper($parts[1]);
     }
 
+    public static function isEnglish(): bool
+    {
+        return str_starts_with(self::current(), 'en');
+    }
+
     public static function hideDefault(): bool
     {
         try {
