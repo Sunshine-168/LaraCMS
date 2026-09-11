@@ -74,14 +74,19 @@
             $statusVal = old('status', $entry->status);
         @endphp
         <select name="status">
-            <option value="draft" @selected($statusVal === 'draft')>草稿</option>
-            <option value="pending" @selected($statusVal === 'pending')>待审</option>
-            @if($canPublish || $entry->status === 'published')
+            @if($canPublish)
+                <option value="draft" @selected($statusVal === 'draft')>草稿</option>
+                <option value="pending" @selected($statusVal === 'pending')>待审</option>
                 <option value="published" @selected($statusVal === 'published')>已发布</option>
+            @elseif($entry->status === 'published')
+                <option value="published" selected>已发布</option>
+            @else
+                <option value="draft" @selected($statusVal === 'draft')>草稿</option>
+                <option value="pending" @selected($statusVal === 'pending')>待审</option>
             @endif
         </select>
         @if(! $canPublish)
-            <p class="muted">无发布权限：草稿/新建不能直接发布，会进入待审。已发布内容保存后仍保持发布；改成待审才会下架。</p>
+            <p class="muted">无发布权限：草稿/新建不能直接发布，会进入待审。已发布内容不能改为草稿或待审。</p>
         @endif
         <label>定时发布时间（可空；未来时间则到点才前台可见）</label>
         <input type="datetime-local" name="published_at" value="{{ $pubAt }}">

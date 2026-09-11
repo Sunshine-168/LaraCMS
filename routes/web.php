@@ -32,9 +32,9 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/c/{category}/{slug}', [SiteController::class, 'showByCatId'])->name('entry.catid'.$nameSuffix)
         ->whereNumber('category')->where('slug', '[A-Za-z0-9\-_]+');
     Route::get('/member/login', [MemberController::class, 'showLogin'])->name('member.login'.$nameSuffix);
-    Route::post('/member/login', [MemberController::class, 'login'])->name('member.login.submit'.$nameSuffix);
+    Route::post('/member/login', [MemberController::class, 'login'])->middleware('throttle:5,1')->name('member.login.submit'.$nameSuffix);
     Route::get('/member/register', [MemberController::class, 'showRegister'])->name('member.register'.$nameSuffix);
-    Route::post('/member/register', [MemberController::class, 'register'])->name('member.register.submit'.$nameSuffix);
+    Route::post('/member/register', [MemberController::class, 'register'])->middleware('throttle:5,1')->name('member.register.submit'.$nameSuffix);
     Route::get('/member/forgot', [MemberController::class, 'showForgot'])->name('member.forgot'.$nameSuffix);
     Route::post('/member/forgot', [MemberController::class, 'sendReset'])->name('member.forgot.submit'.$nameSuffix);
     Route::get('/member/reset', [MemberController::class, 'showReset'])->name('member.reset'.$nameSuffix);

@@ -120,12 +120,12 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 
 - **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
 - **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
-- **磁盘 HTML**：`CMS_DISK_HTML=true` 后，后台「全页缓存」可生成到 `public/html/site_{id}/…/index.html`；命令 `cms:html-build` / `cms:html-purge-disk`
+- **磁盘 HTML**：默认关闭。设 `CMS_DISK_HTML=true` 后，后台可生成到 `public/html/site_{id}/…/index.html`，需 nginx `try_files`；`php artisan serve` 不会读这些文件。命令 `cms:html-build` / `cms:html-purge-disk`
 - **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
 - **上传水印**：站点设置可配文字/图片水印及位置（右下/左下/右上/左上/居中）；中文文字依赖系统 TTF，建议用透明 PNG
 - **定时发布**：`published_at` 未到点时前台 `/e/{id}`、下载、外链跳转均为 404；后台列表显示「定时」
-- **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，后台内容列表可筛待审并发布
-- **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能把文档设为已发布，批量发布也会被拒绝
+- **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，可填写该模型扩展字段；后台内容列表可筛待审并发布
+- **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能发布，也不能把已发布改回草稿/待审
 - **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
 - **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份
 - **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入

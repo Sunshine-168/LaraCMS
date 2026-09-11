@@ -18,6 +18,7 @@
         <label>密码</label>
         <input type="password" name="password" required placeholder="请输入密码">
         <label class="remember"><input type="checkbox" name="remember" value="1"> 记住我</label>
+        @include('cms.partials.auth-captcha')
         @error('email')<div class="login-error">{{ $message }}</div>@enderror
         <button type="submit">登 录</button>
     </form>

@@ -6,6 +6,7 @@ use App\Models\Admin\AdminPermission;
 use App\Models\Admin\AdminRole;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\MemberGroup;
+use App\Models\Cms\ModelField;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
@@ -95,6 +96,12 @@ class AdminRbacSeeder extends Seeder
             ContentModel::query()->withoutGlobalScopes()
                 ->where('slug', 'article')
                 ->update(['allow_contribute' => true]);
+            foreach (ContentModel::query()->withoutGlobalScopes()->where('slug', 'article')->get() as $article) {
+                ModelField::query()->firstOrCreate(
+                    ['model_id' => $article->id, 'name' => 'source_note'],
+                    ['label' => '来源', 'type' => 'text', 'sort_order' => 0]
+                );
+            }
         }
     }
 }

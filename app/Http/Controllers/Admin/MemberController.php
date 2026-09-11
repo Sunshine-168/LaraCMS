@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Cms\Member;
 use App\Models\Cms\MemberGroup;
 use App\Services\Admin\MemberService;
+use App\Support\CurrentSite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MemberController extends Controller
@@ -36,7 +38,10 @@ class MemberController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:cms_members,email',
+            'email' => [
+                'required', 'email',
+                Rule::unique('cms_members', 'email')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault())),
+            ],
             'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:32',
             'bio' => 'nullable|string|max:500',
@@ -60,7 +65,12 @@ class MemberController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:cms_members,email,'.$member->id,
+            'email' => [
+                'required', 'email',
+                Rule::unique('cms_members', 'email')
+                    ->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))
+                    ->ignore($member->id),
+            ],
             'password' => 'nullable|string|min:8',
             'phone' => 'nullable|string|max:32',
             'bio' => 'nullable|string|max:500',

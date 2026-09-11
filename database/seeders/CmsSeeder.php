@@ -112,7 +112,9 @@ class CmsSeeder extends Seeder
     private function seedModels(): array
     {
         $defs = [
-            'article' => ['name' => '文章', 'kind' => 'list', 'list_tpl' => 'list.list', 'show_tpl' => 'show.show', 'fields' => []],
+            'article' => ['name' => '文章', 'kind' => 'list', 'list_tpl' => 'list.list', 'show_tpl' => 'show.show', 'fields' => [
+                ['name' => 'source_note', 'label' => '来源', 'type' => 'text'],
+            ]],
             'page' => ['name' => '单页', 'kind' => 'single', 'list_tpl' => null, 'show_tpl' => 'show.show', 'fields' => []],
             'product' => [
                 'name' => '产品', 'kind' => 'list', 'list_tpl' => 'list.list_product', 'show_tpl' => 'show.show_product',

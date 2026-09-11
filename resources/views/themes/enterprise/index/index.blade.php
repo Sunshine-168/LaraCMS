@@ -2,6 +2,9 @@
 
 @section('content')
     @cmsAdv(['name' => 'home_banner'])
+        @if($item->html)
+            {!! $item->html !!}
+        @else
         <div class="banner-slide" @if($item->image) style="background-image:url('{{ $item->image }}')" @endif>
             <div>
                 <h1>{{ $item->t('title') }}</h1>
@@ -9,6 +12,7 @@
                 @if($item->url)<p><a class="btn" href="{{ $item->url }}">了解更多</a></p>@endif
             </div>
         </div>
+        @endif
     @endcmsAdv
 
     <section style="margin:32px 0">
@@ -18,7 +22,7 @@
                 @if($item->cover)<img src="{{ cms_media($item->cover) }}" alt="" style="width:100%;border-radius:8px">@endif
                 <div>
                     <h3>{{ $item->t('title') }}</h3>
-                    <div class="content">{!! nl2br(e($item->t('content'))) !!}</div>
+                    <div class="content">{!! \App\Support\Cdn::rewriteHtml((string) $item->t('content')) !!}</div>
                     <p><a class="btn" href="{{ $item->url }}">查看详情</a></p>
                 </div>
             </div>
@@ -29,11 +33,15 @@
         <h2>新闻动态</h2>
         <div class="grid" style="margin-top:12px">
             @cmsAdv(['name' => 'latest_news'])
+                @if($item->html)
+                    {!! $item->html !!}
+                @else
                 <article class="card-soft">
                     @if($item->image)<img src="{{ $item->image }}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px">@endif
                     <h3 style="margin:8px 0"><a href="{{ $item->url }}">{{ $item->t('title') }}</a></h3>
                     <p class="muted">@cmsSubstr(['name' => $item->t('notes'), 'len' => 80])</p>
                 </article>
+                @endif
             @endcmsAdv
         </div>
     </section>
@@ -67,10 +75,14 @@
         <h2>合作伙伴</h2>
         <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px">
             @cmsAdv(['name' => 'partners'])
+                @if($item->html)
+                    {!! $item->html !!}
+                @else
                 <a href="{{ $item->url ?: '#' }}" class="card-soft" style="min-width:120px;text-align:center">
                     @if($item->image)<img src="{{ $item->image }}" alt="" style="max-height:40px">@endif
                     <div>{{ $item->t('title') }}</div>
                 </a>
+                @endif
             @endcmsAdv
         </div>
     </section>

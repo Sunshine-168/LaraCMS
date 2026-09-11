@@ -94,6 +94,25 @@ class PublishBackupCdnTest extends TestCase
         $this->assertTrue($live->fresh()->isLive());
     }
 
+    public function test_editor_cannot_unpublish_live_entry(): void
+    {
+        $editor = AdminUser::query()->where('email', 'editor@example.com')->first();
+        $live = Entry::query()->published()->first();
+        $this->actingAs($editor, 'admin');
+        $svc = app(EntryService::class);
+        $payload = $this->newEntryPayload((int) $live->model_id, (int) $live->category_id, (string) $live->t('title'));
+        $payload['status'] = 'draft';
+        foreach (array_keys($payload['locales']) as $code) {
+            $payload['locales'][$code]['slug'] = (string) $live->t('slug');
+            $payload['locales'][$code]['title'] = (string) $live->t('title');
+            $payload['locales'][$code]['content'] = (string) $live->t('content');
+        }
+        $result = $svc->save($live, $payload);
+        $this->assertTrue($result['ok']);
+        $this->assertSame('published', $live->fresh()->status);
+        $this->assertTrue($live->fresh()->isLive());
+    }
+
     public function test_cdn_rewrites_storage_and_app_url_covers(): void
     {
         Setting::setValue('cdn_url', 'https://cdn.example.test');

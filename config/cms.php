@@ -13,6 +13,7 @@ return [
         'blog', 'manga', 'sports', 'default',
     ],
     'form_captcha' => (bool) env('CMS_FORM_CAPTCHA', true),
+    'auth_captcha' => (bool) env('CMS_AUTH_CAPTCHA', true),
 
     /*
     | 后台任务运行模式（多站点可按站切换）
@@ -49,7 +50,7 @@ return [
     | nginx 示例：try_files /html/site_1$uri/index.html /html/site_1$uri $uri /index.php?$query_string;
     */
     'disk_html' => [
-        'enabled' => (bool) env('CMS_DISK_HTML', true),
+        'enabled' => (bool) env('CMS_DISK_HTML', false),
         'path' => env('CMS_DISK_HTML_PATH', 'html'),
     ],
 ];

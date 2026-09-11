@@ -114,6 +114,50 @@ class MemberContributeTest extends TestCase
         $this->assertSame('改了一点', $entry->fresh()->t('content'));
     }
 
+    public function test_member_can_save_model_extra_fields(): void
+    {
+        $member = Member::query()->where('email', 'member@example.com')->first();
+        $article = ContentModel::query()->where('slug', 'article')->first();
+        $news = Category::query()->get()->first(fn (Category $c) => $c->t('slug') === 'news');
+        $article->fields()->create([
+            'name' => 'must_note',
+            'label' => '必填备注',
+            'type' => 'text',
+            'is_required' => true,
+            'sort_order' => 99,
+        ]);
+
+        $this->actingAs($member, 'member')
+            ->post(route('member.entries.store'), [
+                'model_id' => $article->id,
+                'category_id' => $news->id,
+                'title' => '带扩展字段',
+                'content' => '正文',
+                'action' => 'draft',
+            ])
+            ->assertSessionHasErrors();
+
+        $this->actingAs($member, 'member')
+            ->get(route('member.entries.create', ['model_id' => $article->id]))
+            ->assertOk()
+            ->assertSee('必填备注');
+
+        $this->actingAs($member, 'member')
+            ->post(route('member.entries.store'), [
+                'model_id' => $article->id,
+                'category_id' => $news->id,
+                'title' => '带扩展字段',
+                'content' => '正文',
+                'action' => 'draft',
+                'attrs' => ['must_note' => '会员来稿', 'hack' => 'nope'],
+            ])
+            ->assertRedirect();
+
+        $entry = Entry::query()->where('member_id', $member->id)->orderByDesc('id')->first();
+        $this->assertSame('会员来稿', $entry->attr('must_note'));
+        $this->assertNull($entry->attr('hack'));
+    }
+
     public function test_group_without_contribute_cannot_open_editor(): void
     {
         $group = MemberGroup::query()->create([
@@ -152,9 +196,14 @@ class MemberContributeTest extends TestCase
                 'category_id' => $news->id,
                 'title' => 'API 投稿标题',
                 'content' => 'API 正文',
+                'attrs' => ['source_note' => '接口来源', 'hack' => 'nope'],
             ])
             ->assertOk()
             ->assertJsonPath('data.status', 'draft');
+
+        $attrs = $created->json('data.attrs');
+        $this->assertSame('接口来源', $attrs['source_note'] ?? null);
+        $this->assertArrayNotHasKey('hack', $attrs ?? []);
 
         $id = $created->json('data.id');
         $this->withHeaders($auth)

@@ -6,10 +6,14 @@
         <h2>热门推荐</h2>
         <div class="grid">
             @cmsAdv(['name'=>'hot_links'])
+                @if($item->html)
+                    {!! $item->html !!}
+                @else
                 <a class="link" href="{{ $item->url }}" target="_blank" rel="noopener">
                     @if($item->image)<img src="{{ $item->image }}" alt="">@endif
                     <div>{{ $item->t('title') }}</div>
                 </a>
+                @endif
             @endcmsAdv
         </div>
     </section>

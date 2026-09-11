@@ -103,7 +103,16 @@ class SiteFrontService
         ])));
 
         foreach ($candidates as $tpl) {
-            foreach ([$theme, 'enterprise', 'default'] as $themeName) {
+            $full = "themes.{$theme}.{$tpl}";
+            if (view()->exists($full)) {
+                return $full;
+            }
+        }
+        foreach ($candidates as $tpl) {
+            foreach (['enterprise', 'default'] as $themeName) {
+                if ($themeName === $theme) {
+                    continue;
+                }
                 $full = "themes.{$themeName}.{$tpl}";
                 if (view()->exists($full)) {
                     return $full;

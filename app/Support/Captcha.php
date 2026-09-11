@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Validation\ValidationException;
+
 class Captcha
 {
     public static function generate(): array
@@ -23,5 +25,22 @@ class Captcha
         session()->forget('cms_captcha');
 
         return $expect !== null && (int) $answer === (int) $expect;
+    }
+
+    public static function enabled(): bool
+    {
+        return (bool) config('cms.auth_captcha', true);
+    }
+
+    public static function assertValid(?string $answer): void
+    {
+        if (! self::enabled()) {
+            return;
+        }
+        if (! self::check($answer)) {
+            throw ValidationException::withMessages([
+                'captcha' => '验证码错误',
+            ]);
+        }
     }
 }

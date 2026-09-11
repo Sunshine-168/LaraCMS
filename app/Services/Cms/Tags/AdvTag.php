@@ -43,6 +43,9 @@ class AdvTag
         return $items->values()->map(function ($item) {
             if ($item instanceof RecommendItem) {
                 $item->image = Cdn::url($item->image);
+                if (! empty($item->html)) {
+                    $item->html = Cdn::rewriteHtml((string) $item->html);
+                }
             }
 
             return $item;

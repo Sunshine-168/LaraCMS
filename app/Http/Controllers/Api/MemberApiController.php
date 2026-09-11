@@ -221,6 +221,7 @@ class MemberApiController extends ApiController
             'category_id' => $e->category_id,
             'model_id' => $e->model_id,
             'url' => $e->status === 'published' ? $e->url : null,
+            'attrs' => $e->attrs ?? [],
         ];
     }
 

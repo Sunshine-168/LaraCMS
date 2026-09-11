@@ -10,6 +10,7 @@ use App\Services\Cms\MemberChunkUploadService;
 use App\Services\Cms\MemberContributeService;
 use App\Services\Cms\MemberFavoriteService;
 use App\Services\Cms\SiteFrontService;
+use App\Support\Captcha;
 use App\Support\CurrentSite;
 use App\Support\MailConfig;
 use Illuminate\Http\JsonResponse;
@@ -43,7 +44,9 @@ class MemberController extends Controller
         $data = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
         ]);
+        Captcha::assertValid($request->input('captcha'));
 
         $ok = Auth::guard('member')->attempt(
             ['email' => $data['email'], 'password' => $data['password'], 'is_active' => true],
@@ -74,7 +77,9 @@ class MemberController extends Controller
                 Rule::unique('cms_members', 'email')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault())),
             ],
             'password' => 'required|string|min:6|confirmed',
+            'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
         ]);
+        Captcha::assertValid($request->input('captcha'));
 
         $defaultGroupId = MemberGroup::query()
             ->where('slug', 'default')

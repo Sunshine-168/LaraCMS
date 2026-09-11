@@ -32,5 +32,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="CMS_AUTH_CAPTCHA" value="false"/>
+        <env name="CMS_DISK_HTML" value="false"/>
     </php>
 </phpunit>

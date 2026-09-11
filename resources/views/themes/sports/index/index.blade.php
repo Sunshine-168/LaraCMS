@@ -2,12 +2,16 @@
 @section('content')
     <h1>体育信号 / 资讯聚合</h1>
     @cmsAdv(['name'=>'live_board'])
+        @if($item->html)
+            {!! $item->html !!}
+        @else
         <div class="card">
             <span class="live">FOCUS</span>
             <strong style="margin-left:8px">{{ $item->t('title') }}</strong>
             <p class="muted">{{ $item->t('notes') }}</p>
             <a class="btn" href="{{ $item->url }}">进入赛事</a>
         </div>
+        @endif
     @endcmsAdv
 
     <div class="filters" style="margin:16px 0">

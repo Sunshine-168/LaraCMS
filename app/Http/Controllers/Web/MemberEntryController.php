@@ -49,6 +49,7 @@ class MemberEntryController extends Controller
             return redirect()->route('member.profile')->with('error', '当前没有开放投稿的模型');
         }
         $model = $models->firstWhere('id', $request->integer('model_id')) ?? $models->first();
+        $model->load(['fields.categories']);
 
         return $this->site->renderThemePage('member.entry-form', [
             'member' => $member,
@@ -89,6 +90,7 @@ class MemberEntryController extends Controller
         if (! $model) {
             return redirect()->route('member.entries.index')->with('error', '模型不存在');
         }
+        $model->load(['fields.categories']);
 
         return $this->site->renderThemePage('member.entry-form', [
             'member' => $member,

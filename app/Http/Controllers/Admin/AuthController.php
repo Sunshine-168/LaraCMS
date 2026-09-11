@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\AuthService;
+use App\Support\Captcha;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -30,7 +31,9 @@ class AuthController extends Controller
         $data = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
         ]);
+        Captcha::assertValid($request->input('captcha'));
 
         $result = $this->authService->login(
             $data['email'],

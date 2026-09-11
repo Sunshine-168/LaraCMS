@@ -92,6 +92,9 @@ class EntryService
             $status = 'pending';
             $input['published_at'] = '';
         }
+        if (! $this->canPublish() && $wasPublished) {
+            $status = 'published';
+        }
         $entry->status = $status;
         $entry->sort_order = (int) ($input['sort_order'] ?? 0);
         $entry->is_homepage = ! empty($input['is_homepage']);
@@ -360,7 +363,10 @@ class EntryService
             }
         }
         $entry->published_at = ! empty($snap['published_at']) ? $snap['published_at'] : null;
-        if (($entry->status ?? '') === 'published' && ! $this->canPublish() && ! $wasPublished) {
+        if (! $this->canPublish() && $wasPublished) {
+            $entry->status = 'published';
+            $entry->published_at = $entry->published_at ?: ($snap['published_at'] ?? now());
+        } elseif (($entry->status ?? '') === 'published' && ! $this->canPublish() && ! $wasPublished) {
             $entry->status = 'pending';
             $entry->published_at = null;
         }

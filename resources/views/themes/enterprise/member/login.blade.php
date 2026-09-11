@@ -9,6 +9,7 @@
         <label>密码</label>
         <input type="password" name="password" required style="width:100%;padding:8px;margin:6px 0 12px">
         <label><input type="checkbox" name="remember" value="1"> 记住我</label>
+        @include('cms.partials.auth-captcha')
         @error('email')<p style="color:#b91c1c">{{ $message }}</p>@enderror
         <p><button class="btn" type="submit">登录</button>
             <a href="{{ route('member.register') }}">注册账号</a>

@@ -112,10 +112,29 @@ class FinishUpTest extends TestCase
         $this->get('/member/register')->assertOk()->assertSee('会员注册');
         $this->get('/member/forgot')->assertOk()->assertSee('找回密码');
         $this->get('/tag/laravel')->assertOk()->assertSee('标签');
+        $this->get('/news')->assertOk()->assertSee('新闻中心');
 
         Setting::setValue('theme', 'download');
         $this->get('/tag/laravel')->assertOk()->assertSee('标签');
         $this->get('/member/login')->assertOk()->assertSee('会员登录');
+    }
+
+    public function test_blog_theme_keeps_own_skin_and_renders_html(): void
+    {
+        $this->seed(CmsSeeder::class);
+        CurrentSite::set(Site::default());
+        Setting::setValue('theme', 'blog');
+
+        $this->get('/products')->assertOk()->assertSee('Literata')->assertSee('产品中心');
+
+        $entry = Entry::query()->published()->whereHas('modelDef', fn ($q) => $q->where('slug', 'article'))->first();
+        $this->assertNotNull($entry);
+        $entry->setTranslation('content', 'zh_cn', '<p>富文本段落</p>');
+        $entry->save();
+        $this->get($entry->url)
+            ->assertOk()
+            ->assertSee('富文本段落', false)
+            ->assertDontSee('&lt;p&gt;');
     }
 
     public function test_legacy_pages_routes_are_hidden(): void
