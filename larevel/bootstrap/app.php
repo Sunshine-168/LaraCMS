@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\InstallController;
 use App\Http\Middleware\AdminAuthenticate;
 use App\Http\Middleware\AdminPermission;
 use App\Http\Middleware\AdminRole;
@@ -9,6 +10,7 @@ use App\Http\Middleware\HandleCmsRedirect;
 use App\Http\Middleware\HtmlCache;
 use App\Http\Middleware\LogAdminAction;
 use App\Http\Middleware\RecordVisit;
+use App\Http\Middleware\ResolveMemberApi;
 use App\Http\Middleware\ResolveSite;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -17,22 +19,23 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Illuminate\Support\Facades\Route::middleware('web')->group(function () {
-                Illuminate\Support\Facades\Route::get('/install', [\App\Http\Controllers\Web\InstallController::class, 'index'])->name('install');
-                Illuminate\Support\Facades\Route::post('/install', [\App\Http\Controllers\Web\InstallController::class, 'run'])->name('install.run');
+            Route::middleware('web')->group(function () {
+                Route::get('/install', [InstallController::class, 'index'])->name('install');
+                Route::post('/install', [InstallController::class, 'run'])->name('install.run');
             });
             // API / 后台先注册，避免被前台 /{cat}/{slug} 吃掉
-            Illuminate\Support\Facades\Route::middleware('api')
+            Route::middleware('api')
                 ->group(base_path('routes/api.php'));
-            Illuminate\Support\Facades\Route::middleware('web')
+            Route::middleware('web')
                 ->group(base_path('routes/admin.php'));
-            Illuminate\Support\Facades\Route::middleware('web')
+            Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         },
     )
@@ -55,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale' => SetLocale::class,
             'html.cache' => HtmlCache::class,
             'api.token' => ApiToken::class,
+            'member.api' => ResolveMemberApi::class,
         ]);
 
         $middleware->web(prepend: [

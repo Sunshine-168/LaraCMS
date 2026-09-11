@@ -29,4 +29,16 @@ class ApiToken
 
         return $next($request);
     }
+
+    /** 请求是否携带与站点设置匹配的 API Token（用于写入接口免验证码） */
+    public static function providedTokenIsValid(Request $request): bool
+    {
+        $token = (string) Setting::getValue('api_token', '');
+        if ($token === '') {
+            return false;
+        }
+        $given = (string) ($request->header('X-CMS-Token') ?: $request->query('api_token', '') ?: $request->input('api_token', ''));
+
+        return $given !== '' && hash_equals($token, $given);
+    }
 }

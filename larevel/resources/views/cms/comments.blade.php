@@ -5,6 +5,7 @@
     $member = auth('member')->user();
     $canPost = $commentsEnabled && ($member || $commentsGuest);
 @endphp
+@include('cms.partials.favorite')
 @if($commentsEnabled)
 <section class="cms-comments" style="margin-top:36px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08)">
     <h2 style="font-size:1.25rem;margin:0 0 16px">评论 @if($commentTree->count())<span class="muted" style="font-size:.9rem">({{ $commentTree->sum(fn($c) => 1 + $c->children->count()) }})</span>@endif</h2>

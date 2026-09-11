@@ -46,4 +46,18 @@ class ModelField extends Model
 
         return $this->categories->pluck('id')->implode(',');
     }
+
+    /** 关联内容模型 slug（entry 类型，或 manga_id 兼容） */
+    public function relatedModelSlug(): ?string
+    {
+        $slug = $this->options['related_model'] ?? null;
+        if (is_string($slug) && $slug !== '') {
+            return $slug;
+        }
+        if ($this->type === 'entry' || $this->name === 'manga_id') {
+            return $this->name === 'manga_id' ? 'manga' : null;
+        }
+
+        return null;
+    }
 }

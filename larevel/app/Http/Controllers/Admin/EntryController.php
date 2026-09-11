@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Cms\Category;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
+use App\Models\Cms\EntryRevision;
 use App\Models\Cms\Recommend;
+use App\Models\Cms\Setting;
 use App\Models\Cms\Tag;
 use App\Services\Admin\EntryService;
 use App\Support\AdminCategoryScope;
@@ -17,9 +19,7 @@ use Illuminate\View\View;
 
 class EntryController extends Controller
 {
-    public function __construct(private readonly EntryService $entryService)
-    {
-    }
+    public function __construct(private readonly EntryService $entryService) {}
 
     /** 内容列表 */
     public function index(Request $request): View
@@ -58,8 +58,8 @@ class EntryController extends Controller
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
             'mapDefaults' => [
-                'lng' => (float) \App\Models\Cms\Setting::getValue('map_default_lng', '116.397'),
-                'lat' => (float) \App\Models\Cms\Setting::getValue('map_default_lat', '39.908'),
+                'lng' => (float) Setting::getValue('map_default_lng', '116.397'),
+                'lat' => (float) Setting::getValue('map_default_lat', '39.908'),
             ],
         ]);
     }
@@ -68,15 +68,19 @@ class EntryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $result = $this->entryService->save(null, $request->all());
+        if ($result['ok'] && $result['data'] instanceof Entry) {
+            return redirect()->route('admin.entries.edit', $result['data'])
+                ->with('status', $result['msg']);
+        }
 
         return redirect()->route('admin.entries.index', ['model_id' => $request->input('model_id')])
-            ->with('status', $result['msg']);
+            ->with('error', $result['msg']);
     }
 
     /** 编辑内容 */
     public function edit(Entry $entry): View
     {
-        $entry->load(['tags', 'categories']);
+        $entry->load(['tags', 'categories', 'revisions.admin']);
         $model = $entry->modelDef()->with(['fields.categories'])->firstOrFail();
 
         return view('admin.entries.form', [
@@ -85,9 +89,10 @@ class EntryController extends Controller
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
+            'revisions' => $entry->revisions,
             'mapDefaults' => [
-                'lng' => (float) \App\Models\Cms\Setting::getValue('map_default_lng', '116.397'),
-                'lat' => (float) \App\Models\Cms\Setting::getValue('map_default_lat', '39.908'),
+                'lng' => (float) Setting::getValue('map_default_lng', '116.397'),
+                'lat' => (float) Setting::getValue('map_default_lat', '39.908'),
             ],
         ]);
     }
@@ -97,8 +102,26 @@ class EntryController extends Controller
     {
         $result = $this->entryService->save($entry, $request->all());
 
-        return redirect()->route('admin.entries.index', ['model_id' => $entry->model_id])
-            ->with('status', $result['msg']);
+        return redirect()->route('admin.entries.edit', $entry)
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    /** 刷新草稿预览链接 */
+    public function issuePreview(Entry $entry): RedirectResponse
+    {
+        $result = $this->entryService->issuePreviewToken($entry);
+
+        return redirect()->route('admin.entries.edit', $entry)
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    /** 还原历史版本 */
+    public function restoreRevision(Entry $entry, EntryRevision $revision): RedirectResponse
+    {
+        $result = $this->entryService->restoreRevision($entry, $revision);
+
+        return redirect()->route('admin.entries.edit', $entry)
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
     /** 删除内容（进回收站） */

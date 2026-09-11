@@ -5,22 +5,18 @@ namespace App\Http\Controllers\Web;
 use App\Cms\CmsViewContext;
 use App\Http\Controllers\Controller;
 use App\Models\Cms\Category;
-use App\Models\Cms\CmsForm;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
-use App\Models\Cms\FormSubmission;
 use App\Models\Cms\Tag;
 use App\Services\Cms\CommentService;
+use App\Services\Cms\FormSubmitService;
 use App\Services\Cms\SiteFrontService;
 use App\Services\Cms\TagAutoLinkService;
-use App\Support\Captcha;
 use App\Support\Locale;
-use App\Support\MailConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -32,8 +28,8 @@ class SiteController extends Controller
         private readonly CmsViewContext $context,
         private readonly TagAutoLinkService $tagAutoLink,
         private readonly CommentService $comments,
-    ) {
-    }
+        private readonly FormSubmitService $forms,
+    ) {}
 
     /** 首页 */
     public function index(): View
@@ -112,6 +108,68 @@ class SiteController extends Controller
         $category = $this->site->categoryBySlug($slug);
         abort_unless($category, 404);
 
+        return $this->renderCategory($site, $category);
+    }
+
+    /** 文档详情 */
+    public function show(string $catSlug, string $slug): View|RedirectResponse
+    {
+        $site = $this->site->bootSite();
+        $category = $this->site->categoryBySlug($catSlug);
+        abort_unless($category, 404);
+        $entry = $this->site->entryBySlug($category, $slug);
+        abort_unless($entry, 404);
+
+        return $this->renderEntry($site, $category, $entry);
+    }
+
+    /** ID 伪静态：/e/{entry} */
+    public function showById(Entry $entry): View|RedirectResponse
+    {
+        $site = $this->site->bootSite();
+        abort_unless($entry->isLive(), 404);
+        $entry->loadMissing(['category', 'modelDef']);
+        $category = $entry->category;
+        abort_unless($category, 404);
+
+        return $this->renderEntry($site, $category, $entry);
+    }
+
+    /** /c/{category} */
+    public function categoryById(int $category): View|RedirectResponse
+    {
+        $site = $this->site->bootSite();
+        $cat = Category::query()->active()->with('modelDef')->findOrFail($category);
+
+        return $this->renderCategory($site, $cat);
+    }
+
+    /** /c/{category}/{slug} */
+    public function showByCatId(int $category, string $slug): View|RedirectResponse
+    {
+        $site = $this->site->bootSite();
+        $cat = Category::query()->active()->with('modelDef')->findOrFail($category);
+        $entry = $this->site->entryBySlug($cat, $slug);
+        abort_unless($entry, 404);
+
+        return $this->renderEntry($site, $cat, $entry);
+    }
+
+    /** /{model}/{cat}/{slug} */
+    public function showByModel(string $modelSlug, string $catSlug, string $slug): View|RedirectResponse
+    {
+        $site = $this->site->bootSite();
+        $category = $this->site->categoryBySlug($catSlug);
+        abort_unless($category && $category->modelDef?->slug === $modelSlug, 404);
+        $entry = $this->site->entryBySlug($category, $slug);
+        abort_unless($entry, 404);
+
+        return $this->renderEntry($site, $category, $entry);
+    }
+
+    /** @param  array<string, mixed>  $site */
+    protected function renderCategory(array $site, Category $category): View|RedirectResponse
+    {
         if ($category->type === 'link' && ($category->getAttributes()['url'] ?? null)) {
             return redirect()->away($category->getAttributes()['url']);
         }
@@ -137,92 +195,46 @@ class SiteController extends Controller
         return view($this->site->resolveListTpl($category), compact('site', 'category'));
     }
 
-    /** 文档详情 */
-    public function show(string $catSlug, string $slug): View|RedirectResponse
+    /** 文档预览（草稿/未到点发布，token 有效期内） */
+    public function preview(string $token): View|RedirectResponse
     {
         $site = $this->site->bootSite();
-        $category = $this->site->categoryBySlug($catSlug);
-        abort_unless($category, 404);
-        $entry = $this->site->entryBySlug($category, $slug);
-        abort_unless($entry, 404);
-
-        return $this->renderEntry($site, $category, $entry);
-    }
-
-    /** ID 伪静态：/e/{entry} */
-    public function showById(Entry $entry): View|RedirectResponse
-    {
-        $site = $this->site->bootSite();
-        abort_unless($entry->status === 'published', 404);
-        $entry->loadMissing(['category', 'modelDef']);
+        $entry = Entry::query()->with(['category', 'modelDef', 'tags'])
+            ->where('preview_token', $token)
+            ->where(function ($q) {
+                $q->whereNull('preview_expires_at')->orWhere('preview_expires_at', '>', now());
+            })
+            ->firstOrFail();
         $category = $entry->category;
         abort_unless($category, 404);
 
-        return $this->renderEntry($site, $category, $entry);
+        return $this->renderEntry($site, $category, $entry, preview: true);
     }
 
-    /** /c/{category} */
-    public function categoryById(int $category): View|RedirectResponse
+    protected function renderEntry(array $site, $category, Entry $entry, bool $preview = false): View|RedirectResponse
     {
-        $site = $this->site->bootSite();
-        $cat = \App\Models\Cms\Category::query()->active()->with('modelDef')->findOrFail($category);
-        if ($cat->type === 'link' && ($cat->getAttributes()['url'] ?? null)) {
-            return redirect()->away($cat->getAttributes()['url']);
-        }
-        $this->context->setCategory($cat);
-        $this->context->setSeo($cat->t('meta_title') ?: $cat->t('title').' - '.$site['title'], '', $cat->t('meta_description') ?: '');
-
-        return view($this->site->resolveListTpl($cat), ['site' => $site, 'category' => $cat]);
-    }
-
-    /** /c/{category}/{slug} */
-    public function showByCatId(int $category, string $slug): View|RedirectResponse
-    {
-        $site = $this->site->bootSite();
-        $cat = \App\Models\Cms\Category::query()->active()->with('modelDef')->findOrFail($category);
-        $entry = $this->site->entryBySlug($cat, $slug);
-        abort_unless($entry, 404);
-
-        return $this->renderEntry($site, $cat, $entry);
-    }
-
-    /** /{model}/{cat}/{slug} */
-    public function showByModel(string $modelSlug, string $catSlug, string $slug): View|RedirectResponse
-    {
-        $site = $this->site->bootSite();
-        $category = $this->site->categoryBySlug($catSlug);
-        abort_unless($category && $category->modelDef?->slug === $modelSlug, 404);
-        $entry = $this->site->entryBySlug($category, $slug);
-        abort_unless($entry, 404);
-
-        return $this->renderEntry($site, $category, $entry);
-    }
-
-    /** @param  array<string, mixed>  $site */
-    protected function renderEntry(array $site, $category, Entry $entry): View|RedirectResponse
-    {
-        $needMemberView = filter_var($entry->attr('member_only', false), FILTER_VALIDATE_BOOLEAN)
-            || filter_var($entry->attr('require_login', false), FILTER_VALIDATE_BOOLEAN)
-            || filter_var($entry->attr('islogin', false), FILTER_VALIDATE_BOOLEAN)
-            || $entry->hasFlag('member');
-        if ($needMemberView) {
-            $member = Auth::guard('member')->user();
-            if (! $member) {
-                return redirect()->route('member.login')
-                    ->with('error', '该内容需会员登录后查看')
-                    ->with('url.intended', request()->fullUrl());
+        if (! $preview) {
+            $needMemberView = $entry->isMemberGated();
+            if ($needMemberView) {
+                $member = Auth::guard('member')->user();
+                if (! $member) {
+                    return redirect()->route('member.login')
+                        ->with('error', '该内容需会员登录后查看')
+                        ->with('url.intended', request()->fullUrl());
+                }
+                if (! $member->canMember('view_member_content')) {
+                    return redirect()->route('member.profile')->with('error', '当前会员组无权查看此内容');
+                }
             }
-            if (! $member->canMember('view_member_content')) {
-                return redirect()->route('member.profile')->with('error', '当前会员组无权查看此内容');
-            }
+            $entry->increment('views');
         }
 
-        $entry->increment('views');
+        $this->context->setPreview($preview);
         $entry->setAttribute('linked_content', $this->tagAutoLink->linkify($entry->t('content')));
         $this->context->setCategory($category);
         $this->context->setArticle($entry);
         $this->context->setSeo(
-            $entry->t('meta_title') ?: $entry->t('title').' - '.$site['title'],
+            ($preview ? '[预览] ' : '').($entry->t('meta_title') ?: $entry->t('title').' - '.$site['title']),
             '',
             $entry->t('meta_description') ?: ($entry->t('excerpt') ?: '')
         );
@@ -232,16 +244,17 @@ class SiteController extends Controller
             'category' => $category,
             'entry' => $entry,
             'article' => $entry,
-            'commentsEnabled' => $this->comments->enabled(),
+            'isPreview' => $preview,
+            'commentsEnabled' => $preview ? false : $this->comments->enabled(),
             'commentsGuest' => $this->comments->guestsAllowed(),
-            'commentTree' => $this->comments->approvedTreeForEntry($entry),
+            'commentTree' => $preview ? collect() : $this->comments->approvedTreeForEntry($entry),
         ]);
     }
 
     /** 下载附件并计次（支持会员门槛） */
     public function download(Request $request, Entry $entry): StreamedResponse|RedirectResponse
     {
-        abort_unless($entry->status === 'published', 404);
+        abort_unless($entry->isLive(), 404);
 
         $needLogin = filter_var($entry->attr('require_login', false), FILTER_VALIDATE_BOOLEAN)
             || filter_var($entry->attr('islogin', false), FILTER_VALIDATE_BOOLEAN);
@@ -277,7 +290,7 @@ class SiteController extends Controller
     /** 外链点击计次后跳转 */
     public function go(Entry $entry): RedirectResponse
     {
-        abort_unless($entry->status === 'published', 404);
+        abort_unless($entry->isLive(), 404);
         $url = $entry->attr('url') ?: $entry->attr('source_url');
         abort_unless($url, 404);
         $entry->increment('clicks');
@@ -300,7 +313,7 @@ class SiteController extends Controller
         $entries = $tag->entries()->with(['category', 'modelDef'])->published()
             ->orderByDesc('published_at')->paginate(12);
 
-        return view($this->site->themeView('tag'), compact('site', 'tag', 'entries'));
+        return $this->site->renderThemePage('tag', compact('site', 'tag', 'entries'));
     }
 
     /** RSS */
@@ -317,72 +330,16 @@ class SiteController extends Controller
     /** 表单提交（含验证码，按字段定义校验） */
     public function submitForm(Request $request, string $slug): RedirectResponse
     {
-        $form = CmsForm::query()->where('slug', $slug)->where('is_active', true)->firstOrFail();
-
-        if (config('cms.form_captcha', true) && ! Captcha::check($request->input('captcha'))) {
-            return back()->with('error', '验证码错误')->withInput();
-        }
-
-        $rules = [];
-        $allowed = [];
-        foreach ($form->fields ?? [] as $field) {
-            if (! is_array($field) || empty($field['name'])) {
-                continue;
+        $result = $this->forms->submit($slug, $request, Auth::guard('member')->user());
+        if (! $result['ok']) {
+            if ($result['msg'] === '表单不存在') {
+                abort(404);
             }
-            $name = (string) $field['name'];
-            $allowed[] = $name;
-            $type = $field['type'] ?? 'text';
-            $rule = ! empty($field['required']) ? ['required'] : ['nullable'];
-            if ($type === 'email') {
-                $rule[] = 'email';
-            } elseif ($type === 'number') {
-                $rule[] = 'numeric';
-            } elseif ($type === 'checkbox') {
-                $rule[] = 'array';
-            } else {
-                $rule[] = 'string';
-                $rule[] = 'max:5000';
-            }
-            $rules[$name] = $rule;
-        }
-        $validated = $rules === []
-            ? $request->except(['_token', 'captcha'])
-            : $request->validate($rules);
 
-        $data = [];
-        foreach ($allowed as $key) {
-            if (array_key_exists($key, $validated)) {
-                $data[$key] = $validated[$key];
-            }
+            return back()->with('error', $result['msg'])->withInput();
         }
 
-        $member = Auth::guard('member')->user();
-        if ($member && ! $member->canMember('form_submit')) {
-            return back()->with('error', '当前会员组无权提交表单');
-        }
-
-        FormSubmission::query()->create([
-            'form_id' => $form->id,
-            'data' => $data,
-            'ip' => $request->ip(),
-        ]);
-
-        if ($form->notify_email) {
-            try {
-                MailConfig::applyFromSettings();
-                $body = "表单「{$form->name}」有新提交\nIP: {$request->ip()}\n\n";
-                foreach ($data as $k => $v) {
-                    $body .= $k.': '.(is_array($v) ? implode(', ', $v) : $v)."\n";
-                }
-                Mail::raw($body, function ($message) use ($form) {
-                    $message->to($form->notify_email)->subject('【CMS】新表单留言：'.$form->name);
-                });
-            } catch (\Throwable) {
-                // 邮件失败不影响用户提交
-            }
-        }
-
-        return back()->with('status', '提交成功，我们会尽快联系您。');
+        return back()->with('status', $result['msg']);
     }
 
     /** sitemap */

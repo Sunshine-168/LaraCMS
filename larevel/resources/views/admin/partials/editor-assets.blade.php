@@ -20,6 +20,10 @@
     .media-picker-grid img { width:100%; height:80px; object-fit:cover; display:block; border-radius:2px; }
     .cover-row { display:flex; gap:8px; align-items:center; max-width:720px; }
     .cover-row input { flex:1; }
+    .images-thumbs { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .images-thumb { position:relative; width:88px; height:88px; border:1px solid #e5e6eb; border-radius:4px; overflow:hidden; background:#f7f8fa; }
+    .images-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .images-thumb button { position:absolute; top:2px; right:2px; border:0; background:rgba(0,0,0,.55); color:#fff; width:20px; height:20px; border-radius:50%; cursor:pointer; line-height:20px; padding:0; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
@@ -81,9 +85,51 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             var target = document.querySelector(btn.getAttribute('data-media-pick'));
             if (!target) return;
-            window.CmsEditor.openPicker(function (url) { target.value = url; });
+            window.CmsEditor.openPicker(function (url) {
+                target.value = url;
+                target.dispatchEvent(new Event('input'));
+            });
         });
     });
+    document.querySelectorAll('[data-media-pick-append]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var target = document.querySelector(btn.getAttribute('data-media-pick-append'));
+            if (!target) return;
+            window.CmsEditor.openPicker(function (url) {
+                var cur = (target.value || '').trim();
+                var parts = cur ? cur.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+                if (parts.indexOf(url) === -1) parts.push(url);
+                target.value = parts.join(',');
+                target.dispatchEvent(new Event('input'));
+            });
+        });
+    });
+    function parseUrls(raw) {
+        return (raw || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+    function bindGallery(box) {
+        var sel = box.getAttribute('data-images-input');
+        var input = sel ? document.querySelector(sel) : null;
+        var thumbs = box.querySelector('.images-thumbs');
+        if (!input || !thumbs) return;
+        var render = function () {
+            var urls = parseUrls(input.value);
+            thumbs.innerHTML = '';
+            urls.forEach(function (url) {
+                var wrap = document.createElement('div');
+                wrap.className = 'images-thumb';
+                wrap.innerHTML = '<img src="' + url + '" alt=""><button type="button" title="移除">&times;</button>';
+                wrap.querySelector('button').addEventListener('click', function () {
+                    input.value = parseUrls(input.value).filter(function (u) { return u !== url; }).join(',');
+                    render();
+                });
+                thumbs.appendChild(wrap);
+            });
+        };
+        input.addEventListener('input', render);
+        render();
+    }
+    document.querySelectorAll('.images-gallery').forEach(bindGallery);
 });
 </script>
 <div class="media-picker-mask" id="mediaPickerMask">

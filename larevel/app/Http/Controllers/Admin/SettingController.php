@@ -11,16 +11,14 @@ use Illuminate\View\View;
 
 class SettingController extends Controller
 {
-    public function __construct(private readonly SettingService $settingService)
-    {
-    }
+    public function __construct(private readonly SettingService $settingService) {}
 
     /** 站点设置页 */
     public function edit(): View
     {
         $keys = [
             'site_name', 'site_description', 'site_keywords', 'theme',
-            'upload_thumb_width', 'upload_watermark_text',
+            'upload_thumb_width', 'upload_watermark_text', 'upload_watermark_position', 'upload_watermark_image',
             'site_closed', 'site_closed_message',
             'analytics_code', 'tag_autolink',
             'mail_host', 'mail_port', 'mail_encryption', 'mail_username', 'mail_password',
@@ -42,7 +40,7 @@ class SettingController extends Controller
     {
         $data = $request->only([
             'site_name', 'site_description', 'site_keywords', 'theme',
-            'upload_watermark_text', 'site_closed_message', 'analytics_code',
+            'upload_watermark_text', 'upload_watermark_position', 'site_closed_message', 'analytics_code',
             'mail_host', 'mail_encryption', 'mail_username', 'mail_from_address', 'mail_from_name',
             'mobile_theme', 'mobile_domain', 'mobile_detect', 'api_token',
             'comments_notify_email', 'map_default_lng', 'map_default_lat',
@@ -64,6 +62,15 @@ class SettingController extends Controller
         $data['mobile_detect'] = in_array($detect, ['both', 'domain', 'ua'], true) ? $detect : 'both';
         if ($request->filled('mail_password')) {
             $data['mail_password'] = (string) $request->input('mail_password');
+        }
+        $pos = strtolower((string) $request->input('upload_watermark_position', 'br'));
+        $data['upload_watermark_position'] = in_array($pos, ['br', 'bl', 'tr', 'tl', 'center'], true) ? $pos : 'br';
+        if ($request->boolean('upload_watermark_image_clear')) {
+            $data['upload_watermark_image'] = '';
+        }
+        if ($request->hasFile('watermark_image')) {
+            $request->validate(['watermark_image' => 'image|max:2048']);
+            $data['upload_watermark_image'] = $request->file('watermark_image')->store('cms/watermark', 'public');
         }
 
         $result = $this->settingService->save($data);

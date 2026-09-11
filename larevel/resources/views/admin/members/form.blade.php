@@ -8,6 +8,10 @@
         <input type="text" name="name" value="{{ old('name', $member->name) }}" required>
         <label>邮箱</label>
         <input type="email" name="email" value="{{ old('email', $member->email) }}" required>
+        <label>手机</label>
+        <input type="text" name="phone" value="{{ old('phone', $member->phone) }}" maxlength="32">
+        <label>简介</label>
+        <textarea name="bio" rows="3" maxlength="500">{{ old('bio', $member->bio) }}</textarea>
         <label>分组</label>
         <select name="group_id">
             <option value="">未分组</option>

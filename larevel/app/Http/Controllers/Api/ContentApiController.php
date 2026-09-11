@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Models\Cms\Entry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ContentApiController extends ApiController
 {
@@ -52,15 +54,24 @@ class ContentApiController extends ApiController
             return $this->fail('内容不存在', 404);
         }
 
-        $memberOnly = filter_var($e->attr('member_only', false), FILTER_VALIDATE_BOOLEAN)
-            || filter_var($e->attr('require_login', false), FILTER_VALIDATE_BOOLEAN)
-            || filter_var($e->attr('islogin', false), FILTER_VALIDATE_BOOLEAN)
-            || $e->hasFlag('member');
+        $memberOnly = $e->isMemberGated();
         if ($memberOnly) {
-            return $this->fail('该内容需会员权限，请使用前台会话访问', 403);
+            $member = Auth::guard('member')->user();
+            if (! $member || ! $member->canMember('view_member_content')) {
+                return $this->fail('该内容需会员登录后访问', 403);
+            }
         }
 
         return $this->ok($this->transform($e, true));
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        if (! $request->filled('q')) {
+            return $this->fail('缺少 q');
+        }
+
+        return $this->listPage($request);
     }
 
     /** @return array<string, mixed> */

@@ -9,12 +9,14 @@ use App\Models\Cms\CmsForm;
 use App\Models\Cms\Collector;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
+use App\Models\Cms\Member;
+use App\Models\Cms\MemberGroup;
+use App\Models\Cms\Menu;
+use App\Models\Cms\MenuItem;
 use App\Models\Cms\ModelField;
 use App\Models\Cms\Recommend;
 use App\Models\Cms\RecommendItem;
 use App\Models\Cms\Setting;
-use App\Models\Cms\Member;
-use App\Models\Cms\MemberGroup;
 use App\Models\Cms\Site;
 use App\Models\Cms\Tag;
 use App\Support\CurrentSite;
@@ -24,32 +26,18 @@ class CmsSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(AdminRbacSeeder::class);
+        AdminBootstrapSeeder::$siteName = '综合 CMS 演示';
+        AdminBootstrapSeeder::$admin = [
+            'name' => '超级管理员',
+            'email' => 'admin@example.com',
+            'password' => 'Admin@12345',
+        ];
+        $this->call(AdminBootstrapSeeder::class);
 
         $site = Site::default();
-        if (! $site) {
-            $host = parse_url((string) config('app.url', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
-            $site = Site::query()->create([
-                'name' => '默认站点',
-                'domain' => Site::normalizeDomain((string) $host),
-                'is_default' => true,
-                'is_active' => true,
-            ]);
-        }
         CurrentSite::set($site);
 
-        $superRoleId = AdminRole::query()->where('slug', 'super_admin')->value('id');
         $editorRoleId = AdminRole::query()->where('slug', 'editor')->value('id');
-
-        AdminUser::query()->updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => '超级管理员',
-                'password' => 'Admin@12345',
-                'role_id' => $superRoleId,
-                'is_active' => true,
-            ]
-        );
         $editor = AdminUser::query()->updateOrCreate(
             ['email' => 'editor@example.com'],
             [
@@ -61,22 +49,17 @@ class CmsSeeder extends Seeder
         );
         $editor->sites()->sync([$site->id]);
 
-        $defaultGroup = MemberGroup::query()->updateOrCreate(
-            ['site_id' => $site->id, 'slug' => 'default'],
-            [
-                'name' => '普通会员',
-                'sort' => 0,
-                'is_active' => true,
-                'permissions' => MemberGroup::permissionKeys(),
-            ]
-        );
+        $defaultGroup = MemberGroup::query()
+            ->where('site_id', $site->id)
+            ->where('slug', 'default')
+            ->first();
         Member::query()->updateOrCreate(
             ['site_id' => $site->id, 'email' => 'member@example.com'],
             [
                 'name' => '演示会员',
                 'password' => 'Member@12345',
                 'is_active' => true,
-                'group_id' => $defaultGroup->id,
+                'group_id' => $defaultGroup?->id,
             ]
         );
 
@@ -99,9 +82,10 @@ class CmsSeeder extends Seeder
         $this->seedRecommends($models, $cats);
         $this->seedForms();
         $this->seedTags($models);
+        $this->seedMenus($cats);
 
         if (! is_file(storage_path('app/install.lock'))) {
-            file_put_contents(storage_path('app/install.lock'), "installed_at=".now()->toDateTimeString()."\nseed_demo=1\n");
+            file_put_contents(storage_path('app/install.lock'), 'installed_at='.now()->toDateTimeString()."\nseed_demo=1\n");
         }
     }
 
@@ -180,7 +164,7 @@ class CmsSeeder extends Seeder
             'chapter' => [
                 'name' => '章节', 'kind' => 'list', 'list_tpl' => 'list.list', 'show_tpl' => 'show.chapter',
                 'fields' => [
-                    ['name' => 'manga_id', 'label' => '所属漫画 ID', 'type' => 'number', 'is_required' => true],
+                    ['name' => 'manga_id', 'label' => '所属漫画', 'type' => 'entry', 'is_required' => true, 'options' => ['related_model' => 'manga']],
                     ['name' => 'pages', 'label' => '图片URL（每行一张）', 'type' => 'textarea'],
                 ],
             ],
@@ -280,7 +264,7 @@ class CmsSeeder extends Seeder
             'slug' => ['zh_cn' => 'about', 'en' => 'about'],
             'content' => [
                 'zh_cn' => "我们是一家提供综合 CMS 解决方案的团队。\n支持企业站、下载站、导航站与源码站。",
-                'en' => "We build a flexible CMS for enterprise, download, navigation and source sites.",
+                'en' => 'We build a flexible CMS for enterprise, download, navigation and source sites.',
             ],
             'flags' => 'about',
             'status' => 'published',
@@ -539,6 +523,31 @@ class CmsSeeder extends Seeder
         );
         if ($entry = Entry::query()->find(7)) {
             $entry->tags()->sync([$tag->id]);
+        }
+    }
+
+    /** @param  array<string, Category>  $cats */
+    private function seedMenus(array $cats): void
+    {
+        $menu = Menu::query()->updateOrCreate(
+            ['site_id' => CurrentSite::id(), 'location' => 'header'],
+            ['name' => '主导航', 'is_active' => true]
+        );
+        MenuItem::query()->where('menu_id', $menu->id)->delete();
+        $sort = 0;
+        foreach ($cats as $cat) {
+            if (! $cat->is_menu) {
+                continue;
+            }
+            MenuItem::query()->create([
+                'menu_id' => $menu->id,
+                'title' => $cat->title,
+                'type' => 'category',
+                'reference_id' => $cat->id,
+                'url' => $cat->frontUrl(),
+                'sort_order' => $sort++,
+                'is_active' => true,
+            ]);
         }
     }
 }

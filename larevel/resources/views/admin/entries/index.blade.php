@@ -50,7 +50,9 @@
                     <td>{{ $entry->category?->t('title') }}</td>
                     <td class="muted">{{ $entry->flags ?: '—' }}</td>
                     <td>
-                        @if($entry->status === 'published')
+                        @if($entry->isScheduled())
+                            <span class="badge badge-warn">定时 {{ $entry->published_at->format('Y-m-d H:i') }}</span>
+                        @elseif($entry->status === 'published')
                             <span class="badge badge-ok">已发布</span>
                         @else
                             <span class="badge badge-off">{{ $entry->status }}</span>

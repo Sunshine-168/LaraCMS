@@ -6,16 +6,17 @@ use App\Cms\CmsViewContext;
 use App\Models\Cms\Category;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Setting;
+use App\Models\Cms\Tag;
 use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\MobileDetect;
+use App\Support\UrlMode;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 class SiteFrontService
 {
-    public function __construct(private readonly CmsViewContext $context)
-    {
-    }
+    public function __construct(private readonly CmsViewContext $context) {}
 
     public function bootSite(): array
     {
@@ -40,7 +41,7 @@ class SiteFrontService
             'pc_theme' => $pcTheme,
             'is_mobile' => $isMobile,
             'analytics_code' => (string) Setting::getValue('analytics_code', ''),
-            'url_mode' => \App\Support\UrlMode::current(),
+            'url_mode' => UrlMode::current(),
         ];
         $this->context->setSite($site);
         config([
@@ -113,6 +114,54 @@ class SiteFrontService
         return "themes.{$theme}.{$name}";
     }
 
+    /** 当前主题布局（会员/标签等共用页） */
+    public function themeLayout(): string
+    {
+        $theme = config('cms.theme', 'enterprise');
+        foreach ([
+            "themes.{$theme}.partials.layout",
+            "themes.{$theme}.layout",
+            'themes.enterprise.partials.layout',
+        ] as $view) {
+            if (view()->exists($view)) {
+                return $view;
+            }
+        }
+
+        return 'themes.enterprise.partials.layout';
+    }
+
+    /**
+     * 优先当前主题模板，其次 cms.* 共用页，避免落到别的主题布局。
+     */
+    public function pageView(string $name, ?string $fallback = null): string
+    {
+        $theme = config('cms.theme', 'enterprise');
+        $candidates = array_values(array_unique(array_filter([$name, $fallback])));
+
+        foreach ($candidates as $tpl) {
+            $full = "themes.{$theme}.{$tpl}";
+            if (view()->exists($full)) {
+                return $full;
+            }
+        }
+        foreach ($candidates as $tpl) {
+            $cms = 'cms.'.$tpl;
+            if (view()->exists($cms)) {
+                return $cms;
+            }
+        }
+
+        return $this->themeView($name, $fallback);
+    }
+
+    public function renderThemePage(string $name, array $data = [], ?string $fallback = null): View
+    {
+        $data['layout'] = $data['layout'] ?? $this->themeLayout();
+
+        return view($this->pageView($name, $fallback), $data);
+    }
+
     public function resolveListTpl(Category $category): string
     {
         $tpl = $category->list_tpl
@@ -141,18 +190,38 @@ class SiteFrontService
 
     public function sitemapUrls(): Collection
     {
-        $urls = collect([url('/')]);
+        $urls = collect([
+            ['loc' => url('/'), 'lastmod' => now()->toAtomString()],
+        ]);
         foreach (Category::query()->active()->get() as $cat) {
-            if ($cat->type !== 'link') {
-                $urls->push(url($cat->frontUrl()));
+            if ($cat->type === 'link') {
+                continue;
             }
+            $urls->push([
+                'loc' => url($cat->frontUrl()),
+                'lastmod' => optional($cat->updated_at)?->toAtomString(),
+            ]);
         }
-        foreach (Entry::query()->published()->with('category')->get() as $entry) {
-            if ($entry->modelDef?->kind !== 'single' && $entry->modelDef?->slug !== 'link') {
-                $urls->push(url($entry->url));
+        foreach (Entry::query()->published()->with(['category', 'modelDef'])->get() as $entry) {
+            if ($entry->isMemberGated() || $entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link') {
+                continue;
             }
+            $urls->push([
+                'loc' => url($entry->url),
+                'lastmod' => optional($entry->updated_at ?: $entry->published_at)?->toAtomString(),
+            ]);
+        }
+        foreach (Tag::query()->get() as $tag) {
+            $slug = (string) $tag->t('slug');
+            if ($slug === '') {
+                continue;
+            }
+            $urls->push([
+                'loc' => url(UrlMode::localePrefix().'/tag/'.$slug),
+                'lastmod' => optional($tag->updated_at)?->toAtomString(),
+            ]);
         }
 
-        return $urls->unique()->values();
+        return $urls->unique('loc')->values();
     }
 }

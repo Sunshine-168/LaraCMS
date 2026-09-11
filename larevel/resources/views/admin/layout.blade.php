@@ -92,6 +92,10 @@
                 @if($can('form_submissions'))
                     <a href="{{ route('admin.form-submissions.index') }}" class="{{ request()->routeIs('admin.form-submissions.*') ? 'active' : '' }}">
                         <i class="fas fa-inbox"></i><span>留言收件箱</span>
+                        @php $unreadForms = \App\Models\Cms\FormSubmission::query()->where('is_read', false)->count(); @endphp
+                        @if($unreadForms > 0)
+                            <span class="badge badge-warn" style="margin-left:6px">{{ $unreadForms }}</span>
+                        @endif
                     </a>
                 @endif
                 @if($can('comments'))

@@ -77,10 +77,20 @@ class Site extends Model
     public static function findByDomain(string $domain): ?self
     {
         $domain = self::normalizeDomain($domain);
+        $key = 'cms.site.by_domain.'.$domain;
+        $cached = Cache::get($key);
+        if ($cached !== null && ! is_int($cached)) {
+            Cache::forget($key);
+            $cached = null;
+        }
 
-        return Cache::remember('cms.site.by_domain.'.$domain, 300, function () use ($domain) {
-            return static::query()->where('domain', $domain)->where('is_active', true)->first();
+        $id = $cached ?? Cache::remember($key, 300, function () use ($domain) {
+            $found = static::query()->where('domain', $domain)->where('is_active', true)->value('id');
+
+            return $found ? (int) $found : 0;
         });
+
+        return $id ? static::query()->find($id) : null;
     }
 
     public function adminUsers(): BelongsToMany

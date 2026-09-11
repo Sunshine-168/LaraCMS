@@ -10,14 +10,13 @@ use App\Support\Captcha;
 use App\Support\CurrentSite;
 use App\Support\MailConfig;
 use App\Support\Result;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class CommentService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache)
-    {
-    }
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
     public function enabled(): bool
     {
@@ -29,7 +28,7 @@ class CommentService
         return (bool) (int) Setting::getValue('comments_guest', '1');
     }
 
-    /** @return \Illuminate\Support\Collection<int, Comment> */
+    /** @return Collection<int, Comment> */
     public function approvedTreeForEntry(Entry $entry)
     {
         $all = Comment::query()
@@ -48,18 +47,18 @@ class CommentService
         })->values();
     }
 
-    public function submit(Entry $entry, array $input, ?Member $member, string $ip, ?string $ua): array
+    public function submit(Entry $entry, array $input, ?Member $member, string $ip, ?string $ua, bool $skipCaptcha = false): array
     {
         if (! $this->enabled()) {
             return Result::fail('评论功能已关闭');
         }
-        if ($entry->status !== 'published') {
+        if (! $entry->isLive()) {
             return Result::fail('内容不可评论');
         }
         if (! $member && ! $this->guestsAllowed()) {
             return Result::fail('请先登录后再评论');
         }
-        if (config('cms.form_captcha', true) && ! Captcha::check($input['captcha'] ?? null)) {
+        if (! $skipCaptcha && config('cms.form_captcha', true) && ! Captcha::check($input['captcha'] ?? null)) {
             return Result::fail('验证码错误');
         }
 

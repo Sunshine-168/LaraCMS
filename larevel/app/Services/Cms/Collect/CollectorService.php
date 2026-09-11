@@ -9,14 +9,13 @@ use App\Services\Cms\HtmlCacheService;
 use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\Result;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class CollectorService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache)
-    {
-    }
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
     /** 运行所有到期采集器 */
     public function runDue(): array
@@ -51,6 +50,7 @@ class CollectorService
         try {
             $items = match ($collector->type) {
                 'json' => $this->fetchJson($collector),
+                'html' => $this->fetchHtml($collector),
                 default => $this->fetchRss($collector),
             };
 
@@ -95,6 +95,7 @@ class CollectorService
     /** @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}> */
     protected function fetchRss(Collector $collector): array
     {
+        $this->assertPublicHttpUrl($collector->source_url);
         $response = Http::timeout(25)
             ->withHeaders(['User-Agent' => 'CMS-Collector/1.0'])
             ->get($collector->source_url);
@@ -151,9 +152,207 @@ class CollectorService
         return $items;
     }
 
+    /**
+     * 列表页 CSS 选择器 + 可选详情页正文（只跟同源链接，不翻页、不爬全站）。
+     *
+     * @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}>
+     */
+    protected function fetchHtml(Collector $collector): array
+    {
+        $this->assertPublicHttpUrl($collector->source_url);
+        $opts = $collector->options ?? [];
+        $itemSel = trim((string) ($opts['item_selector'] ?? ''));
+        if ($itemSel === '') {
+            throw new \RuntimeException('HTML 采集需要填写 item_selector');
+        }
+
+        $listHtml = $this->httpGet($collector->source_url);
+        $xpath = $this->htmlXPath($listHtml);
+        $nodes = $xpath->query(CssSelector::toXPath($itemSel, false));
+        if ($nodes === false || $nodes->length === 0) {
+            throw new \RuntimeException('列表选择器未匹配到条目：'.$itemSel);
+        }
+
+        $linkSel = trim((string) ($opts['link_selector'] ?? 'a'));
+        $titleSel = trim((string) ($opts['title_selector'] ?? ''));
+        $summarySel = trim((string) ($opts['summary_selector'] ?? ''));
+        $coverSel = trim((string) ($opts['cover_selector'] ?? ''));
+        $detailSel = trim((string) ($opts['detail_content_selector'] ?? ''));
+        $baseHost = $this->hostOf($collector->source_url);
+
+        $items = [];
+        foreach ($nodes as $node) {
+            if (! $node instanceof \DOMNode) {
+                continue;
+            }
+            $href = $this->firstAttr($xpath, $node, $linkSel !== '' ? $linkSel : 'a', 'href');
+            $link = $href ? $this->absoluteUrl($collector->source_url, $href) : '';
+            $title = $titleSel !== ''
+                ? $this->firstText($xpath, $node, $titleSel)
+                : $this->firstText($xpath, $node, $linkSel !== '' ? $linkSel : 'a');
+            if ($title === '' && $node instanceof \DOMElement) {
+                $title = trim(preg_replace('/\s+/u', ' ', $node->textContent) ?? '');
+            }
+            $title = Str::limit($title, 180, '');
+            if ($title === '') {
+                continue;
+            }
+            $summary = $summarySel !== '' ? $this->firstText($xpath, $node, $summarySel) : '';
+            $coverHref = $coverSel !== '' ? $this->firstAttr($xpath, $node, $coverSel, 'src') : null;
+            $cover = $coverHref ? $this->absoluteUrl($collector->source_url, $coverHref) : $this->guessCover($node instanceof \DOMElement ? ($node->ownerDocument?->saveHTML($node) ?: '') : '');
+            $content = $summary;
+            if ($detailSel !== '' && $link !== '' && $this->hostOf($link) === $baseHost) {
+                try {
+                    $this->assertPublicHttpUrl($link);
+                    $detail = $this->httpGet($link, 15);
+                    $dx = $this->htmlXPath($detail);
+                    $contentNode = $dx->query(CssSelector::toXPath($detailSel, false));
+                    if ($contentNode && $contentNode->length > 0) {
+                        $content = $this->innerHtml($contentNode->item(0));
+                    }
+                } catch (\Throwable) {
+                    // 详情失败仍用摘要入库
+                }
+            }
+            $max = max(1, min(30, (int) $collector->limit_items));
+            $guid = $link !== '' ? $link : md5($title);
+            $items[] = [
+                'guid' => $guid,
+                'title' => $title,
+                'link' => $link,
+                'summary' => $summary,
+                'content' => $content,
+                'published' => null,
+                'cover' => $cover,
+            ];
+            if (count($items) >= $max) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+
+    protected function httpGet(string $url, int $timeout = 25): string
+    {
+        $response = Http::timeout($timeout)
+            ->withHeaders(['User-Agent' => 'CMS-Collector/1.0'])
+            ->get($url);
+        if (! $response->successful()) {
+            throw new \RuntimeException('HTTP '.$response->status().' '.$url);
+        }
+        $body = $response->body();
+        if (strlen($body) > 1_500_000) {
+            $body = substr($body, 0, 1_500_000);
+        }
+
+        return $body;
+    }
+
+    protected function htmlXPath(string $html): \DOMXPath
+    {
+        $dom = new \DOMDocument;
+        $prev = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+
+        return new \DOMXPath($dom);
+    }
+
+    protected function firstText(\DOMXPath $xpath, \DOMNode $context, string $selector): string
+    {
+        $nodes = $xpath->query(CssSelector::toXPath($selector, true), $context);
+        if (! $nodes || $nodes->length === 0) {
+            return '';
+        }
+
+        return trim(preg_replace('/\s+/u', ' ', $nodes->item(0)?->textContent ?? '') ?? '');
+    }
+
+    protected function firstAttr(\DOMXPath $xpath, \DOMNode $context, string $selector, string $attr): ?string
+    {
+        $nodes = $xpath->query(CssSelector::toXPath($selector, true), $context);
+        if (! $nodes || $nodes->length === 0) {
+            return null;
+        }
+        $node = $nodes->item(0);
+        if ($node instanceof \DOMElement && $node->hasAttribute($attr)) {
+            return trim($node->getAttribute($attr));
+        }
+        if ($context instanceof \DOMElement && strtolower($context->nodeName) === strtolower($selector) && $context->hasAttribute($attr)) {
+            return trim($context->getAttribute($attr));
+        }
+
+        return null;
+    }
+
+    protected function innerHtml(?\DOMNode $node): string
+    {
+        if (! $node || ! $node->ownerDocument) {
+            return '';
+        }
+        $html = '';
+        foreach ($node->childNodes as $child) {
+            $html .= $node->ownerDocument->saveHTML($child);
+        }
+
+        return trim($html);
+    }
+
+    protected function absoluteUrl(string $base, string $href): string
+    {
+        $href = trim($href);
+        if ($href === '' || str_starts_with($href, 'javascript:') || str_starts_with($href, 'mailto:')) {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $href)) {
+            return $href;
+        }
+        $parts = parse_url($base);
+        $scheme = $parts['scheme'] ?? 'https';
+        $host = $parts['host'] ?? '';
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+        $origin = $scheme.'://'.$host.$port;
+        if (str_starts_with($href, '//')) {
+            return $scheme.':'.$href;
+        }
+        if (str_starts_with($href, '/')) {
+            return $origin.$href;
+        }
+        $dir = rtrim(str_replace('\\', '/', dirname($parts['path'] ?? '/')), '/');
+
+        return $origin.($dir === '' ? '' : $dir).'/'.$href;
+    }
+
+    protected function hostOf(string $url): string
+    {
+        return strtolower((string) parse_url($url, PHP_URL_HOST));
+    }
+
+    protected function assertPublicHttpUrl(string $url): void
+    {
+        $parts = parse_url($url);
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            throw new \RuntimeException('仅允许 http/https 源地址');
+        }
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        if ($host === '' || $host === 'localhost' || str_ends_with($host, '.local') || str_ends_with($host, '.internal')) {
+            throw new \RuntimeException('不允许内网地址');
+        }
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $ok = filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+            if ($ok === false) {
+                throw new \RuntimeException('不允许内网地址');
+            }
+        }
+    }
+
     /** @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}> */
     protected function fetchJson(Collector $collector): array
     {
+        $this->assertPublicHttpUrl($collector->source_url);
         $response = Http::timeout(25)
             ->withHeaders(['User-Agent' => 'CMS-Collector/1.0', 'Accept' => 'application/json'])
             ->get($collector->source_url);
@@ -224,7 +423,7 @@ class CollectorService
         $publishedAt = now();
         if (! empty($item['published'])) {
             try {
-                $publishedAt = \Carbon\Carbon::parse($item['published']);
+                $publishedAt = Carbon::parse($item['published']);
             } catch (\Throwable) {
             }
         }

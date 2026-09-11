@@ -23,9 +23,7 @@
     <div class="wrap">
         <a class="brand" href="/">{{ $site['title'] ?? config('app.name') }}</a>
         <nav>
-            @cmsChannel(['type' => 'top', 'ismenu' => 1, 'num' => 12])
-                <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
-            @endcmsChannel
+            @include('cms.partials.header-nav')
             <a href="{{ route('search') }}">搜索</a>
             @auth('member')
                 <form method="post" action="{{ route('member.logout') }}" style="display:inline">@csrf<button type="submit" style="background:none;border:0;color:inherit;cursor:pointer">退出</button></form>

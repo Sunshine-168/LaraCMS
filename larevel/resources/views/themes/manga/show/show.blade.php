@@ -9,10 +9,8 @@
             <div>{{ $entry->t('content') }}</div>
             <h3 style="margin-top:20px">章节列表</h3>
             <ul style="padding-left:18px">
-                @cmsContent(['model'=>'chapter','num'=>100,'order'=>'sort_order asc,id asc'])
-                    @if((int)$item->attr('manga_id') === (int)$entry->id)
-                        <li style="margin:8px 0"><a href="{{ $item->url }}">{{ $item->t('title') }}</a></li>
-                    @endif
+                @cmsContent(['model'=>'chapter','num'=>200,'order'=>'sort_order asc,id asc','related'=>$entry->id,'related_field'=>'manga_id'])
+                    <li style="margin:8px 0"><a href="{{ $item->url }}">{{ $item->t('title') }}</a></li>
                 @endcmsContent
             </ul>
         </div>

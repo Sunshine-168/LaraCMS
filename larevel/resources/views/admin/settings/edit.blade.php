@@ -2,7 +2,7 @@
 @section('title', '站点设置')
 @section('icon', 'cog')
 @section('content')
-    <form method="post" action="{{ route('admin.settings.update') }}">
+    <form method="post" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -38,7 +38,7 @@
         <label class="inline"><input type="checkbox" name="api_enable" value="1" @checked(old('api_enable', $settings['api_enable'] ?? '0') == '1')> 启用 API Token 校验（关闭则公开只读）</label>
         <label>API Token（启用校验时必填）</label>
         <input type="text" name="api_token" value="{{ old('api_token', $settings['api_token'] ?? '') }}" placeholder="随机长字符串">
-        <p class="muted">接口前缀 /api：site/config、category/*、content/*、recommend?name=</p>
+        <p class="muted">接口前缀 /api：site/config、category/*、content/*、search?q=、tag/*、recommend?name=；POST form/{slug}、comment/{id}（有效 Token 可免验证码）</p>
 
         <h3 style="margin-top:22px">移动端分流</h3>
         <p class="muted">配置移动主题后，按域名或 UA 自动切换主题（视图目录 themes/主题名）。</p>
@@ -62,8 +62,22 @@
         <p class="muted">上传图片时生效（需 PHP GD）。宽度为 0 表示不缩放。</p>
         <label>图片最大宽度（像素，超出等比缩小）</label>
         <input type="number" name="upload_thumb_width" min="0" max="5000" value="{{ old('upload_thumb_width', $settings['upload_thumb_width'] ?? 0) }}">
-        <label>文字水印（留空关闭）</label>
+        <label>文字水印（留空关闭；中文需系统 TTF，否则建议用图片水印）</label>
         <input type="text" name="upload_watermark_text" value="{{ old('upload_watermark_text', $settings['upload_watermark_text'] ?? '') }}" placeholder="© MySite">
+        <label>水印位置</label>
+        <select name="upload_watermark_position">
+            @foreach(['br'=>'右下','bl'=>'左下','tr'=>'右上','tl'=>'左上','center'=>'居中'] as $k => $label)
+                <option value="{{ $k }}" @selected(old('upload_watermark_position', $settings['upload_watermark_position'] ?? 'br') === $k)>{{ $label }}</option>
+            @endforeach
+        </select>
+        <label>图片水印（PNG/JPG，建议透明 PNG）</label>
+        @if(!empty($settings['upload_watermark_image']))
+            <p>
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings['upload_watermark_image']) }}" alt="" style="max-height:64px;background:#eee;padding:4px">
+                <label class="inline"><input type="checkbox" name="upload_watermark_image_clear" value="1"> 清除图片水印</label>
+            </p>
+        @endif
+        <input type="file" name="watermark_image" accept="image/png,image/jpeg,image/webp,image/gif">
 
         <h3 style="margin-top:22px">评论</h3>
         <label class="inline"><input type="checkbox" name="comments_enabled" value="1" @checked(old('comments_enabled', $settings['comments_enabled'] ?? '1') == '1')> 启用内容评论</label>

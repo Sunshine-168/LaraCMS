@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RunCollectorsJob;
 use App\Models\Cms\Category;
 use App\Models\Cms\Collector;
 use App\Models\Cms\CollectorLog;
 use App\Models\Cms\ContentModel;
-use App\Jobs\RunCollectorsJob;
 use App\Services\Admin\CollectorAdminService;
 use App\Services\Cms\Collect\CollectorService;
 use App\Support\CmsRuntime;
@@ -20,8 +20,7 @@ class CollectorController extends Controller
     public function __construct(
         private readonly CollectorAdminService $adminService,
         private readonly CollectorService $collectorService,
-    ) {
-    }
+    ) {}
 
     /** 采集器列表 */
     public function index(): View
@@ -57,7 +56,8 @@ class CollectorController extends Controller
             'name' => 'required|string|max:100',
             'source_url' => 'required|url',
             'model_id' => 'required|exists:cms_models,id',
-            'type' => 'required|in:rss,json',
+            'type' => 'required|in:rss,json,html',
+            'item_selector' => 'required_if:type,html|nullable|string|max:200',
         ]);
         $result = $this->adminService->save(null, $request->all());
 
@@ -82,7 +82,8 @@ class CollectorController extends Controller
             'name' => 'required|string|max:100',
             'source_url' => 'required|url',
             'model_id' => 'required|exists:cms_models,id',
-            'type' => 'required|in:rss,json',
+            'type' => 'required|in:rss,json,html',
+            'item_selector' => 'required_if:type,html|nullable|string|max:200',
         ]);
         $result = $this->adminService->save($collector, $request->all());
 

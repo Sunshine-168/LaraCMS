@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class MemberController extends Controller
 {
-    public function __construct(private readonly MemberService $memberService)
-    {
-    }
+    public function __construct(private readonly MemberService $memberService) {}
 
     /** 会员列表 */
     public function index(): View
@@ -40,6 +38,8 @@ class MemberController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:cms_members,email',
             'password' => 'required|string|min:8',
+            'phone' => 'nullable|string|max:32',
+            'bio' => 'nullable|string|max:500',
         ]);
         $result = $this->memberService->save(null, $request->all());
 
@@ -62,6 +62,8 @@ class MemberController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:cms_members,email,'.$member->id,
             'password' => 'nullable|string|min:8',
+            'phone' => 'nullable|string|max:32',
+            'bio' => 'nullable|string|max:500',
         ]);
         $result = $this->memberService->save($member, $request->all());
 

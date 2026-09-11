@@ -28,12 +28,19 @@ class MenuService
 
             MenuItem::query()->where('menu_id', $menu->id)->delete();
 
+            $created = [];
             foreach ($input['items'] ?? [] as $i => $row) {
                 if (empty($row['title_zh_cn']) && empty($row['title_en'])) {
                     continue;
                 }
-                MenuItem::query()->create([
+                $parentId = null;
+                $parentIndex = $row['parent_index'] ?? '';
+                if ($parentIndex !== '' && $parentIndex !== null && isset($created[(int) $parentIndex]) && (int) $parentIndex < $i) {
+                    $parentId = $created[(int) $parentIndex]->id;
+                }
+                $created[$i] = MenuItem::query()->create([
                     'menu_id' => $menu->id,
+                    'parent_id' => $parentId,
                     'title' => [
                         'zh_cn' => $row['title_zh_cn'] ?? '',
                         'en' => $row['title_en'] ?? ($row['title_zh_cn'] ?? ''),

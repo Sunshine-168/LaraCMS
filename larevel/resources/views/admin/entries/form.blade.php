@@ -87,11 +87,33 @@
                 <textarea class="cms-editor" name="attrs[{{ $field->name }}]">{{ $val }}</textarea>
             @elseif($field->type === 'textarea')
                 <textarea name="attrs[{{ $field->name }}]">{{ $val }}</textarea>
-            @elseif(in_array($field->type, ['image', 'file', 'images'], true))
+            @elseif($field->type === 'images')
+                <div class="images-gallery" data-images-input="#attr_{{ $field->name }}">
+                    <div class="cover-row">
+                        <input type="text" id="attr_{{ $field->name }}" name="attrs[{{ $field->name }}]" value="{{ is_array($val) ? implode(',', $val) : $val }}" placeholder="多图 URL，逗号分隔">
+                        <button type="button" class="btn btn-muted" data-media-pick-append="#attr_{{ $field->name }}">添加图片</button>
+                    </div>
+                    <div class="images-thumbs"></div>
+                </div>
+            @elseif(in_array($field->type, ['image', 'file'], true))
                 <div class="cover-row">
                     <input type="text" id="attr_{{ $field->name }}" name="attrs[{{ $field->name }}]" value="{{ is_array($val) ? implode(',', $val) : $val }}" placeholder="{{ $field->type === 'images' ? '多图 URL，逗号分隔' : '' }}">
                     <button type="button" class="btn btn-muted" data-media-pick="#attr_{{ $field->name }}">选择媒体</button>
                 </div>
+            @elseif($field->relatedModelSlug())
+                @php
+                    $relatedSlug = $field->relatedModelSlug();
+                    $relatedModelId = \App\Models\Cms\ContentModel::query()->where('slug', $relatedSlug)->value('id');
+                    $relatedEntries = $relatedModelId
+                        ? \App\Models\Cms\Entry::query()->published()->where('model_id', $relatedModelId)->orderByDesc('id')->limit(300)->get()
+                        : collect();
+                @endphp
+                <select name="attrs[{{ $field->name }}]">
+                    <option value="">— 选择{{ $field->label }} —</option>
+                    @foreach($relatedEntries as $rel)
+                        <option value="{{ $rel->id }}" @selected((string)$val === (string)$rel->id)>{{ $rel->t('title') }} (#{{ $rel->id }})</option>
+                    @endforeach
+                </select>
             @elseif($field->type === 'number')
                 <input type="number" step="any" name="attrs[{{ $field->name }}]" value="{{ $val }}">
             @elseif($field->type === 'url')
@@ -147,6 +169,47 @@
             <a class="btn btn-muted" href="{{ route('admin.entries.index', ['model_id' => $model->id]) }}">返回</a>
         </p>
     </form>
+
+    @if($entry->exists)
+        <div class="card-soft" style="margin-top:24px;max-width:720px">
+            <h3>草稿预览</h3>
+            <p class="muted">未发布内容可通过此链接查看；过期后点刷新。HTML 缓存与访问统计会跳过预览页。</p>
+            @if($entry->preview_token)
+                <p>
+                    <a href="{{ $entry->previewUrl() }}" target="_blank" rel="noopener">{{ url($entry->previewUrl()) }}</a>
+                    @if($entry->preview_expires_at)
+                        <span class="muted">（有效至 {{ $entry->preview_expires_at->format('Y-m-d H:i') }}）</span>
+                    @endif
+                </p>
+            @else
+                <p class="muted">保存后会自动生成预览链接。</p>
+            @endif
+            <form method="post" action="{{ route('admin.entries.preview', $entry) }}" style="margin-top:8px">
+                @csrf
+                <button class="btn btn-muted" type="submit">刷新预览链接</button>
+            </form>
+        </div>
+
+        @php $revisions = $revisions ?? $entry->revisions ?? collect(); @endphp
+        <div class="card-soft" style="margin-top:16px;max-width:720px">
+            <h3>历史版本</h3>
+            <p class="muted">每次保存会快照上一稿，最多保留 20 条。还原会把当前稿再存一版。</p>
+            @forelse($revisions as $rev)
+                <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid #e5e6eb">
+                    <div style="flex:1">
+                        <strong>{{ $rev->title_hint ?: '（无标题）' }}</strong>
+                        <div class="muted">{{ $rev->created_at?->format('Y-m-d H:i') }} · {{ $rev->admin?->name ?: '系统' }}</div>
+                    </div>
+                    <form method="post" action="{{ route('admin.entries.revisions.restore', [$entry, $rev]) }}" onsubmit="return confirm('还原到该版本？当前内容会另存为新版本。')">
+                        @csrf
+                        <button class="btn btn-muted" type="submit">还原</button>
+                    </form>
+                </div>
+            @empty
+                <p class="muted">尚无历史版本，再次保存后出现。</p>
+            @endforelse
+        </div>
+    @endif
     @include('admin.partials.editor-assets')
     <script>
     (function () {

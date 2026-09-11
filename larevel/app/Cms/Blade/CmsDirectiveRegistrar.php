@@ -13,6 +13,7 @@ use App\Services\Cms\Tags\FilterTag;
 use App\Services\Cms\Tags\FormatTag;
 use App\Services\Cms\Tags\FormTag;
 use App\Services\Cms\Tags\MapTag;
+use App\Services\Cms\Tags\MenuTag;
 use App\Services\Cms\Tags\OrderTag;
 use App\Services\Cms\Tags\PrevNextTag;
 use App\Services\Cms\Tags\SeoTag;
@@ -80,6 +81,7 @@ class CmsDirectiveRegistrar
         });
 
         $this->registerLoop('cmsChannel', ChannelTag::class);
+        $this->registerLoop('cmsMenu', MenuTag::class);
         $this->registerLoop('cmsContent', ContentTag::class);
         $this->registerLoop('cmsAdv', AdvTag::class);
         $this->registerLoop('cmsArcone', ArconeTag::class);

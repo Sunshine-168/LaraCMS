@@ -64,7 +64,7 @@ class MediaService
         return Result::ok(null, '已删除');
     }
 
-    /** 缩略（最大边）+ 文字水印 */
+    /** 缩略（最大边）+ 图/文字水印 */
     protected function processImage(string $fullPath): void
     {
         if (! function_exists('imagecreatetruecolor') || ! is_file($fullPath)) {
@@ -101,16 +101,14 @@ class MediaService
             imagesavealpha($dst, true);
         }
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
-
-        $mark = trim((string) Setting::getValue('upload_watermark_text', ''));
-        if ($mark !== '') {
-            $color = imagecolorallocatealpha($dst, 255, 255, 255, 60);
-            $shadow = imagecolorallocatealpha($dst, 0, 0, 0, 80);
-            $x = max(8, $nw - (strlen($mark) * 7) - 12);
-            $y = max(16, $nh - 14);
-            imagestring($dst, 3, $x + 1, $y + 1, $mark, $shadow);
-            imagestring($dst, 3, $x, $y, $mark, $color);
+        imagealphablending($dst, true);
+        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF) {
+            imagesavealpha($dst, true);
         }
+
+        $pos = $this->watermarkPosition();
+        $this->applyImageWatermark($dst, $nw, $nh, $pos);
+        $this->applyTextWatermark($dst, $nw, $nh, $pos);
 
         match ($type) {
             IMAGETYPE_JPEG => imagejpeg($dst, $fullPath, 85),
@@ -123,5 +121,146 @@ class MediaService
         imagedestroy($src);
         imagedestroy($dst);
     }
-}
 
+    /** @return 'br'|'bl'|'tr'|'tl'|'center' */
+    protected function watermarkPosition(): string
+    {
+        $pos = strtolower(trim((string) Setting::getValue('upload_watermark_position', 'br')));
+
+        return in_array($pos, ['br', 'bl', 'tr', 'tl', 'center'], true) ? $pos : 'br';
+    }
+
+    /** @param  \GdImage  $dst */
+    protected function applyImageWatermark($dst, int $nw, int $nh, string $pos): void
+    {
+        $path = $this->resolveWatermarkImagePath((string) Setting::getValue('upload_watermark_image', ''));
+        if (! $path) {
+            return;
+        }
+        $info = @getimagesize($path);
+        if (! $info) {
+            return;
+        }
+        $wm = match ($info[2]) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
+            IMAGETYPE_PNG => @imagecreatefrompng($path),
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
+            IMAGETYPE_GIF => @imagecreatefromgif($path),
+            default => false,
+        };
+        if (! $wm) {
+            return;
+        }
+        $ww = imagesx($wm);
+        $wh = imagesy($wm);
+        $max = (int) max(24, min($nw, $nh) * 0.28);
+        if ($ww > $max || $wh > $max) {
+            $scale = min($max / $ww, $max / $wh);
+            $tw = (int) max(1, round($ww * $scale));
+            $th = (int) max(1, round($wh * $scale));
+            $resized = imagecreatetruecolor($tw, $th);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            imagecopyresampled($resized, $wm, 0, 0, 0, 0, $tw, $th, $ww, $wh);
+            imagedestroy($wm);
+            $wm = $resized;
+            $ww = $tw;
+            $wh = $th;
+        }
+        [$x, $y] = $this->watermarkXY($nw, $nh, $ww, $wh, $pos, 12);
+        imagecopy($dst, $wm, $x, $y, 0, 0, $ww, $wh);
+        imagedestroy($wm);
+    }
+
+    /** @param  \GdImage  $dst */
+    protected function applyTextWatermark($dst, int $nw, int $nh, string $pos): void
+    {
+        $mark = trim((string) Setting::getValue('upload_watermark_text', ''));
+        if ($mark === '') {
+            return;
+        }
+        $color = imagecolorallocatealpha($dst, 255, 255, 255, 50);
+        $shadow = imagecolorallocatealpha($dst, 0, 0, 0, 70);
+        $font = $this->resolveTtfFont();
+        if ($font && function_exists('imagettfbbox') && function_exists('imagettftext')) {
+            $size = (int) max(12, min(22, (int) round($nw / 36)));
+            $bbox = @imagettfbbox($size, 0, $font, $mark);
+            if ($bbox) {
+                $tw = (int) abs($bbox[2] - $bbox[0]);
+                $th = (int) abs($bbox[7] - $bbox[1]);
+                [$x, $y] = $this->watermarkXY($nw, $nh, $tw, $th, $pos, 12);
+                $baseline = $y + $th;
+                @imagettftext($dst, $size, 0, $x + 1, $baseline + 1, $shadow, $font, $mark);
+                @imagettftext($dst, $size, 0, $x, $baseline, $color, $font, $mark);
+
+                return;
+            }
+        }
+        $fontId = 5;
+        $tw = imagefontwidth($fontId) * strlen($mark);
+        $th = imagefontheight($fontId);
+        [$x, $y] = $this->watermarkXY($nw, $nh, $tw, $th, $pos, 10);
+        imagestring($dst, $fontId, $x + 1, $y + 1, $mark, $shadow);
+        imagestring($dst, $fontId, $x, $y, $mark, $color);
+    }
+
+    /** @return array{0:int,1:int} */
+    protected function watermarkXY(int $nw, int $nh, int $tw, int $th, string $pos, int $pad): array
+    {
+        $x = $pad;
+        $y = $pad;
+        if ($pos === 'tr' || $pos === 'br') {
+            $x = max($pad, $nw - $tw - $pad);
+        }
+        if ($pos === 'bl' || $pos === 'br') {
+            $y = max($pad, $nh - $th - $pad);
+        }
+        if ($pos === 'center') {
+            $x = max($pad, (int) (($nw - $tw) / 2));
+            $y = max($pad, (int) (($nh - $th) / 2));
+        }
+
+        return [$x, $y];
+    }
+
+    protected function resolveWatermarkImagePath(string $stored): ?string
+    {
+        $stored = trim($stored);
+        if ($stored === '') {
+            return null;
+        }
+        if (is_file($stored)) {
+            return $stored;
+        }
+        $rel = $stored;
+        if (preg_match('#/storage/(.+)$#', $stored, $m)) {
+            $rel = $m[1];
+        } elseif (str_starts_with($stored, 'storage/')) {
+            $rel = substr($stored, 8);
+        }
+        $full = Storage::disk('public')->path($rel);
+
+        return is_file($full) ? $full : null;
+    }
+
+    protected function resolveTtfFont(): ?string
+    {
+        $candidates = [
+            'C:\\Windows\\Fonts\\msyh.ttf',
+            'C:\\Windows\\Fonts\\simhei.ttf',
+            'C:\\Windows\\Fonts\\simsun.ttc',
+            'C:\\Windows\\Fonts\\arial.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
+            '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+            '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        ];
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+}

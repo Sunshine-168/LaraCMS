@@ -23,7 +23,8 @@ Controller → Service → Model。能力对标 HkCms「栏目 + 动态模型 + 
 
 **方式 A：安装向导**
 1. 配好 `.env` 后 `composer install && php artisan key:generate`
-2. 浏览器打开 `/install`，勾选演示数据并安装
+2. 浏览器打开 `/install`，填写超管邮箱/密码。不勾选演示数据也会创建管理员，可随后登录后台。
+3. 勾选演示数据时会导入栏目/示例内容；演示超管为 `admin@example.com` / `Admin@12345`。
 
 **方式 B：命令行**
 ```bash
@@ -64,7 +65,8 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 |------|------|
 | `@cmsSeo` | title / keywords / description |
 | `@cmsChannel` / `@endcmsChannel` | 栏目列表 type=top\|son\|peer |
-| `@cmsContent` / `@endcmsContent` | 文档列表（catid/model/flag/page/filter） |
+| `@cmsMenu` / `@endcmsMenu` | 后台导航菜单（location=header；无菜单时回退栏目导航） |
+| `@cmsContent` / `@endcmsContent` | 文档列表（catid/model/flag/page/filter；`related`+`related_field` 可跨栏目取关联文档） |
 | `@cmsPaginate` | 分页 |
 | `@cmsAdv` / `@endcmsAdv` | 推荐位 name= |
 | `@cmsArcone` | 单条 |
@@ -109,9 +111,10 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `/install` | 安装向导（无 install.lock 时） |
 | `/download/{entry}` | 下载计次 |
 | `/go/{entry}` | 外链点击计次 |
-| `/form/{slug}` | 表单 POST（验证码） |
+| `/form/{slug}` | 表单 POST（验证码；后台收件箱可已读/备注/邮件回复） |
 | `/comment/{entry}` | 评论提交（默认待审核；站点设置可开关/游客/限流/通知） |
 | （后台配置） | 入站重定向：精确路径 301/302，命中计数，按站隔离 |
+| `/preview/{token}` | 草稿/未到点发布预览（后台生成，默认 7 天；不计入浏览、不进 HTML 缓存） |
 | `/search?q=` | 全站搜索（可按模型关闭 `is_searchable`） |
 
 ### 模型搬运 / 多栏目 / 磁盘静态
@@ -119,22 +122,27 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 - **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
 - **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
 - **磁盘 HTML**：`CMS_DISK_HTML=true` 后，后台「全页缓存」可生成到 `public/html/site_{id}/…/index.html`；命令 `cms:html-build` / `cms:html-purge-disk`
+- **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
+- **上传水印**：站点设置可配文字/图片水印及位置（右下/左下/右上/左上/居中）；中文文字依赖系统 TTF，建议用透明 PNG
+- **定时发布**：`published_at` 未到点时前台 `/e/{id}`、下载、外链跳转均为 404；后台列表显示「定时」
+- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入
 | `/member/login` | 会员登录 |
 | `/member/register` | 会员注册 |
 | `/member/forgot` | 找回密码（未配邮件时页面展示重置链接） |
-| `/member/profile` | 会员中心（改密） |
+| `/member/profile` | 会员中心（资料含手机/简介、改密、收藏、评论、留言、会员内容） |
 | `/tag/{slug}` | 标签聚合 |
 | `/rss.xml` | RSS |
 | `/sitemap.xml` | 站点地图 |
 
 ## REST API
 
-默认**公开只读**。站点设置开启「API Token 校验」后，请求需带：
-
-- Header：`X-CMS-Token: <token>`
-- 或 Query：`?api_token=<token>`
+默认 **GET 公开只读**（可开 Token 校验）。`POST` 写入在携带有效站点 Token 时可免验证码；无 Token 时仍走会话验证码。会员接口另需登录后下发的 `Authorization: Bearer`（或 `X-Member-Token`），不依赖 Sanctum。
 
 响应格式：`{ "code": 200, "msg": "ok", "data": ... }`
+
+- 站点 Header：`X-CMS-Token: <token>`
+- 或 Query：`?api_token=<token>`
+- 会员 Header：`Authorization: Bearer mbr_…` 或 `X-Member-Token`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -143,12 +151,23 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | GET | `/api/category/tree` | 栏目树 |
 | GET | `/api/category/{id}` | 栏目详情 |
 | GET | `/api/content/list?limit=&category_id=&model_id=&flag=&q=` | 内容分页 |
-| GET | `/api/content/{id}` | 内容详情（含正文/attrs） |
+| GET | `/api/content/{id}` | 内容详情（含正文/attrs；会员门槛需会员令牌） |
+| GET | `/api/search?q=` | 内容搜索（同 list + 必填 q） |
+| GET | `/api/tag/list` | 标签分页 |
+| GET | `/api/tag/{slug}` | 标签及文档列表 |
 | GET | `/api/recommend?name=&num=` | 推荐位（含查询型） |
+| POST | `/api/form/{slug}` | 提交表单（字段同前台） |
+| POST | `/api/comment/{id}` | 提交评论 |
+| POST | `/api/member/login` | 会员登录，返回一次性 token |
+| GET | `/api/member/me` | 当前会员资料 |
+| PUT | `/api/member/profile` | 更新昵称/头像/手机/简介 |
+| POST | `/api/member/logout` | 注销会员令牌 |
+| GET | `/api/member/favorites` | 收藏列表 |
+| POST | `/api/member/favorite/{id}` | 收藏/取消收藏 |
 
-## 定时采集（RSS / JSON）
+## 定时采集（RSS / JSON / HTML）
 
-后台「采集」可配置公开 RSS/Atom 或 JSON 列表源，按间隔写入文档（`source_guid` 去重）。仅采集你有权使用的公开源，勿用于未授权整站抓取。
+后台「采集」可配置公开 RSS/Atom、JSON 列表，或 **HTML 选择器**（列表页条目 + 可选同源详情正文）。按间隔写入文档（`source_guid` 去重）。HTML 模式不翻页、不爬全站，并拒绝内网地址。仅采集你有权使用的公开源。
 
 ## 多站点（全站租户）
 
@@ -223,14 +242,19 @@ php artisan cms:collect --sync
 - 后台「全页缓存」：开关、TTL、清空、预热
 - 环境变量：`CMS_HTML_CACHE=true`、`CMS_HTML_CACHE_TTL=3600`
 - 命令：`php artisan cms:html-clear` / `php artisan cms:html-warm --entries=30`
-- 不缓存：后台、会员、表单、下载、外链跳转、搜索、已登录会员
+- 不缓存：后台、会员、表单、下载、外链跳转、搜索、预览、已登录会员
 - 响应头：`X-CMS-Html-Cache: HIT|MISS`
 
 默认用 CACHE 驱动的 epoch 全站失效；Redis/Memcached 时可按标签精细失效。
 
-## 与 HkCms / TallCMS
+## 不会迁入的旧能力
 
-- **迁**：栏目类型、动态模型（JSON attrs）、推荐位、主题 list/show、Blade 标签查询层、定时采集、流量/蜘蛛统计、全页 HTML 缓存  
-- **不迁**：`{hkcms:}`、磁盘整站静态 HTML、运行时建表、App Center、Filament 区块编辑器、旧 `hkcms_*` 数据
+本仓库只保留 `larevel/`。ThinkPHP HkCms、TallCMS/Filament、旧 `hkcms_*` 桥接代码已移除，下列能力也**不会**再迁：
 
-旧目录：`larevel_tallcms_legacy`、`php/`（HkCms）仅作参考。
+- `{hkcms:}` 标签、运行时按模型建物理表、App Center / 在线升级、Filament 区块编辑器、旧库数据导入
+- HkCms 自由伪静态规则矩阵、会员前台投稿、短信验证码、微信/OAuth 登录、支付、CDN 资源域名
+- TallCMS Webhooks、Scout 全文检索、待审工作流、作者归档页
+
+站点运行不依赖上述项。会员权限、表单、评论、收藏、采集、统计、多站点、缓存、预览/修订均已在本目录实现。
+
+**旧后台**：Pages/Posts 仅当 `CMS_SHOW_LEGACY_ADMIN=true` 时出现，前台已切到 Entry。

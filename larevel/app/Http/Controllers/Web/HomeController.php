@@ -10,14 +10,17 @@ use App\Support\Locale;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
+/**
+ * 旧 Pages/Posts 前台（未注册路由）。现网前台走 SiteController + Entry。
+ * 后台入口仅在 CMS_SHOW_LEGACY_ADMIN=true 时出现。
+ */
 class HomeController extends Controller
 {
     public function __construct(
         private readonly FrontendService $frontend,
         private readonly MenuQueryService $menus,
         private readonly SeoService $seo,
-    ) {
-    }
+    ) {}
 
     /** 站点首页 */
     public function index(): View

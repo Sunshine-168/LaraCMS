@@ -20,9 +20,7 @@
 <header><div class="wrap">
     <a class="brand" href="/">{{ $site['title'] ?? 'Sports' }}</a>
     <nav>
-        @cmsChannel(['type'=>'top','ismenu'=>1])
-            <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
-        @endcmsChannel
+        @include('cms.partials.header-nav')
         <a href="{{ route('search') }}">搜索</a>
     </nav>
 </div></header>

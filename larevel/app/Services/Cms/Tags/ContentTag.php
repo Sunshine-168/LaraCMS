@@ -12,9 +12,7 @@ use Illuminate\Support\Collection;
 
 class ContentTag
 {
-    public function __construct(private readonly CmsViewContext $context)
-    {
-    }
+    public function __construct(private readonly CmsViewContext $context) {}
 
     /** @param  array<string, mixed>  $options */
     public function get(array $options = []): Collection|LengthAwarePaginator
@@ -30,6 +28,7 @@ class ContentTag
         $this->applyIdsFilter($query, $options);
         $this->applyModelFilter($query, $options);
         $this->applyFlagFilter($query, $options);
+        $this->applyRelatedFilter($query, $options);
         $this->applyAttrFilter($query, $options);
         $this->applyOrder($query, $order);
 
@@ -47,6 +46,13 @@ class ContentTag
 
     private function applyCategoryFilter(Builder $query, array $options, bool $insub): void
     {
+        if (array_key_exists('related', $options) && $options['related'] !== '' && $options['related'] !== null) {
+            return;
+        }
+        if (array_key_exists('catid', $options) && in_array($options['catid'], [0, '0', 'all', false], true)) {
+            return;
+        }
+
         $catid = $options['catid'] ?? null;
         if ($catid === null || $catid === '') {
             $catid = $this->context->category()?->id;
@@ -104,6 +110,23 @@ class ContentTag
         });
     }
 
+    /** 关联文档：related=父文档ID，related_field=attrs 字段名 */
+    private function applyRelatedFilter(Builder $query, array $options): void
+    {
+        if (! array_key_exists('related', $options) || $options['related'] === '' || $options['related'] === null) {
+            return;
+        }
+        $field = (string) ($options['related_field'] ?? 'manga_id');
+        if (! preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field)) {
+            return;
+        }
+        $id = (int) $options['related'];
+        $query->where(function (Builder $q) use ($field, $id) {
+            $q->where("attrs->{$field}", $id)
+                ->orWhere("attrs->{$field}", (string) $id);
+        });
+    }
+
     /** 简单 attrs JSON 筛选，如 filter[platform]=windows */
     private function applyAttrFilter(Builder $query, array $options): void
     {
@@ -133,6 +156,7 @@ class ContentTag
             }
             if (str_starts_with($column, 'attr:') && preg_match('/^attr:([A-Za-z_][A-Za-z0-9_]*)$/', $column, $m)) {
                 $query->orderBy("attrs->{$m[1]}", $direction);
+
                 continue;
             }
             if (in_array($column, $allowed, true)) {

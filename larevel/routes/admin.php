@@ -23,8 +23,8 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\QuickPanelController;
 use App\Http\Controllers\Admin\RecommendController;
-use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RecycleController;
+use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
@@ -51,6 +51,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::middleware('admin.perm:entries')->group(function () {
+            Route::post('entries/{entry}/preview', [EntryController::class, 'issuePreview'])->name('entries.preview');
+            Route::post('entries/{entry}/revisions/{revision}/restore', [EntryController::class, 'restoreRevision'])->name('entries.revisions.restore');
             Route::post('entries/batch', [EntryController::class, 'batch'])->name('entries.batch');
             Route::resource('entries', EntryController::class)->except(['show']);
         });
@@ -82,6 +84,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.perm:form_submissions')->group(function () {
             Route::get('form-submissions', [FormSubmissionController::class, 'index'])->name('form-submissions.index');
             Route::get('form-submissions/export', [FormSubmissionController::class, 'export'])->name('form-submissions.export');
+            Route::get('form-submissions/{submission}', [FormSubmissionController::class, 'show'])->name('form-submissions.show');
+            Route::put('form-submissions/{submission}', [FormSubmissionController::class, 'update'])->name('form-submissions.update');
+            Route::post('form-submissions/{submission}/unread', [FormSubmissionController::class, 'unread'])->name('form-submissions.unread');
             Route::delete('form-submissions/{submission}', [FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
         });
         Route::middleware('admin.perm:comments')->group(function () {
@@ -103,12 +108,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('media', [MediaController::class, 'store'])->name('media.store');
             Route::delete('media/{medium}', [MediaController::class, 'destroy'])->name('media.destroy');
         });
-        Route::middleware('admin.perm:pages')->group(function () {
-            Route::resource('pages', PageController::class)->except(['show']);
-        });
-        Route::middleware('admin.perm:posts')->group(function () {
-            Route::resource('posts', PostController::class)->except(['show']);
-        });
+        if (config('cms.show_legacy_admin')) {
+            Route::middleware('admin.perm:pages')->group(function () {
+                Route::resource('pages', PageController::class)->except(['show']);
+            });
+            Route::middleware('admin.perm:posts')->group(function () {
+                Route::resource('posts', PostController::class)->except(['show']);
+            });
+        }
         Route::middleware('admin.perm:stats')->group(function () {
             Route::get('stats', [StatController::class, 'index'])->name('stats.index');
             Route::get('stats/spiders', [StatController::class, 'spiders'])->name('stats.spiders');

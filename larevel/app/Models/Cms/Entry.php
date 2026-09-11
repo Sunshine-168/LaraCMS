@@ -3,8 +3,6 @@
 namespace App\Models\Cms;
 
 use App\Models\Concerns\BelongsToSite;
-
-use App\Support\Locale;
 use App\Support\Translatable;
 use App\Support\UrlMode;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,18 +15,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Entry extends Model
 {
     use BelongsToSite;
-
     use SoftDeletes;
     use Translatable;
 
     protected $table = 'cms_entries';
 
     protected $fillable = [
-        'site_id','category_id', 'model_id', 'title', 'slug', 'excerpt', 'content',
+        'site_id', 'category_id', 'model_id', 'title', 'slug', 'excerpt', 'content',
         'meta_title', 'meta_description', 'attrs', 'cover', 'flags', 'search_text',
         'source_guid', 'collector_id',
         'status', 'sort_order', 'views', 'downloads_count', 'clicks',
-        'is_homepage', 'published_at',];
+        'is_homepage', 'published_at',
+        'preview_token', 'preview_expires_at',
+    ];
 
     protected $appends = ['url'];
 
@@ -44,6 +43,7 @@ class Entry extends Model
             'attrs' => 'array',
             'is_homepage' => 'boolean',
             'published_at' => 'datetime',
+            'preview_expires_at' => 'datetime',
         ];
     }
 
@@ -87,12 +87,62 @@ class Entry extends Model
         return $this->hasMany(Comment::class, 'entry_id');
     }
 
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(EntryRevision::class, 'entry_id')->orderByDesc('id');
+    }
+
+    public function previewUrl(): ?string
+    {
+        if (! $this->preview_token) {
+            return null;
+        }
+
+        return UrlMode::localePrefix().'/preview/'.$this->preview_token;
+    }
+
+    public function previewIsValid(): bool
+    {
+        if (! $this->preview_token) {
+            return false;
+        }
+        if (! $this->preview_expires_at) {
+            return true;
+        }
+
+        return $this->preview_expires_at->isFuture();
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', 'published')
             ->where(function (Builder $q) {
                 $q->whereNull('published_at')->orWhere('published_at', '<=', now());
             });
+    }
+
+    public function isLive(): bool
+    {
+        if ($this->status !== 'published') {
+            return false;
+        }
+
+        return ! $this->published_at || $this->published_at->lte(now());
+    }
+
+    public function isScheduled(): bool
+    {
+        return $this->status === 'published'
+            && $this->published_at
+            && $this->published_at->isFuture();
+    }
+
+    public function isMemberGated(): bool
+    {
+        return filter_var($this->attr('member_only', false), FILTER_VALIDATE_BOOLEAN)
+            || filter_var($this->attr('require_login', false), FILTER_VALIDATE_BOOLEAN)
+            || filter_var($this->attr('islogin', false), FILTER_VALIDATE_BOOLEAN)
+            || $this->hasFlag('member');
     }
 
     public function scopeHomepage(Builder $query): Builder

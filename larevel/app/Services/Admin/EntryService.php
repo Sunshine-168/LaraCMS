@@ -3,17 +3,19 @@
 namespace App\Services\Admin;
 
 use App\Models\Cms\Entry;
+use App\Models\Cms\EntryRevision;
+use App\Models\Cms\Recommend;
+use App\Models\Cms\RecommendItem;
 use App\Services\Cms\HtmlCacheService;
 use App\Support\AdminCategoryScope;
 use App\Support\Result;
 use App\Support\Translatable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 
 class EntryService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache)
-    {
-    }
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
     public function paginate(?int $modelId = null, int $perPage = 15): LengthAwarePaginator
     {
@@ -61,6 +63,10 @@ class EntryService
         }
 
         $entry ??= new Entry;
+        if ($entry->exists) {
+            $entry->loadMissing(['categories', 'tags']);
+            $this->snapshotRevision($entry);
+        }
         $packed = Translatable::packTranslations($input['locales'] ?? [], [
             'title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description',
         ]);
@@ -87,6 +93,7 @@ class EntryService
 
         $entry->rebuildSearchText();
         $entry->save();
+        $this->ensurePreviewToken($entry);
 
         $entry->categories()->sync($extraIds);
 
@@ -233,10 +240,12 @@ class EntryService
         }
         $n = 0;
         $this->scopedEntries($ids)->with(['tags', 'categories'])->get()->each(function (Entry $src) use ($categoryId, &$n) {
-            $copy = $src->replicate(['views', 'downloads', 'clicks']);
+            $copy = $src->replicate(['views', 'downloads', 'clicks', 'preview_token', 'preview_expires_at']);
             $copy->status = 'draft';
             $copy->published_at = null;
             $copy->is_homepage = false;
+            $copy->preview_token = null;
+            $copy->preview_expires_at = null;
             if ($categoryId) {
                 $copy->category_id = $categoryId;
             }
@@ -269,14 +278,14 @@ class EntryService
         if ($ids === [] || $recommendId <= 0) {
             return Result::fail('请选择推荐位');
         }
-        $recommend = \App\Models\Cms\Recommend::query()->find($recommendId);
+        $recommend = Recommend::query()->find($recommendId);
         if (! $recommend) {
             return Result::fail('推荐位不存在');
         }
-        $sort = (int) \App\Models\Cms\RecommendItem::query()->where('recommend_id', $recommendId)->max('sort_order');
+        $sort = (int) RecommendItem::query()->where('recommend_id', $recommendId)->max('sort_order');
         foreach ($this->scopedEntries($ids)->get() as $entry) {
             $sort++;
-            \App\Models\Cms\RecommendItem::query()->updateOrCreate(
+            RecommendItem::query()->updateOrCreate(
                 ['recommend_id' => $recommendId, 'entry_id' => $entry->id],
                 [
                     'title' => $entry->title,
@@ -290,5 +299,95 @@ class EntryService
         $this->htmlCache->forgetAll('entry:batch-push');
 
         return Result::ok(null, '已推送到推荐位');
+    }
+
+    public function issuePreviewToken(Entry $entry, int $days = 7): array
+    {
+        if ($msg = $this->assertAccess($entry)) {
+            return Result::fail($msg);
+        }
+        $entry->preview_token = Str::random(40);
+        $entry->preview_expires_at = now()->addDays(max(1, $days));
+        $entry->save();
+
+        return Result::ok($entry, '预览链接已刷新');
+    }
+
+    public function restoreRevision(Entry $entry, EntryRevision $revision): array
+    {
+        if ($msg = $this->assertAccess($entry)) {
+            return Result::fail($msg);
+        }
+        if ((int) $revision->entry_id !== (int) $entry->id) {
+            return Result::fail('版本不属于该文档');
+        }
+        $entry->loadMissing(['categories', 'tags']);
+        $this->snapshotRevision($entry);
+
+        $snap = $revision->snapshot ?? [];
+        foreach (['title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description', 'cover', 'flags', 'status', 'sort_order', 'is_homepage', 'attrs', 'category_id'] as $field) {
+            if (array_key_exists($field, $snap)) {
+                $entry->{$field} = $snap[$field];
+            }
+        }
+        $entry->published_at = ! empty($snap['published_at']) ? $snap['published_at'] : null;
+        $entry->rebuildSearchText();
+        $entry->save();
+
+        if (isset($snap['category_ids']) && is_array($snap['category_ids'])) {
+            $entry->categories()->sync(array_map('intval', $snap['category_ids']));
+        }
+        if (isset($snap['tag_ids']) && is_array($snap['tag_ids'])) {
+            $entry->tags()->sync(array_map('intval', $snap['tag_ids']));
+        }
+
+        $this->htmlCache->forgetByEntry($entry);
+
+        return Result::ok($entry, '已还原到所选版本（当前稿已另存为新版本）');
+    }
+
+    protected function ensurePreviewToken(Entry $entry): void
+    {
+        if ($entry->preview_token && $entry->preview_expires_at && $entry->preview_expires_at->isFuture()) {
+            return;
+        }
+        $entry->preview_token = Str::random(40);
+        $entry->preview_expires_at = now()->addDays(7);
+        $entry->save();
+    }
+
+    protected function snapshotRevision(Entry $entry): void
+    {
+        $entry->loadMissing(['categories', 'tags']);
+        EntryRevision::query()->create([
+            'entry_id' => $entry->id,
+            'site_id' => $entry->site_id,
+            'admin_id' => auth('admin')->id(),
+            'title_hint' => mb_substr((string) $entry->t('title'), 0, 80) ?: null,
+            'snapshot' => [
+                'title' => $entry->title,
+                'slug' => $entry->slug,
+                'excerpt' => $entry->excerpt,
+                'content' => $entry->content,
+                'meta_title' => $entry->meta_title,
+                'meta_description' => $entry->meta_description,
+                'cover' => $entry->cover,
+                'flags' => $entry->flags,
+                'status' => $entry->status,
+                'sort_order' => $entry->sort_order,
+                'is_homepage' => (bool) $entry->is_homepage,
+                'published_at' => optional($entry->published_at)?->toIso8601String(),
+                'attrs' => $entry->attrs ?? [],
+                'category_id' => $entry->category_id,
+                'category_ids' => $entry->categories->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                'tag_ids' => $entry->tags->pluck('id')->map(fn ($id) => (int) $id)->all(),
+            ],
+        ]);
+
+        $keepIds = EntryRevision::query()->where('entry_id', $entry->id)
+            ->orderByDesc('id')->limit(20)->pluck('id');
+        EntryRevision::query()->where('entry_id', $entry->id)
+            ->whereNotIn('id', $keepIds)
+            ->delete();
     }
 }

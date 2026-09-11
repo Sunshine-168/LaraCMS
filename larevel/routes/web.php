@@ -15,16 +15,17 @@ $reserved = array_map(
 );
 
 $reservedSegments = array_merge(
-    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'sitemap\\.xml'],
+    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'install', 'e', 'c', 'preview', 'sitemap\\.xml'],
     $reserved
 );
 $slugExclude = '^(?!'.implode('$|', $reservedSegments).'$)[A-Za-z0-9\-_]+$';
-$catExclude = '^(?!admin|storage|livewire|api|download|go|form|comment|search|member|login|logout|register|tag|rss|install|e|c'.($reserved ? '|'.implode('|', $reserved) : '').')[A-Za-z0-9\-_]+$';
+$catExclude = $slugExclude;
 
 $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExclude) {
     Route::get('/', [SiteController::class, 'index'])->name('home'.$nameSuffix);
     Route::get('/search', [SiteController::class, 'search'])->name('search'.$nameSuffix);
     Route::get('/tag/{slug}', [SiteController::class, 'tag'])->name('tag'.$nameSuffix);
+    Route::get('/preview/{token}', [SiteController::class, 'preview'])->name('entry.preview'.$nameSuffix)->where('token', '[A-Za-z0-9]{16,64}');
     Route::get('/e/{entry}', [SiteController::class, 'showById'])->name('entry.id'.$nameSuffix)->whereNumber('entry');
     Route::get('/c/{category}', [SiteController::class, 'categoryById'])->name('category.id'.$nameSuffix)->whereNumber('category');
     Route::get('/c/{category}/{slug}', [SiteController::class, 'showByCatId'])->name('entry.catid'.$nameSuffix)
@@ -42,6 +43,7 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::post('/member/reset', [MemberController::class, 'resetPassword'])->name('member.reset.submit'.$nameSuffix);
     Route::get('/member/profile', [MemberController::class, 'profile'])->name('member.profile'.$nameSuffix);
     Route::post('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update'.$nameSuffix);
+    Route::post('/member/favorite/{entry}', [MemberController::class, 'toggleFavorite'])->name('member.favorite'.$nameSuffix)->whereNumber('entry');
     Route::post('/member/password', [MemberController::class, 'updatePassword'])->name('member.password'.$nameSuffix);
     Route::post('/member/upload/init', [MemberController::class, 'uploadInit'])->name('member.upload.init'.$nameSuffix);
     Route::post('/member/upload/chunk', [MemberController::class, 'uploadChunk'])->name('member.upload.chunk'.$nameSuffix);

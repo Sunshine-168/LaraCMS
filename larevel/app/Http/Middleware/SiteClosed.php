@@ -21,6 +21,8 @@ class SiteClosed
             || $request->is('admin/*')
             || $request->is('install')
             || $request->is('install/*')
+            || $request->is('preview/*')
+            || $request->is('*/preview/*')
         ) {
             return $next($request);
         }

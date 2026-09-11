@@ -18,9 +18,7 @@
 <header><div class="wrap">
     <a class="brand" href="/">{{ $site['title'] ?? '导航' }}</a>
     <nav>
-        @cmsChannel(['type'=>'top','ismenu'=>1])
-            <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
-        @endcmsChannel
+        @include('cms.partials.header-nav')
     </nav>
 </div></header>
 <main class="wrap">@yield('content')</main>

@@ -24,6 +24,8 @@ class CmsViewContext
 
     protected ?LengthAwarePaginator $paginator = null;
 
+    protected bool $isPreview = false;
+
     public function setSite(array $site): self
     {
         $this->site = $site;
@@ -58,6 +60,18 @@ class CmsViewContext
     public function article(): ?Entry
     {
         return $this->article;
+    }
+
+    public function setPreview(bool $preview): self
+    {
+        $this->isPreview = $preview;
+
+        return $this;
+    }
+
+    public function isPreview(): bool
+    {
+        return $this->isPreview;
     }
 
     public function setSeo(string $title, string $keywords = '', string $description = ''): self
@@ -106,6 +120,15 @@ class CmsViewContext
 
         $theme = config('cms.theme', 'default');
         $view = $view ?: "themes.{$theme}.partials.paginate";
+
+        if (! view()->exists($view)) {
+            foreach (['cms.partials.paginate', 'themes.enterprise.partials.paginate'] as $fallback) {
+                if (view()->exists($fallback)) {
+                    $view = $fallback;
+                    break;
+                }
+            }
+        }
 
         if (! view()->exists($view)) {
             return new HtmlString($this->paginator->links()->toHtml());

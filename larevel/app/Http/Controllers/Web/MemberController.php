@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cms\Entry;
 use App\Models\Cms\Member;
 use App\Models\Cms\MemberGroup;
 use App\Services\Cms\MemberChunkUploadService;
+use App\Services\Cms\MemberFavoriteService;
 use App\Services\Cms\SiteFrontService;
 use App\Support\CurrentSite;
 use App\Support\MailConfig;
@@ -24,15 +26,13 @@ class MemberController extends Controller
     public function __construct(
         private readonly SiteFrontService $site,
         private readonly MemberChunkUploadService $chunkUpload,
-    ) {
-    }
+        private readonly MemberFavoriteService $favorites,
+    ) {}
 
     /** 会员登录页 */
     public function showLogin(): View
     {
-        $site = $this->site->bootSite();
-
-        return view($this->site->themeView('member.login'), compact('site'));
+        return $this->memberPage('member.login');
     }
 
     /** 提交登录 */
@@ -59,9 +59,7 @@ class MemberController extends Controller
     /** 注册页 */
     public function showRegister(): View
     {
-        $site = $this->site->bootSite();
-
-        return view($this->site->themeView('member.register', 'member.login'), compact('site'));
+        return $this->memberPage('member.register');
     }
 
     /** 提交注册 */
@@ -98,9 +96,7 @@ class MemberController extends Controller
     /** 找回密码页 */
     public function showForgot(): View
     {
-        $site = $this->site->bootSite();
-
-        return view($this->site->themeView('member.forgot', 'member.login'), compact('site'));
+        return $this->memberPage('member.forgot');
     }
 
     /** 申请重置：生成一次性链接（未配邮件时直接展示链接，便于本地调试） */
@@ -149,7 +145,7 @@ class MemberController extends Controller
         ]);
         $site = $this->site->bootSite();
 
-        return view($this->site->themeView('member.reset', 'member.login'), [
+        return $this->memberPage('member.reset', [
             'site' => $site,
             'email' => $request->query('email'),
             'token' => $request->query('token'),
@@ -192,9 +188,25 @@ class MemberController extends Controller
         }
         $site = $this->site->bootSite();
         $member = Auth::guard('member')->user();
-        $member?->loadMissing('group');
+        if (! $member) {
+            return redirect()->route('member.login');
+        }
+        $member->loadMissing('group');
 
-        return view($this->site->themeView('member.profile', 'member.login'), compact('site', 'member'));
+        $comments = $member->comments()->with('entry')->orderByDesc('id')->paginate(8, ['*'], 'comments_page');
+        $submissions = $member->formSubmissions()->with('form')->orderByDesc('id')->paginate(8, ['*'], 'forms_page');
+        $favorites = $member->favoriteEntries()->with(['category', 'modelDef'])
+            ->orderByDesc('cms_member_favorites.id')
+            ->paginate(12, ['*'], 'fav_page');
+        $memberEntries = collect();
+        if ($member->canMember('view_member_content')) {
+            $memberEntries = Entry::query()->with(['category', 'modelDef'])->published()
+                ->orderByDesc('published_at')->orderByDesc('id')->limit(80)->get()
+                ->filter(fn (Entry $e) => $e->isMemberGated() && $e->modelDef?->slug !== 'link')
+                ->values();
+        }
+
+        return $this->memberPage('member.profile', compact('site', 'member', 'comments', 'submissions', 'favorites', 'memberEntries'));
     }
 
     /** 更新资料 */
@@ -207,11 +219,15 @@ class MemberController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:50',
             'avatar' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:32',
+            'bio' => 'nullable|string|max:500',
         ]);
         $member->name = $data['name'];
         if (array_key_exists('avatar', $data) && $data['avatar'] !== null) {
             $member->avatar = $data['avatar'] !== '' ? $data['avatar'] : null;
         }
+        $member->phone = ($data['phone'] ?? '') !== '' ? $data['phone'] : null;
+        $member->bio = ($data['bio'] ?? '') !== '' ? $data['bio'] : null;
         $member->save();
 
         return back()->with('status', '资料已更新');
@@ -267,6 +283,30 @@ class MemberController extends Controller
         return response()->json($result, $result['ok'] ? 200 : 422);
     }
 
+    /** 收藏 / 取消收藏 */
+    public function toggleFavorite(Request $request, Entry $entry): RedirectResponse|JsonResponse
+    {
+        $member = Auth::guard('member')->user();
+        if (! $member) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+            }
+
+            return redirect()->route('member.login')->with('url.intended', url()->previous());
+        }
+
+        if ($entry->isMemberGated() && ! $member->canMember('view_member_content')) {
+            return back()->withErrors(['favorite' => '无权收藏该内容']);
+        }
+
+        $result = $this->favorites->toggle($member, $entry);
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['ok'] ? 200 : 422);
+        }
+
+        return back()->with('status', $result['msg']);
+    }
+
     /** 修改密码 */
     public function updatePassword(Request $request): RedirectResponse
     {
@@ -298,5 +338,13 @@ class MemberController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    /** @param  array<string, mixed>  $data */
+    private function memberPage(string $name, array $data = []): View
+    {
+        $data['site'] = $data['site'] ?? $this->site->bootSite();
+
+        return $this->site->renderThemePage($name, $data);
     }
 }

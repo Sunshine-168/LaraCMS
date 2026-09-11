@@ -43,10 +43,8 @@
     <div class="wrap">
         <a class="brand" href="{{ $prefix ?: '/' }}">{{ $seo['site'] ?? config('app.name') }}</a>
         <nav>
-            @foreach($menuItems ?? [] as $item)
-                <a href="{{ $item->resolved_url }}">{{ $item->t('title') }}</a>
-            @endforeach
-            <a href="{{ $prefix }}/posts">{{ $locale === 'en' ? 'Posts' : '文章' }}</a>
+            @include('cms.partials.header-nav')
+            <a href="{{ $prefix }}/search">{{ $locale === 'en' ? 'Search' : '搜索' }}</a>
             <span class="lang">
                 <a href="/">中文</a> · <a href="/en">EN</a>
             </span>

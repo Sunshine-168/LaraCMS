@@ -7,7 +7,7 @@
         <a class="btn btn-muted" href="{{ route('admin.collectors.logs') }}"><i class="fas fa-history"></i> 运行日志</a>
     </div>
     <p class="muted" style="margin-top:0">
-        支持 RSS/Atom 与 JSON。当前模式：<strong>{{ $collectMode }}</strong>
+        支持 RSS/Atom、JSON 列表、HTML 选择器（仅列表页 + 同源详情，不翻页）。当前模式：<strong>{{ $collectMode }}</strong>
         @if($collectMode === 'queue')
             （队列 <code>{{ $collectQueue }}</code>，需 <code>queue:work --queue={{ $collectQueue }}</code>）
         @elseif($collectMode === 'schedule')

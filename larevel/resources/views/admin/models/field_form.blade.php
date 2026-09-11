@@ -10,10 +10,12 @@
         <input type="text" name="label" value="{{ old('label', $field->label) }}" required>
         <label>类型</label>
         <select name="type">
-            @foreach(['text','textarea','editor','number','url','image','images','file','date','datetime','select','radio','checkbox','switch','map'] as $t)
+            @foreach(['text','textarea','editor','number','url','image','images','file','date','datetime','select','radio','checkbox','switch','map','entry'] as $t)
                 <option value="{{ $t }}" @selected(old('type', $field->type) === $t)>{{ $t }}</option>
             @endforeach
         </select>
+        <label>关联模型 slug（entry 类型，如 manga）</label>
+        <input type="text" name="related_model" value="{{ old('related_model', $field->options['related_model'] ?? ($field->name === 'manga_id' ? 'manga' : '')) }}" placeholder="manga">
         <label>选项（select/radio 用，逗号分隔）</label>
         <input type="text" name="choices" value="{{ old('choices', implode(',', $field->options['choices'] ?? [])) }}">
         <label>排序</label>

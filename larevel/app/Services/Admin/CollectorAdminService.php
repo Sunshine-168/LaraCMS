@@ -35,6 +35,12 @@ class CollectorAdminService
                 'guid_key' => $input['guid_key'] ?? 'id',
                 'published_key' => $input['published_key'] ?? 'published_at',
                 'cover_key' => $input['cover_key'] ?? 'cover',
+                'item_selector' => trim((string) ($input['item_selector'] ?? '')),
+                'link_selector' => trim((string) ($input['link_selector'] ?? 'a')),
+                'title_selector' => trim((string) ($input['title_selector'] ?? '')),
+                'summary_selector' => trim((string) ($input['summary_selector'] ?? '')),
+                'cover_selector' => trim((string) ($input['cover_selector'] ?? '')),
+                'detail_content_selector' => trim((string) ($input['detail_content_selector'] ?? '')),
             ],
         ]);
         $collector->save();

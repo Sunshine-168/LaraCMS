@@ -17,12 +17,10 @@
 <header><div class="wrap">
     <a class="brand" href="/">{{ $site['title'] ?? '源码站' }}</a>
     <nav>
-        @cmsChannel(['type'=>'top','ismenu'=>1])
-            <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
-        @endcmsChannel
+        @include('cms.partials.header-nav')
         <span class="muted">
             @cmsTaglist(['num'=>8])
-                <a class="tag" href="/?tag={{ $item->t('slug') }}">{{ $item->t('title') }}</a>
+                <a class="tag" href="{{ url('/tag/'.$item->t('slug')) }}">{{ $item->t('title') }}</a>
             @endcmsTaglist
         </span>
     </nav>

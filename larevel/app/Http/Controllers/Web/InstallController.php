@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use Database\Seeders\AdminBootstrapSeeder;
 use Database\Seeders\CmsSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,22 +47,33 @@ class InstallController extends Controller
         }
 
         $request->validate([
+            'site_name' => 'required|string|max:80',
+            'admin_name' => 'required|string|max:50',
+            'admin_email' => 'required|email|max:120',
+            'admin_password' => 'required|string|min:8|confirmed',
             'seed_demo' => 'nullable|boolean',
         ]);
 
         try {
             Artisan::call('migrate', ['--force' => true]);
+            AdminBootstrapSeeder::$siteName = (string) $request->input('site_name');
+            AdminBootstrapSeeder::$admin = [
+                'name' => (string) $request->input('admin_name'),
+                'email' => (string) $request->input('admin_email'),
+                'password' => (string) $request->input('admin_password'),
+            ];
+            Artisan::call('db:seed', ['--class' => AdminBootstrapSeeder::class, '--force' => true]);
             if ($request->boolean('seed_demo')) {
                 Artisan::call('db:seed', ['--class' => CmsSeeder::class, '--force' => true]);
             }
             file_put_contents(
                 storage_path('app/install.lock'),
-                "installed_at=".now()->toDateTimeString()."\nseed_demo=".($request->boolean('seed_demo') ? '1' : '0')."\n"
+                'installed_at='.now()->toDateTimeString()."\nseed_demo=".($request->boolean('seed_demo') ? '1' : '0')."\n"
             );
         } catch (\Throwable $e) {
-            return back()->with('error', '安装失败：'.$e->getMessage());
+            return back()->withInput()->with('error', '安装失败：'.$e->getMessage());
         }
 
-        return redirect('/admin/login')->with('status', '安装完成，请登录后台');
+        return redirect('/admin/login')->with('status', '安装完成，请使用刚才填写的管理员账号登录');
     }
 }

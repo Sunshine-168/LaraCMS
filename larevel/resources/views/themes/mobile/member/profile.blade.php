@@ -17,6 +17,8 @@
             @include('cms.partials.member-chunk-upload', ['purpose' => 'avatar', 'targetInput' => 'memberAvatar', 'previewId' => 'memberAvatarPreview'])
         @endif
         <p><label>昵称<br><input type="text" name="name" value="{{ old('name', $member->name) }}" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
+        <p><label>手机<br><input type="text" name="phone" value="{{ old('phone', $member->phone) }}" maxlength="32" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
+        <p><label>简介<br><textarea name="bio" rows="3" maxlength="500" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px">{{ old('bio', $member->bio) }}</textarea></label></p>
         <p><button class="btn" type="submit">保存资料</button></p>
     </form>
 
@@ -28,6 +30,7 @@
         <p><label>确认新密码<br><input type="password" name="password_confirmation" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
         <p><button class="btn" type="submit">保存密码</button></p>
     </form>
+    @include('cms.partials.member-hub')
     <form method="post" action="{{ route('member.logout') }}" style="margin-top:16px">@csrf
         <button class="btn" type="submit" style="background:#64748b">退出登录</button>
     </form>

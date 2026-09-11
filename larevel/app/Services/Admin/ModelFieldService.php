@@ -8,9 +8,7 @@ use App\Support\Result;
 
 class ModelFieldService
 {
-    public function __construct(private readonly FieldBindService $fieldBind)
-    {
-    }
+    public function __construct(private readonly FieldBindService $fieldBind) {}
 
     public function save(ContentModel $model, ?ModelField $field, array $input): array
     {
@@ -20,6 +18,12 @@ class ModelFieldService
         $options = $field->options ?? [];
         if ($choices !== '') {
             $options['choices'] = array_values(array_filter(array_map('trim', explode(',', $choices))));
+        }
+        $related = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($input['related_model'] ?? '')) ?: null;
+        if ($related) {
+            $options['related_model'] = $related;
+        } elseif (($input['type'] ?? $field->type) !== 'entry') {
+            unset($options['related_model']);
         }
 
         $field->fill([

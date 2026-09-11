@@ -23,9 +23,7 @@
     <div class="wrap">
         <a class="brand" href="/">{{ $site['title'] ?? config('app.name') }}</a>
         <nav>
-            @cmsChannel(['type' => 'top', 'ismenu' => 1, 'num' => 12])
-                <a href="{{ $item->frontUrl() }}">{{ $item->t('title') }}</a>
-            @endcmsChannel
+            @include('cms.partials.header-nav')
             <a href="{{ route('search') }}">搜索</a>
             @auth('member')
                 <a href="{{ route('member.profile') }}">我的</a>

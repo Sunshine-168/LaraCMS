@@ -12,22 +12,29 @@
 
         <label>位置</label>
         <input type="text" name="location" value="{{ old('location', $menu->location ?: 'header') }}">
+        <p class="muted">前台用 <code>@cmsMenu(['location' => 'header'])</code> 读取；无菜单时回退到栏目导航。</p>
 
         <label><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $menu->is_active ?? true))> 启用</label>
 
         <h3 style="margin-top:24px;">菜单项</h3>
-        <p class="muted">留空标题的行会被忽略。可增删行后保存。</p>
+        <p class="muted">类型选栏目/文档时填写引用 ID。父级行号从 0 起算，留空为顶级。留空标题的行会被忽略。</p>
         <div id="menu-items">
             @php
                 $rows = old('items');
                 if (! $rows) {
-                    $rows = $menu->items?->map(fn ($item) => [
+                    $idToIndex = [];
+                    $items = $menu->items?->values() ?? collect();
+                    foreach ($items as $idx => $item) {
+                        $idToIndex[$item->id] = $idx;
+                    }
+                    $rows = $items->map(fn ($item, $idx) => [
                         'title_zh_cn' => $item->t('title', 'zh_cn'),
                         'title_en' => $item->t('title', 'en'),
                         'type' => $item->type,
                         'url' => $item->url,
                         'reference_id' => $item->reference_id,
-                    ])->all() ?: [['title_zh_cn' => '', 'title_en' => '', 'type' => 'url', 'url' => '/', 'reference_id' => '']];
+                        'parent_index' => ($item->parent_id && isset($idToIndex[$item->parent_id])) ? $idToIndex[$item->parent_id] : '',
+                    ])->all() ?: [['title_zh_cn' => '', 'title_en' => '', 'type' => 'url', 'url' => '/', 'reference_id' => '', 'parent_index' => '']];
                 }
             @endphp
             @foreach($rows as $i => $row)
@@ -39,13 +46,15 @@
                     <label>类型</label>
                     <select name="items[{{ $i }}][type]">
                         <option value="url" @selected(($row['type'] ?? '') === 'url')>URL</option>
-                        <option value="page" @selected(($row['type'] ?? '') === 'page')>页面 ID</option>
-                        <option value="post" @selected(($row['type'] ?? '') === 'post')>文章 ID</option>
+                        <option value="category" @selected(($row['type'] ?? '') === 'category')>栏目 ID</option>
+                        <option value="entry" @selected(($row['type'] ?? '') === 'entry')>文档 ID</option>
                     </select>
-                    <label>URL</label>
+                    <label>URL（类型为 URL 时）</label>
                     <input type="text" name="items[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}">
                     <label>引用 ID</label>
                     <input type="number" name="items[{{ $i }}][reference_id]" value="{{ $row['reference_id'] ?? '' }}">
+                    <label>父级行号</label>
+                    <input type="number" name="items[{{ $i }}][parent_index]" min="0" value="{{ $row['parent_index'] ?? '' }}">
                 </div>
             @endforeach
         </div>
@@ -72,11 +81,12 @@ document.getElementById('add-item').addEventListener('click', () => {
         <label>类型</label>
         <select name="items[${idx}][type]">
             <option value="url">URL</option>
-            <option value="page">页面 ID</option>
-            <option value="post">文章 ID</option>
+            <option value="category">栏目 ID</option>
+            <option value="entry">文档 ID</option>
         </select>
-        <label>URL</label><input type="text" name="items[${idx}][url]" value="/">
+        <label>URL（类型为 URL 时）</label><input type="text" name="items[${idx}][url]" value="/">
         <label>引用 ID</label><input type="number" name="items[${idx}][reference_id]">
+        <label>父级行号</label><input type="number" name="items[${idx}][parent_index]" min="0">
     `;
     wrap.appendChild(div);
     idx++;
