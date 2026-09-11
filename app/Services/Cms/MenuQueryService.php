@@ -6,8 +6,6 @@ use App\Models\Cms\Category;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Menu;
 use App\Models\Cms\MenuItem;
-use App\Models\Cms\Page;
-use App\Models\Cms\Post;
 use App\Support\Locale;
 use Illuminate\Support\Collection;
 
@@ -51,8 +49,6 @@ class MenuQueryService
         return match ($item->type) {
             'category' => optional(Category::query()->active()->find($item->reference_id))->frontUrl() ?: '#',
             'entry' => (string) (optional(Entry::query()->published()->with(['category', 'modelDef'])->find($item->reference_id))->url ?: '#'),
-            'page' => ($prefix ?: '').'/'.(optional(Page::find($item->reference_id))->t('slug') ?: '#'),
-            'post' => ($prefix ?: '').'/posts/'.(optional(Post::find($item->reference_id))->t('slug') ?: '#'),
             default => $this->localizeUrl($item->url ?: '#', $prefix),
         };
     }

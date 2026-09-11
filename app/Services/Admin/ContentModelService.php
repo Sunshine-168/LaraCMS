@@ -38,6 +38,7 @@ class ContentModelService
             'is_searchable' => array_key_exists('is_searchable', $input)
                 ? ! empty($input['is_searchable'])
                 : ($model->exists ? (bool) $model->is_searchable : true),
+            'allow_contribute' => $kind === 'list' && ! empty($input['allow_contribute']),
         ]);
         $model->save();
 
@@ -80,6 +81,7 @@ class ContentModelService
                 'sort_order' => (int) $source->sort_order,
                 'is_active' => (bool) $source->is_active,
                 'is_searchable' => (bool) ($source->is_searchable ?? true),
+                'allow_contribute' => (bool) ($source->allow_contribute ?? false),
             ]);
             foreach ($source->fields as $field) {
                 ModelField::query()->create([
@@ -116,6 +118,7 @@ class ContentModelService
                 'sort_order' => (int) $model->sort_order,
                 'is_active' => (bool) $model->is_active,
                 'is_searchable' => (bool) ($model->is_searchable ?? true),
+                'allow_contribute' => (bool) ($model->allow_contribute ?? false),
             ],
             'fields' => $model->fields->map(fn (ModelField $f) => [
                 'name' => $f->name,
@@ -159,6 +162,7 @@ class ContentModelService
                 'sort_order' => (int) ($meta['sort_order'] ?? 0),
                 'is_active' => ! empty($meta['is_active']),
                 'is_searchable' => array_key_exists('is_searchable', $meta) ? ! empty($meta['is_searchable']) : true,
+                'allow_contribute' => ($kind === 'list') && ! empty($meta['allow_contribute']),
             ]);
             $model->save();
 

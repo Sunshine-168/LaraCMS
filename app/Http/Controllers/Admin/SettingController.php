@@ -28,6 +28,7 @@ class SettingController extends Controller
             'comments_enabled', 'comments_guest', 'comments_auto_approve',
             'comments_notify_email', 'comments_rate_seconds',
             'map_default_lng', 'map_default_lat',
+            'cdn_url',
         ];
 
         return view('admin.settings.edit', [
@@ -44,6 +45,7 @@ class SettingController extends Controller
             'mail_host', 'mail_encryption', 'mail_username', 'mail_from_address', 'mail_from_name',
             'mobile_theme', 'mobile_domain', 'mobile_detect', 'api_token',
             'comments_notify_email', 'map_default_lng', 'map_default_lat',
+            'cdn_url',
         ]);
         $data['upload_thumb_width'] = (string) max(0, (int) $request->input('upload_thumb_width', 0));
         $data['map_default_lng'] = (string) $request->input('map_default_lng', '116.397');
@@ -72,6 +74,11 @@ class SettingController extends Controller
             $request->validate(['watermark_image' => 'image|max:2048']);
             $data['upload_watermark_image'] = $request->file('watermark_image')->store('cms/watermark', 'public');
         }
+        $cdn = trim((string) ($data['cdn_url'] ?? ''));
+        if ($cdn !== '' && ! preg_match('#^https?://#i', $cdn)) {
+            $cdn = '';
+        }
+        $data['cdn_url'] = rtrim($cdn, '/');
 
         $result = $this->settingService->save($data);
 

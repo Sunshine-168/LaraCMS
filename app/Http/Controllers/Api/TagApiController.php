@@ -44,7 +44,7 @@ class TagApiController extends ApiController
                 'title' => $e->t('title'),
                 'slug' => $e->t('slug'),
                 'excerpt' => $e->t('excerpt'),
-                'cover' => $e->cover,
+                'cover' => cms_media($e->cover),
                 'url' => $e->url,
                 'published_at' => optional($e->published_at)?->toIso8601String(),
             ])->values(),

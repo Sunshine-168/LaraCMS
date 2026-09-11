@@ -69,10 +69,23 @@
         <label>排序</label>
         <input type="number" name="sort_order" value="{{ old('sort_order', $entry->sort_order ?? 0) }}">
         <label>状态</label>
+        @php
+            $canPublish = $canPublish ?? auth('admin')->user()?->canPerm('publish');
+            $statusVal = old('status', $entry->status);
+            if (! $canPublish && $statusVal === 'published') {
+                $statusVal = 'pending';
+            }
+        @endphp
         <select name="status">
-            <option value="draft" @selected(old('status', $entry->status) === 'draft')>草稿</option>
-            <option value="published" @selected(old('status', $entry->status) === 'published')>已发布</option>
+            <option value="draft" @selected($statusVal === 'draft')>草稿</option>
+            <option value="pending" @selected($statusVal === 'pending')>待审</option>
+            @if($canPublish)
+                <option value="published" @selected($statusVal === 'published')>已发布</option>
+            @endif
         </select>
+        @if(! $canPublish)
+            <p class="muted">无发布权限：保存为待审后由超管发布。{{ $entry->status === 'published' ? '当前已发布，保存后将重新进入待审。' : '' }}</p>
+        @endif
         <label>定时发布时间（可空；未来时间则到点才前台可见）</label>
         <input type="datetime-local" name="published_at" value="{{ $pubAt }}">
         <label><input type="checkbox" name="is_homepage" value="1" @checked(old('is_homepage', $entry->is_homepage))> 设为首页文档</label>

@@ -46,6 +46,11 @@ class Member extends Authenticatable
         return $this->hasMany(FormSubmission::class, 'member_id');
     }
 
+    public function contributedEntries(): HasMany
+    {
+        return $this->hasMany(Entry::class, 'member_id');
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(MemberFavorite::class, 'member_id');

@@ -11,6 +11,8 @@
         nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}.card{border:1px solid #333;border-radius:8px;padding:14px;margin:12px 0;background:#171717}
         .btn{display:inline-block;background:#65a30d;color:#052e16;padding:8px 12px;border-radius:6px;font-weight:700}
         .muted{color:#a3a3a3;font-size:13px}.tag{display:inline-block;border:1px solid #404040;padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
+        .card-soft{border:1px solid #333;border-radius:8px;padding:14px;margin:12px 0;background:#171717}
+        input,textarea,select{font:inherit;padding:8px;border:1px solid #333;border-radius:6px;background:#111;color:#f5f5f5}
     </style>
 </head>
 <body>

@@ -14,6 +14,7 @@ class AdminRbacSeeder extends Seeder
             ['key' => 'dashboard', 'name' => '仪表盘', 'group' => '概览', 'sort' => 10],
             ['key' => 'stats', 'name' => '流量统计', 'group' => '概览', 'sort' => 20],
             ['key' => 'entries', 'name' => '内容管理', 'group' => '内容', 'sort' => 30],
+            ['key' => 'publish', 'name' => '发布内容', 'group' => '内容', 'sort' => 35],
             ['key' => 'recycle', 'name' => '回收站', 'group' => '内容', 'sort' => 40],
             ['key' => 'categories', 'name' => '栏目管理', 'group' => '内容', 'sort' => 50],
             ['key' => 'tags', 'name' => '标签管理', 'group' => '内容', 'sort' => 60],
@@ -36,8 +37,6 @@ class AdminRbacSeeder extends Seeder
             ['key' => 'logs', 'name' => '操作日志', 'group' => '系统', 'sort' => 180],
             ['key' => 'admin_users', 'name' => '管理员', 'group' => '系统', 'sort' => 190],
             ['key' => 'roles', 'name' => '角色权限', 'group' => '系统', 'sort' => 200],
-            ['key' => 'pages', 'name' => '页面(旧)', 'group' => '兼容', 'sort' => 210],
-            ['key' => 'posts', 'name' => '文章(旧)', 'group' => '兼容', 'sort' => 220],
         ];
 
         $ids = [];
@@ -61,7 +60,7 @@ class AdminRbacSeeder extends Seeder
 
         $editorKeys = [
             'dashboard', 'stats', 'entries', 'recycle', 'categories', 'tags', 'flags',
-            'media', 'menus', 'forms', 'form_submissions', 'comments', 'redirects', 'pages', 'posts',
+            'media', 'menus', 'forms', 'form_submissions', 'comments', 'redirects',
         ];
         $operatorKeys = ['dashboard', 'stats', 'form_submissions', 'comments', 'redirects', 'media'];
 

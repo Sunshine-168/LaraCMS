@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\CommentController;
 use App\Http\Controllers\Web\MemberController;
+use App\Http\Controllers\Web\MemberEntryController;
 use App\Http\Controllers\Web\SiteController;
 use App\Support\Locale;
 use Illuminate\Support\Facades\Route;
@@ -30,9 +31,6 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/c/{category}', [SiteController::class, 'categoryById'])->name('category.id'.$nameSuffix)->whereNumber('category');
     Route::get('/c/{category}/{slug}', [SiteController::class, 'showByCatId'])->name('entry.catid'.$nameSuffix)
         ->whereNumber('category')->where('slug', '[A-Za-z0-9\-_]+');
-    Route::get('/{modelSlug}/{catSlug}/{slug}', [SiteController::class, 'showByModel'])
-        ->where(['modelSlug' => $slugExclude, 'catSlug' => '[A-Za-z0-9\-_]+', 'slug' => '[A-Za-z0-9\-_]+'])
-        ->name('entry.model'.$nameSuffix);
     Route::get('/member/login', [MemberController::class, 'showLogin'])->name('member.login'.$nameSuffix);
     Route::post('/member/login', [MemberController::class, 'login'])->name('member.login.submit'.$nameSuffix);
     Route::get('/member/register', [MemberController::class, 'showRegister'])->name('member.register'.$nameSuffix);
@@ -43,12 +41,20 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::post('/member/reset', [MemberController::class, 'resetPassword'])->name('member.reset.submit'.$nameSuffix);
     Route::get('/member/profile', [MemberController::class, 'profile'])->name('member.profile'.$nameSuffix);
     Route::post('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update'.$nameSuffix);
+    Route::get('/member/entries', [MemberEntryController::class, 'index'])->name('member.entries.index'.$nameSuffix);
+    Route::get('/member/entries/create', [MemberEntryController::class, 'create'])->name('member.entries.create'.$nameSuffix);
+    Route::post('/member/entries', [MemberEntryController::class, 'store'])->name('member.entries.store'.$nameSuffix);
+    Route::get('/member/entries/{entry}/edit', [MemberEntryController::class, 'edit'])->name('member.entries.edit'.$nameSuffix)->whereNumber('entry');
+    Route::put('/member/entries/{entry}', [MemberEntryController::class, 'update'])->name('member.entries.update'.$nameSuffix)->whereNumber('entry');
     Route::post('/member/favorite/{entry}', [MemberController::class, 'toggleFavorite'])->name('member.favorite'.$nameSuffix)->whereNumber('entry');
     Route::post('/member/password', [MemberController::class, 'updatePassword'])->name('member.password'.$nameSuffix);
     Route::post('/member/upload/init', [MemberController::class, 'uploadInit'])->name('member.upload.init'.$nameSuffix);
     Route::post('/member/upload/chunk', [MemberController::class, 'uploadChunk'])->name('member.upload.chunk'.$nameSuffix);
     Route::post('/member/upload/complete', [MemberController::class, 'uploadComplete'])->name('member.upload.complete'.$nameSuffix);
     Route::post('/member/logout', [MemberController::class, 'logout'])->name('member.logout'.$nameSuffix);
+    Route::get('/{modelSlug}/{catSlug}/{slug}', [SiteController::class, 'showByModel'])
+        ->where(['modelSlug' => $slugExclude, 'catSlug' => '[A-Za-z0-9\-_]+', 'slug' => '[A-Za-z0-9\-_]+'])
+        ->name('entry.model'.$nameSuffix);
     Route::get('/download/{entry}', [SiteController::class, 'download'])->name('download'.$nameSuffix);
     Route::get('/go/{entry}', [SiteController::class, 'go'])->name('go'.$nameSuffix);
     Route::post('/form/{slug}', [SiteController::class, 'submitForm'])->name('form.submit'.$nameSuffix);

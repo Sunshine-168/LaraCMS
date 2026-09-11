@@ -7,6 +7,7 @@ use App\Models\Cms\Entry;
 use App\Models\Cms\Member;
 use App\Models\Cms\MemberGroup;
 use App\Services\Cms\MemberChunkUploadService;
+use App\Services\Cms\MemberContributeService;
 use App\Services\Cms\MemberFavoriteService;
 use App\Services\Cms\SiteFrontService;
 use App\Support\CurrentSite;
@@ -27,6 +28,7 @@ class MemberController extends Controller
         private readonly SiteFrontService $site,
         private readonly MemberChunkUploadService $chunkUpload,
         private readonly MemberFavoriteService $favorites,
+        private readonly MemberContributeService $contribute,
     ) {}
 
     /** 会员登录页 */
@@ -198,6 +200,9 @@ class MemberController extends Controller
         $favorites = $member->favoriteEntries()->with(['category', 'modelDef'])
             ->orderByDesc('cms_member_favorites.id')
             ->paginate(12, ['*'], 'fav_page');
+        $myEntries = $member->contributedEntries()->with(['category', 'modelDef'])->orderByDesc('id')->paginate(8, ['*'], 'posts_page');
+        $canContribute = $member->canMember('contribute');
+        $contributeModels = $canContribute ? $this->contribute->modelsFor($member) : collect();
         $memberEntries = collect();
         if ($member->canMember('view_member_content')) {
             $memberEntries = Entry::query()->with(['category', 'modelDef'])->published()
@@ -206,7 +211,10 @@ class MemberController extends Controller
                 ->values();
         }
 
-        return $this->memberPage('member.profile', compact('site', 'member', 'comments', 'submissions', 'favorites', 'memberEntries'));
+        return $this->memberPage('member.profile', compact(
+            'site', 'member', 'comments', 'submissions', 'favorites', 'memberEntries',
+            'myEntries', 'canContribute', 'contributeModels'
+        ));
     }
 
     /** 更新资料 */

@@ -25,13 +25,17 @@ class EntryController extends Controller
     public function index(Request $request): View
     {
         $modelId = $request->integer('model_id') ?: null;
+        $status = $request->query('status');
 
         return view('admin.entries.index', [
-            'entries' => $this->entryService->paginate($modelId),
+            'entries' => $this->entryService->paginate($modelId, is_string($status) ? $status : null),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'modelId' => $modelId,
+            'status' => $status,
+            'pendingCount' => $this->entryService->pendingCount(),
             'categories' => $this->scopedCategories(),
             'recommends' => Recommend::query()->where('is_active', true)->orderBy('id')->get(),
+            'canPublish' => $this->entryService->canPublish(),
         ]);
     }
 
@@ -57,6 +61,7 @@ class EntryController extends Controller
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
+            'canPublish' => $this->entryService->canPublish(),
             'mapDefaults' => [
                 'lng' => (float) Setting::getValue('map_default_lng', '116.397'),
                 'lat' => (float) Setting::getValue('map_default_lat', '39.908'),
@@ -90,6 +95,7 @@ class EntryController extends Controller
             'tags' => Tag::query()->orderByDesc('id')->get(),
             'locales' => Locale::codes(),
             'revisions' => $entry->revisions,
+            'canPublish' => $this->entryService->canPublish(),
             'mapDefaults' => [
                 'lng' => (float) Setting::getValue('map_default_lng', '116.397'),
                 'lat' => (float) Setting::getValue('map_default_lat', '39.908'),
@@ -141,6 +147,7 @@ class EntryController extends Controller
         $action = (string) $request->input('action');
         $result = match ($action) {
             'publish' => $this->entryService->batchStatus($ids, 'published'),
+            'pending' => $this->entryService->batchStatus($ids, 'pending'),
             'draft' => $this->entryService->batchStatus($ids, 'draft'),
             'delete' => $this->entryService->batchDelete($ids),
             'move' => $this->entryService->batchMove($ids, (int) $request->input('category_id')),

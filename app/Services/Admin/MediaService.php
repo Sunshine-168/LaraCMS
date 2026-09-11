@@ -4,6 +4,7 @@ namespace App\Services\Admin;
 
 use App\Models\Cms\Media;
 use App\Models\Cms\Setting;
+use App\Support\Cdn;
 use App\Support\Result;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -27,7 +28,7 @@ class MediaService
             ->get()
             ->map(fn (Media $m) => [
                 'id' => $m->id,
-                'url' => Storage::disk($m->disk)->url($m->path),
+                'url' => Cdn::url(Storage::disk($m->disk)->url($m->path)),
                 'filename' => $m->filename,
                 'alt' => $m->alt,
             ])

@@ -1,3 +1,31 @@
+@if(!empty($canContribute))
+    <h2 style="margin-top:28px">我的投稿</h2>
+    <p>
+        <a href="{{ route('member.entries.index') }}">全部投稿</a>
+        @if(($contributeModels ?? collect())->isNotEmpty())
+            · <a href="{{ route('member.entries.create', ['model_id' => $contributeModels->first()->id]) }}">写新稿</a>
+        @endif
+    </p>
+    @if(($myEntries ?? null) && $myEntries->isNotEmpty())
+        <ul style="padding-left:18px">
+            @foreach($myEntries as $item)
+                <li style="margin:8px 0">
+                    {{ $item->t('title') }}
+                    <span class="muted"> · {{ \App\Models\Cms\Entry::statusLabel($item->status) }}</span>
+                    @if($item->status === 'published')
+                        · <a href="{{ $item->url }}">查看</a>
+                    @else
+                        · <a href="{{ route('member.entries.edit', $item) }}">编辑</a>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+        {{ $myEntries->links() }}
+    @else
+        <p class="muted">还没有投稿。</p>
+    @endif
+@endif
+
 @if(($favorites ?? null) && $favorites->isNotEmpty())
     <h2 style="margin-top:28px">我的收藏</h2>
     <ul style="padding-left:18px">

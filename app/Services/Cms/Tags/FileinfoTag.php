@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileinfoTag
 {
-    public function __construct(private readonly CmsViewContext $context)
-    {
-    }
+    public function __construct(private readonly CmsViewContext $context) {}
 
     /**
      * 附件信息列表
@@ -69,7 +67,7 @@ class FileinfoTag
             'mime' => $media?->mime,
             'size' => $size,
             'size_text' => $size > 0 ? number_format($size / 1024, 1).' KB' : ($entry->attr('size') ?: ''),
-            'url' => $isUrl ? $path : ($media ? $media->url() : Storage::disk('public')->url($path)),
+            'url' => cms_media($isUrl ? $path : ($media ? $media->url() : Storage::disk('public')->url($path))),
             'download_url' => $downloadUrl,
             'entry' => $entry,
         ];

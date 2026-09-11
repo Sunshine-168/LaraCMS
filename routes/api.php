@@ -33,5 +33,9 @@ Route::prefix('api')->middleware(['api', 'api.token', 'member.api'])->group(func
         Route::put('member/profile', [MemberApiController::class, 'updateProfile']);
         Route::get('member/favorites', [MemberApiController::class, 'favorites']);
         Route::post('member/favorite/{entry}', [MemberApiController::class, 'toggleFavorite'])->whereNumber('entry');
+        Route::get('member/entries', [MemberApiController::class, 'entries']);
+        Route::post('member/entries', [MemberApiController::class, 'storeEntry']);
+        Route::put('member/entries/{entry}', [MemberApiController::class, 'updateEntry'])->whereNumber('entry');
+        Route::post('member/entries/{entry}/submit', [MemberApiController::class, 'submitEntry'])->whereNumber('entry');
     });
 });

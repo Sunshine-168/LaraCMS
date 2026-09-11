@@ -21,7 +21,7 @@
                 @cmsContent(['catid'=>$cat->id,'model'=>'link','num'=>24,'insub'=>false, 'as' => 'link'])
                     <a class="link" href="{{ route('go', $link) }}" target="_blank" rel="noopener">
                         @if($link->cover || $link->attr('icon'))
-                            <img src="{{ $link->cover ?: $link->attr('icon') }}" alt="">
+                            <img src="{{ cms_media($link->cover ?: $link->attr('icon')) }}" alt="">
                         @endif
                         <div>{{ $link->t('title') }}</div>
                         <div class="muted">点击 {{ $link->clicks }}</div>

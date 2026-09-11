@@ -28,7 +28,6 @@ Controller → Service → Model。能力对标 HkCms「栏目 + 动态模型 + 
 
 **方式 B：命令行**
 ```bash
-cd larevel
 composer install
 cp .env.example .env   # 按需
 php artisan key:generate
@@ -42,10 +41,10 @@ php artisan serve
 - 文档 ID 伪静态：`/e/{id}`（站点设置 `url_mode=entry_id`）
 - 后台：http://127.0.0.1:8000/admin/login  
 - 超管：`admin@example.com` / `Admin@12345`（`is_super`，全部权限）
-- 编辑：`editor@example.com` / `Editor@12345`（内容模块权限，无模型/设置/角色管理）
+- 编辑：`editor@example.com` / `Editor@12345`（内容模块权限，**无发布权限**，保存为待审由超管发布）
 - 前台会员：`member@example.com` / `Member@12345`（会员门槛下载）
 - 后台 ACL：角色权限 + 管理员栏目授权；侧栏按 `canPerm` 过滤
-- 系统工具：清缓存 / 再导入演示数据（`admin/cache`）
+- 系统工具：清缓存 / 再导入演示数据 / **整站备份**（`admin/cache`，或 `php artisan cms:backup`）
 - 安装锁：`storage/app/install.lock`（删除后会再次进入 `/install`）
 
 ## 目录
@@ -125,11 +124,16 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 - **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
 - **上传水印**：站点设置可配文字/图片水印及位置（右下/左下/右上/左上/居中）；中文文字依赖系统 TTF，建议用透明 PNG
 - **定时发布**：`published_at` 未到点时前台 `/e/{id}`、下载、外链跳转均为 404；后台列表显示「定时」
+- **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，后台内容列表可筛待审并发布
+- **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能把文档设为已发布，批量发布也会被拒绝
+- **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，`/storage` 与 APP_URL 前缀的附件地址会改写到该域名
+- **整站备份**：系统工具或 `php artisan cms:backup`，zip 含 `database.sql`（sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份
 - **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入
 | `/member/login` | 会员登录 |
 | `/member/register` | 会员注册 |
 | `/member/forgot` | 找回密码（未配邮件时页面展示重置链接） |
-| `/member/profile` | 会员中心（资料含手机/简介、改密、收藏、评论、留言、会员内容） |
+| `/member/profile` | 会员中心（资料含手机/简介、改密、投稿、收藏、评论、留言、会员内容） |
+| `/member/entries` | 我的投稿 / 写新稿 |
 | `/tag/{slug}` | 标签聚合 |
 | `/rss.xml` | RSS |
 | `/sitemap.xml` | 站点地图 |
@@ -164,6 +168,10 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | POST | `/api/member/logout` | 注销会员令牌 |
 | GET | `/api/member/favorites` | 收藏列表 |
 | POST | `/api/member/favorite/{id}` | 收藏/取消收藏 |
+| GET | `/api/member/entries` | 我的投稿 |
+| POST | `/api/member/entries` | 新建投稿（`submit=1` 直接待审） |
+| PUT | `/api/member/entries/{id}` | 更新草稿 |
+| POST | `/api/member/entries/{id}/submit` | 提交审核 |
 
 ## 定时采集（RSS / JSON / HTML）
 
@@ -249,12 +257,10 @@ php artisan cms:collect --sync
 
 ## 不会迁入的旧能力
 
-本仓库只保留 `larevel/`。ThinkPHP HkCms、TallCMS/Filament、旧 `hkcms_*` 桥接代码已移除，下列能力也**不会**再迁：
+本仓库只保留 Laravel CMS。ThinkPHP HkCms、TallCMS/Filament、旧 `hkcms_*` 桥接代码已移除，下列能力也**不会**再迁：
 
 - `{hkcms:}` 标签、运行时按模型建物理表、App Center / 在线升级、Filament 区块编辑器、旧库数据导入
-- HkCms 自由伪静态规则矩阵、会员前台投稿、短信验证码、微信/OAuth 登录、支付、CDN 资源域名
-- TallCMS Webhooks、Scout 全文检索、待审工作流、作者归档页
+- HkCms 自由伪静态规则矩阵、短信验证码、微信/OAuth 登录、支付
+- TallCMS Webhooks、Scout 全文检索、作者归档页
 
-站点运行不依赖上述项。会员权限、表单、评论、收藏、采集、统计、多站点、缓存、预览/修订均已在本目录实现。
-
-**旧后台**：Pages/Posts 仅当 `CMS_SHOW_LEGACY_ADMIN=true` 时出现，前台已切到 Entry。
+站点运行不依赖上述项。会员权限、前台投稿（待审后发布）、表单、评论、收藏、采集、统计、多站点、缓存、预览/修订、CDN 资源域名、整站备份均已在本目录实现。

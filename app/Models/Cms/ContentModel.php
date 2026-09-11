@@ -3,7 +3,6 @@
 namespace App\Models\Cms;
 
 use App\Models\Concerns\BelongsToSite;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,7 +14,7 @@ class ContentModel extends Model
 
     protected $fillable = [
         'site_id', 'slug', 'name', 'kind', 'list_tpl', 'show_tpl',
-        'sort_order', 'is_active', 'is_searchable',
+        'sort_order', 'is_active', 'is_searchable', 'allow_contribute',
     ];
 
     protected function casts(): array
@@ -23,6 +22,7 @@ class ContentModel extends Model
         return [
             'is_active' => 'boolean',
             'is_searchable' => 'boolean',
+            'allow_contribute' => 'boolean',
         ];
     }
 

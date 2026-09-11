@@ -2,7 +2,7 @@
 @section('content')
     @cmsBreadcrumb
     <div style="display:grid;grid-template-columns:200px 1fr;gap:20px;margin-top:16px">
-        <img src="{{ $entry->cover }}" alt="" style="width:100%;border-radius:10px">
+        <img src="{{ cms_media($entry->cover) }}" alt="" style="width:100%;border-radius:10px">
         <div>
             <h1>{{ $entry->t('title') }}</h1>
             <p class="muted">{{ $entry->attr('author') }} · {{ $entry->attr('area') }} · {{ $entry->attr('status') }}</p>

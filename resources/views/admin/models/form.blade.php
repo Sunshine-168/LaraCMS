@@ -29,6 +29,7 @@
 
         <label class="inline"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $model->is_active ?? true))> 启用</label>
         <label class="inline"><input type="checkbox" name="is_searchable" value="1" @checked(old('is_searchable', $model->is_searchable ?? true))> 参与全站搜索</label>
+        <label class="inline"><input type="checkbox" name="allow_contribute" value="1" @checked(old('allow_contribute', $model->allow_contribute ?? false))> 允许会员投稿（仅列表模型）</label>
 
         <div class="form-actions">
             <button class="btn" type="submit">保存</button>

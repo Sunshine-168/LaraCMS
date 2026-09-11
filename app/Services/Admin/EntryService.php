@@ -17,15 +17,26 @@ class EntryService
 {
     public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
-    public function paginate(?int $modelId = null, int $perPage = 15): LengthAwarePaginator
+    public function paginate(?int $modelId = null, ?string $status = null, int $perPage = 15): LengthAwarePaginator
     {
-        $q = Entry::query()->with(['category', 'categories', 'modelDef'])->orderByDesc('id');
+        $q = Entry::query()->with(['category', 'categories', 'modelDef', 'member'])->orderByDesc('id');
         if ($modelId) {
             $q->where('model_id', $modelId);
+        }
+        if (in_array((string) $status, ['draft', 'pending', 'published'], true)) {
+            $q->where('status', $status);
         }
         AdminCategoryScope::applyToEntries($q);
 
         return $q->paginate($perPage);
+    }
+
+    public function pendingCount(): int
+    {
+        $q = Entry::query()->where('status', 'pending');
+        AdminCategoryScope::applyToEntries($q);
+
+        return $q->count();
     }
 
     public function paginateTrashed(int $perPage = 20): LengthAwarePaginator
@@ -75,11 +86,16 @@ class EntryService
         $entry->model_id = (int) $input['model_id'];
         $entry->cover = $input['cover'] ?? null;
         $entry->flags = $this->normalizeFlags($input);
-        $entry->status = $input['status'] ?? 'draft';
+        $status = (string) ($input['status'] ?? 'draft');
+        if ($status === 'published' && ! $this->canPublish()) {
+            $status = 'pending';
+            $input['published_at'] = '';
+        }
+        $entry->status = $status;
         $entry->sort_order = (int) ($input['sort_order'] ?? 0);
         $entry->is_homepage = ! empty($input['is_homepage']);
         $entry->attrs = $input['attrs'] ?? [];
-        if (($input['status'] ?? '') === 'published') {
+        if ($status === 'published') {
             $entry->published_at = ! empty($input['published_at'])
                 ? $input['published_at']
                 : ($entry->published_at ?: now());
@@ -181,11 +197,21 @@ class EntryService
         return $q;
     }
 
+    public function canPublish(): bool
+    {
+        $admin = auth('admin')->user();
+
+        return $admin && $admin->canPerm('publish');
+    }
+
     /** @param  list<int>  $ids */
     public function batchStatus(array $ids, string $status): array
     {
-        if (! in_array($status, ['draft', 'published'], true) || $ids === []) {
+        if (! in_array($status, ['draft', 'pending', 'published'], true) || $ids === []) {
             return Result::fail('参数无效');
+        }
+        if ($status === 'published' && ! $this->canPublish()) {
+            return Result::fail('无发布权限，请提交待审由超管发布');
         }
         $this->scopedEntries($ids)->update([
             'status' => $status,
@@ -240,7 +266,8 @@ class EntryService
         }
         $n = 0;
         $this->scopedEntries($ids)->with(['tags', 'categories'])->get()->each(function (Entry $src) use ($categoryId, &$n) {
-            $copy = $src->replicate(['views', 'downloads', 'clicks', 'preview_token', 'preview_expires_at']);
+            $copy = $src->replicate(['views', 'downloads', 'clicks', 'preview_token', 'preview_expires_at', 'member_id']);
+            $copy->member_id = null;
             $copy->status = 'draft';
             $copy->published_at = null;
             $copy->is_homepage = false;
@@ -331,6 +358,10 @@ class EntryService
             }
         }
         $entry->published_at = ! empty($snap['published_at']) ? $snap['published_at'] : null;
+        if (($entry->status ?? '') === 'published' && ! $this->canPublish()) {
+            $entry->status = 'pending';
+            $entry->published_at = null;
+        }
         $entry->rebuildSearchText();
         $entry->save();
 

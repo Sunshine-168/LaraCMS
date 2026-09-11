@@ -82,7 +82,7 @@ class ContentApiController extends ApiController
             'title' => $e->t('title'),
             'slug' => $e->t('slug'),
             'excerpt' => $e->t('excerpt'),
-            'cover' => $e->cover,
+            'cover' => cms_media($e->cover),
             'flags' => $e->flags,
             'url' => $e->url,
             'views' => $e->views,

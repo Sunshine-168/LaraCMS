@@ -15,7 +15,7 @@
         <h2>公司简介</h2>
         @cmsContent(['model' => 'page', 'num' => 1, 'flag' => 'about'])
             <div class="card-soft" style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;margin-top:12px">
-                @if($item->cover)<img src="{{ $item->cover }}" alt="" style="width:100%;border-radius:8px">@endif
+                @if($item->cover)<img src="{{ cms_media($item->cover) }}" alt="" style="width:100%;border-radius:8px">@endif
                 <div>
                     <h3>{{ $item->t('title') }}</h3>
                     <div class="content">{!! nl2br(e($item->t('content'))) !!}</div>
@@ -43,7 +43,7 @@
         <div class="grid" style="margin-top:12px">
             @cmsContent(['model' => 'product', 'num' => 4])
                 <article class="card-soft">
-                    @if($item->cover)<img src="{{ $item->cover }}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px">@endif
+                    @if($item->cover)<img src="{{ cms_media($item->cover) }}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px">@endif
                     <h3 style="margin:10px 0 6px"><a href="{{ $item->url }}">{{ $item->t('title') }}</a></h3>
                     <p class="muted">{{ $item->attr('price') }}</p>
                 </article>

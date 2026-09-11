@@ -19,4 +19,26 @@
     @if($hasLock ?? false)
         <p class="muted" style="margin-top:10px">安装锁：storage/app/install.lock 已存在</p>
     @endif
+
+    <h3 style="margin-top:28px">整站备份</h3>
+    <p class="muted">打包数据库 SQL（及 sqlite 文件）与 <code>storage/app/public</code> 上传文件，不含 .env。保留最近 5 份。命令：<code>php artisan cms:backup</code></p>
+    <form method="post" action="{{ route('admin.cache.backup') }}" style="margin-bottom:16px">
+        @csrf
+        <button class="btn" type="submit"><i class="fas fa-archive"></i> 立即备份</button>
+    </form>
+    @if(!empty($backups))
+        <table>
+            <thead><tr><th>文件</th><th>大小</th><th>时间</th><th></th></tr></thead>
+            <tbody>
+            @foreach($backups as $b)
+                <tr>
+                    <td>{{ $b['file'] }}</td>
+                    <td>{{ number_format(($b['size'] ?? 0) / 1024, 1) }} KB</td>
+                    <td>{{ date('Y-m-d H:i:s', $b['mtime'] ?? 0) }}</td>
+                    <td><a href="{{ route('admin.cache.backup.download', $b['file']) }}">下载</a></td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    @endif
 @endsection

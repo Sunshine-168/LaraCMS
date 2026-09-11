@@ -19,8 +19,6 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MemberGroupController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\ModelController;
-use App\Http\Controllers\Admin\PageController;
-use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\QuickPanelController;
 use App\Http\Controllers\Admin\RecommendController;
 use App\Http\Controllers\Admin\RecycleController;
@@ -108,14 +106,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('media', [MediaController::class, 'store'])->name('media.store');
             Route::delete('media/{medium}', [MediaController::class, 'destroy'])->name('media.destroy');
         });
-        if (config('cms.show_legacy_admin')) {
-            Route::middleware('admin.perm:pages')->group(function () {
-                Route::resource('pages', PageController::class)->except(['show']);
-            });
-            Route::middleware('admin.perm:posts')->group(function () {
-                Route::resource('posts', PostController::class)->except(['show']);
-            });
-        }
         Route::middleware('admin.perm:stats')->group(function () {
             Route::get('stats', [StatController::class, 'index'])->name('stats.index');
             Route::get('stats/spiders', [StatController::class, 'spiders'])->name('stats.spiders');
@@ -163,6 +153,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('cache', [CacheController::class, 'edit'])->name('cache.edit');
             Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
             Route::post('cache/seed-demo', [CacheController::class, 'seedDemo'])->name('cache.seed-demo');
+            Route::post('cache/backup', [CacheController::class, 'backup'])->name('cache.backup');
+            Route::get('cache/backups/{file}', [CacheController::class, 'downloadBackup'])->name('cache.backup.download');
         });
         Route::middleware('admin.perm:html_cache')->group(function () {
             Route::get('html-cache', [HtmlCacheController::class, 'edit'])->name('html-cache.edit');

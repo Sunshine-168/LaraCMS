@@ -4,8 +4,10 @@
 @section('content')
     <div class="toolbar">
         @foreach($models as $m)
-            <a class="btn {{ (int)$modelId === (int)$m->id ? '' : 'btn-muted' }}" href="{{ route('admin.entries.index', ['model_id' => $m->id]) }}">{{ $m->name }}</a>
+            <a class="btn {{ (int)$modelId === (int)$m->id ? '' : 'btn-muted' }}" href="{{ route('admin.entries.index', ['model_id' => $m->id, 'status' => $status ?? null]) }}">{{ $m->name }}</a>
         @endforeach
+        <a class="btn {{ ($status ?? '') === 'pending' ? '' : 'btn-muted' }}" href="{{ route('admin.entries.index', array_filter(['model_id' => $modelId, 'status' => 'pending'])) }}">待审{{ ($pendingCount ?? 0) > 0 ? ' '.$pendingCount : '' }}</a>
+        <a class="btn {{ ($status ?? '') === '' ? '' : 'btn-muted' }}" href="{{ route('admin.entries.index', array_filter(['model_id' => $modelId])) }}">全部</a>
         <span class="spacer"></span>
         <a class="btn btn-muted" href="{{ route('admin.recycle.index') }}"><i class="fas fa-trash-alt"></i> 回收站</a>
         @if($models->isNotEmpty())
@@ -17,7 +19,10 @@
         <input type="hidden" name="model_id" value="{{ $modelId }}">
         <div class="toolbar" style="flex-wrap:wrap;gap:8px">
             <select name="action" id="batchAction" style="max-width:160px">
-                <option value="publish">批量发布</option>
+                @if($canPublish ?? auth('admin')->user()?->canPerm('publish'))
+                    <option value="publish">批量发布</option>
+                @endif
+                <option value="pending">批量待审</option>
                 <option value="draft">批量草稿</option>
                 <option value="move">批量移动栏目</option>
                 <option value="copy">批量复制</option>
@@ -39,7 +44,7 @@
             <button class="btn btn-muted" type="submit" onclick="return confirm('确认对所选内容执行操作？')">执行</button>
         </div>
         <table class="data">
-            <thead><tr><th style="width:36px"><input type="checkbox" id="checkAll"></th><th>ID</th><th>标题</th><th>模型</th><th>栏目</th><th>Flags</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:36px"><input type="checkbox" id="checkAll"></th><th>ID</th><th>标题</th><th>模型</th><th>栏目</th><th>投稿</th><th>Flags</th><th>状态</th><th>操作</th></tr></thead>
             <tbody>
             @forelse($entries as $entry)
                 <tr>
@@ -48,14 +53,17 @@
                     <td>{{ $entry->t('title') }}</td>
                     <td>{{ $entry->modelDef?->name }}</td>
                     <td>{{ $entry->category?->t('title') }}</td>
+                    <td class="muted">{{ $entry->member?->name ?: '—' }}</td>
                     <td class="muted">{{ $entry->flags ?: '—' }}</td>
                     <td>
-                        @if($entry->isScheduled())
+                        @if($entry->isPending())
+                            <span class="badge badge-warn">待审</span>
+                        @elseif($entry->isScheduled())
                             <span class="badge badge-warn">定时 {{ $entry->published_at->format('Y-m-d H:i') }}</span>
                         @elseif($entry->status === 'published')
                             <span class="badge badge-ok">已发布</span>
                         @else
-                            <span class="badge badge-off">{{ $entry->status }}</span>
+                            <span class="badge badge-off">{{ \App\Models\Cms\Entry::statusLabel($entry->status) }}</span>
                         @endif
                     </td>
                     <td class="actions">
@@ -67,7 +75,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="muted">暂无内容</td></tr>
+                <tr><td colspan="9" class="muted">暂无内容</td></tr>
             @endforelse
             </tbody>
         </table>

@@ -11,9 +11,7 @@ use Illuminate\Support\Collection;
 
 class CategoryService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache)
-    {
-    }
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
     public function all(): Collection
     {
@@ -61,7 +59,7 @@ class CategoryService
         if (! AdminCategoryScope::canAccess((int) $category->id)) {
             return Result::fail(AdminCategoryScope::denyMessage());
         }
-        if ($category->entries()->exists() || $category->posts()->exists()) {
+        if ($category->entries()->exists()) {
             return Result::fail('该栏目下仍有内容，无法删除');
         }
         if ($category->children()->exists()) {

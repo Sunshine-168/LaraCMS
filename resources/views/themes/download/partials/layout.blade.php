@@ -10,6 +10,8 @@
         header{padding:20px 0;border-bottom:1px solid #1e293b}.brand{font-size:24px;font-weight:700;color:#fff}
         nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}.card{background:#111827;border:1px solid #1f2937;border-radius:10px;padding:14px;margin:10px 0}
         .btn{display:inline-block;background:#0284c7;color:#fff;padding:8px 12px;border-radius:6px}.muted{color:#94a3b8;font-size:13px}
+        .card-soft{background:#111827;border:1px solid #1f2937;border-radius:10px;padding:14px;margin:10px 0}
+        input,textarea,select{font:inherit;padding:8px;border:1px solid #1f2937;border-radius:6px;background:#0b1220;color:#e5eefc}
         .filters a{margin-right:8px;padding:4px 8px;border:1px solid #334155;border-radius:999px;font-size:13px}
         .filters a.active{background:#0284c7;border-color:#0284c7;color:#fff}
     </style>

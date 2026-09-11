@@ -5,12 +5,13 @@
         @if($member->group) · {{ $member->group->name }}@endif
     </p>
     @if(session('status'))<p style="color:green">{{ session('status') }}</p>@endif
+    @if(session('error'))<p style="color:#c00">{{ session('error') }}</p>@endif
     @if($errors->any())<p style="color:#c00">{{ $errors->first() }}</p>@endif
 
     <form method="post" action="{{ route('member.profile.update') }}" class="card-soft" style="margin:14px 0">
         @csrf
         <p>
-            <img id="memberAvatarPreview" src="{{ $member->avatar }}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
+            <img id="memberAvatarPreview" src="{{ cms_media($member->avatar) }}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
         </p>
         <p><label>头像 URL<br><input type="text" id="memberAvatar" name="avatar" value="{{ old('avatar', $member->avatar) }}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px"></label></p>
         @if($member->canMember('upload'))

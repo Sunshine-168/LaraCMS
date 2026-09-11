@@ -111,6 +111,10 @@ class FinishUpTest extends TestCase
         $this->get('/member/register')->assertOk()->assertSee('会员注册');
         $this->get('/member/forgot')->assertOk()->assertSee('找回密码');
         $this->get('/tag/laravel')->assertOk()->assertSee('标签');
+
+        Setting::setValue('theme', 'download');
+        $this->get('/tag/laravel')->assertOk()->assertSee('标签');
+        $this->get('/member/login')->assertOk()->assertSee('会员登录');
     }
 
     public function test_legacy_pages_routes_are_hidden(): void

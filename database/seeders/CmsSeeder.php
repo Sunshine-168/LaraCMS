@@ -191,6 +191,7 @@ class CmsSeeder extends Seeder
                     'show_tpl' => $def['show_tpl'],
                     'sort_order' => $sort++,
                     'is_active' => true,
+                    'allow_contribute' => $slug === 'article',
                 ]
             );
             ModelField::query()->where('model_id', $model->id)->delete();

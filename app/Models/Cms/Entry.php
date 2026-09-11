@@ -23,7 +23,7 @@ class Entry extends Model
     protected $fillable = [
         'site_id', 'category_id', 'model_id', 'title', 'slug', 'excerpt', 'content',
         'meta_title', 'meta_description', 'attrs', 'cover', 'flags', 'search_text',
-        'source_guid', 'collector_id',
+        'source_guid', 'collector_id', 'member_id',
         'status', 'sort_order', 'views', 'downloads_count', 'clicks',
         'is_homepage', 'published_at',
         'preview_token', 'preview_expires_at',
@@ -87,6 +87,11 @@ class Entry extends Model
         return $this->hasMany(Comment::class, 'entry_id');
     }
 
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
+    }
+
     public function revisions(): HasMany
     {
         return $this->hasMany(EntryRevision::class, 'entry_id')->orderByDesc('id');
@@ -135,6 +140,21 @@ class Entry extends Model
         return $this->status === 'published'
             && $this->published_at
             && $this->published_at->isFuture();
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'published' => '已发布',
+            'pending' => '待审',
+            'draft' => '草稿',
+            default => $status,
+        };
     }
 
     public function isMemberGated(): bool

@@ -5,6 +5,7 @@ namespace App\Services\Cms\Tags;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Recommend;
 use App\Models\Cms\RecommendItem;
+use App\Support\Cdn;
 use Illuminate\Support\Collection;
 
 class AdvTag
@@ -39,7 +40,13 @@ class AdvTag
             }
         }
 
-        return $items->values();
+        return $items->values()->map(function ($item) {
+            if ($item instanceof RecommendItem) {
+                $item->image = Cdn::url($item->image);
+            }
+
+            return $item;
+        });
     }
 
     /** @param  array<string, mixed>  $options */
@@ -84,7 +91,7 @@ class AdvTag
             $item = new RecommendItem([
                 'title' => $entry->title,
                 'notes' => $entry->excerpt,
-                'image' => $entry->cover,
+                'image' => Cdn::url($entry->cover),
                 'url' => $entry->url,
                 'entry_id' => $entry->id,
                 'is_active' => true,

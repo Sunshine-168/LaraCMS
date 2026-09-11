@@ -3,8 +3,8 @@
 namespace App\Models\Cms;
 
 use App\Models\Concerns\BelongsToSite;
-
 use App\Support\Translatable;
+use App\Support\UrlMode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,15 +13,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Category extends Model
 {
     use BelongsToSite;
-
     use Translatable;
 
     protected $table = 'cms_categories';
 
     protected $fillable = [
-        'site_id','title', 'slug', 'type', 'model_id', 'parent_id', 'list_tpl', 'show_tpl',
+        'site_id', 'title', 'slug', 'type', 'model_id', 'parent_id', 'list_tpl', 'show_tpl',
         'category_tpl', 'is_menu', 'url', 'page_size', 'sort_order', 'status',
-        'meta_title', 'meta_description',];
+        'meta_title', 'meta_description', ];
 
     protected function casts(): array
     {
@@ -54,11 +53,6 @@ class Category extends Model
         return $this->hasMany(Entry::class, 'category_id');
     }
 
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'category_id');
-    }
-
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', 'published');
@@ -77,13 +71,13 @@ class Category extends Model
             return (string) $raw;
         }
 
-        $prefix = \App\Support\UrlMode::localePrefix();
+        $prefix = UrlMode::localePrefix();
         $slug = $this->t('slug');
-        $mode = \App\Support\UrlMode::current();
+        $mode = UrlMode::current();
 
         return match ($mode) {
-            \App\Support\UrlMode::CAT_ID => $prefix.'/c/'.$this->id,
-            \App\Support\UrlMode::MODEL_CAT_ENTRY => $prefix.'/'.($this->modelDef?->slug ?: 'item').'/'.$slug,
+            UrlMode::CAT_ID => $prefix.'/c/'.$this->id,
+            UrlMode::MODEL_CAT_ENTRY => $prefix.'/'.($this->modelDef?->slug ?: 'item').'/'.$slug,
             default => $prefix.'/'.$slug,
         };
     }

@@ -6,13 +6,14 @@
         @if($member->group) · 分组：{{ $member->group->name }}@endif
     </p>
     @if(session('status'))<p style="color:green">{{ session('status') }}</p>@endif
+    @if(session('error'))<p style="color:#c00">{{ session('error') }}</p>@endif
     @if($errors->any())<p style="color:#c00">{{ $errors->first() }}</p>@endif
 
     <h2>资料</h2>
     <form method="post" action="{{ route('member.profile.update') }}">
         @csrf
         <p>
-            <img id="memberAvatarPreview" src="{{ $member->avatar }}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
+            <img id="memberAvatarPreview" src="{{ cms_media($member->avatar) }}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;{{ $member->avatar ? '' : 'display:none' }}">
         </p>
         <p><label>头像 URL<br><input type="text" id="memberAvatar" name="avatar" value="{{ old('avatar', $member->avatar) }}" style="width:100%;padding:8px"></label></p>
         @if($member->canMember('upload'))

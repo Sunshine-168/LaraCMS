@@ -40,6 +40,11 @@
         <input type="text" name="api_token" value="{{ old('api_token', $settings['api_token'] ?? '') }}" placeholder="随机长字符串">
         <p class="muted">接口前缀 /api：site/config、category/*、content/*、search?q=、tag/*、recommend?name=；POST form/{slug}、comment/{id}（有效 Token 可免验证码）</p>
 
+        <h3 style="margin-top:22px">CDN 资源域名</h3>
+        <p class="muted">附件 /storage 与已用 APP_URL 保存的媒体地址会改写到该域名。留空则走站点 APP_URL。不要填带路径的管理后台地址。</p>
+        <label>CDN / 静态资源 URL</label>
+        <input type="url" name="cdn_url" value="{{ old('cdn_url', $settings['cdn_url'] ?? '') }}" placeholder="https://cdn.example.com">
+
         <h3 style="margin-top:22px">移动端分流</h3>
         <p class="muted">配置移动主题后，按域名或 UA 自动切换主题（视图目录 themes/主题名）。</p>
         <label>移动主题（留空关闭分流）</label>
@@ -73,7 +78,7 @@
         <label>图片水印（PNG/JPG，建议透明 PNG）</label>
         @if(!empty($settings['upload_watermark_image']))
             <p>
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings['upload_watermark_image']) }}" alt="" style="max-height:64px;background:#eee;padding:4px">
+                <img src="{{ cms_media(\Illuminate\Support\Facades\Storage::disk('public')->url($settings['upload_watermark_image'])) }}" alt="" style="max-height:64px;background:#eee;padding:4px">
                 <label class="inline"><input type="checkbox" name="upload_watermark_image_clear" value="1"> 清除图片水印</label>
             </p>
         @endif

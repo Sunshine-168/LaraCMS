@@ -12,6 +12,9 @@
         .link{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:14px;text-align:center}
         .link img{width:40px;height:40px;object-fit:contain}.muted{color:#78716c;font-size:13px}
         .section{margin:28px 0} nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+        .card-soft{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:14px;margin:12px 0}
+        .btn{display:inline-block;background:#0f766e;color:#fff;padding:8px 12px;border-radius:6px}
+        input,textarea,select{font:inherit;padding:8px;border:1px solid #e7e5e4;border-radius:6px}
     </style>
 </head>
 <body>

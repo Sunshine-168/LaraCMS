@@ -11,6 +11,9 @@
         nav{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-family:"DM Sans",sans-serif;font-size:14px}
         article{padding:28px 0;border-bottom:1px solid #e7e5e4}.muted{color:#78716c;font-size:13px;font-family:"DM Sans",sans-serif}
         h1{font-size:34px;line-height:1.25} .content p{margin:0 0 1em}
+        .card-soft{background:#fff;border:1px solid #e7e5e4;border-radius:10px;padding:16px;margin:16px 0}
+        .btn{display:inline-block;background:#9a3412;color:#fff;padding:8px 14px;border-radius:6px}
+        input,textarea,select{font:inherit;padding:8px;border:1px solid #e7e5e4;border-radius:6px}
     </style>
 </head>
 <body>

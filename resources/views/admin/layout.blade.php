@@ -42,6 +42,10 @@
                 @if($can('entries'))
                     <a href="{{ route('admin.entries.index') }}" class="{{ request()->routeIs('admin.entries.*') ? 'active' : '' }}">
                         <i class="fas fa-file-alt"></i><span>内容管理</span>
+                        @php $pendingEntries = \App\Models\Cms\Entry::query()->where('status', 'pending')->count(); @endphp
+                        @if($pendingEntries > 0)
+                            <span class="badge badge-warn" style="margin-left:6px">{{ $pendingEntries }}</span>
+                        @endif
                     </a>
                 @endif
                 @if($can('recycle'))
@@ -167,20 +171,6 @@
                 @if($can('roles'))
                     <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
                         <i class="fas fa-user-shield"></i><span>角色权限</span>
-                    </a>
-                @endif
-            @endif
-
-            @if(config('cms.show_legacy_admin') && ($can('pages') || $can('posts')))
-                <div class="nav-header">兼容</div>
-                @if($can('pages'))
-                    <a href="{{ route('admin.pages.index') }}" class="{{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-                        <i class="fas fa-file"></i><span>页面(旧)</span>
-                    </a>
-                @endif
-                @if($can('posts'))
-                    <a href="{{ route('admin.posts.index') }}" class="{{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
-                        <i class="fas fa-newspaper"></i><span>文章(旧)</span>
                     </a>
                 @endif
             @endif

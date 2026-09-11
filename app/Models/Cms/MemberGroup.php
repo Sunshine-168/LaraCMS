@@ -3,7 +3,6 @@
 namespace App\Models\Cms;
 
 use App\Models\Concerns\BelongsToSite;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -26,7 +25,7 @@ class MemberGroup extends Model
     /** @return list<string> */
     public static function permissionKeys(): array
     {
-        return ['download', 'form_submit', 'view_member_content', 'upload'];
+        return ['download', 'form_submit', 'view_member_content', 'upload', 'contribute'];
     }
 
     public function allows(string $key): bool

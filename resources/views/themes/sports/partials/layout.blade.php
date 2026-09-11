@@ -12,6 +12,8 @@
         .card{background:#06281f;border:1px solid #065f46;border-radius:12px;padding:14px;margin:10px 0}
         .live{display:inline-block;background:#dc2626;color:#fff;font-size:11px;padding:2px 8px;border-radius:999px}
         .muted{color:#6ee7b7;opacity:.8;font-size:13px}.btn{display:inline-block;background:#10b981;color:#042f2e;padding:8px 12px;border-radius:6px;font-weight:700}
+        .card-soft{background:#06281f;border:1px solid #065f46;border-radius:12px;padding:14px;margin:10px 0}
+        input,textarea,select{font:inherit;padding:8px;border:1px solid #065f46;border-radius:6px;background:#04110d;color:#ecfdf5}
         .filters a{margin-right:8px;padding:4px 10px;border:1px solid #065f46;border-radius:999px;font-size:13px}
         .filters a.active{background:#059669;border-color:#059669;color:#fff}
     </style>

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Cms\Site;
 use App\Support\AdminSiteAccess;
+use App\Support\Cdn;
 use App\Support\CurrentSite;
 use Closure;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class ResolveSite
         } else {
             $this->resolveByHost($request);
         }
+
+        Cdn::applyRuntime();
 
         return $next($request);
     }

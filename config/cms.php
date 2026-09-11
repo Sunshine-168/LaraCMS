@@ -13,8 +13,6 @@ return [
         'blog', 'manga', 'sports', 'default',
     ],
     'form_captcha' => (bool) env('CMS_FORM_CAPTCHA', true),
-    /** 侧栏是否显示旧 Posts/Pages（路由仍可用） */
-    'show_legacy_admin' => (bool) env('CMS_SHOW_LEGACY_ADMIN', false),
 
     /*
     | 后台任务运行模式（多站点可按站切换）
