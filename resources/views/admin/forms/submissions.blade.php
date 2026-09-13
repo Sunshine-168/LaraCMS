@@ -6,7 +6,7 @@
 @endsection
 @section('content')
     <div class="toolbar">
-        <a class="btn btn-muted" href="{{ route('admin.forms.index') }}"><i class="fas fa-wpforms"></i> 表单定义</a>
+        <a class="btn btn-muted" href="{{ route('admin.forms.index') }}"><i class="fas fa-clipboard-list"></i> 表单定义</a>
         <a class="btn btn-muted" href="{{ route('admin.form-submissions.export', request()->only(['form_id','status'])) }}"><i class="fas fa-file-csv"></i> 导出 CSV</a>
         <form method="get" style="display:flex;gap:8px;align-items:center;margin:0;flex-wrap:wrap">
             <select name="form_id" onchange="this.form.submit()" style="max-width:220px">

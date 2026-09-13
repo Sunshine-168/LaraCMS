@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('title', $form->exists ? '编辑表单' : '新建表单')
-@section('icon', 'wpforms')
+@section('icon', 'clipboard-list')
 @section('content')
     <form method="post" action="{{ $form->exists ? route('admin.forms.update', $form) : route('admin.forms.store') }}" id="formDef">
         @csrf

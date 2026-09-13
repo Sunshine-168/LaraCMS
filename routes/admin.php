@@ -109,8 +109,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
         Route::middleware('admin.perm:stats')->group(function () {
             Route::get('stats', [StatController::class, 'index'])->name('stats.index');
+            Route::get('stats/export', [StatController::class, 'export'])->name('stats.export');
             Route::get('stats/spiders', [StatController::class, 'spiders'])->name('stats.spiders');
+            Route::get('stats/spiders/export', [StatController::class, 'exportSpiders'])->name('stats.spiders.export');
             Route::get('stats/logs', [StatController::class, 'logs'])->name('stats.logs');
+            Route::get('stats/logs/export', [StatController::class, 'exportLogs'])->name('stats.logs.export');
         });
         Route::middleware('admin.perm:models')->group(function () {
             Route::get('models', [ModelController::class, 'index'])->name('models.index');

@@ -20,7 +20,7 @@ class QuickPanelService
             'entries' => ['title' => '内容', 'icon' => 'fas fa-file-alt', 'route' => 'admin.entries.index', 'url' => null, 'perm' => 'entries'],
             'categories' => ['title' => '栏目', 'icon' => 'fas fa-sitemap', 'route' => 'admin.categories.index', 'url' => null, 'perm' => 'categories'],
             'media' => ['title' => '媒体', 'icon' => 'fas fa-photo-video', 'route' => 'admin.media.index', 'url' => null, 'perm' => 'media'],
-            'forms' => ['title' => '表单', 'icon' => 'fas fa-wpforms', 'route' => 'admin.forms.index', 'url' => null, 'perm' => 'forms'],
+            'forms' => ['title' => '表单', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.forms.index', 'url' => null, 'perm' => 'forms'],
             'form_submissions' => ['title' => '留言', 'icon' => 'fas fa-inbox', 'route' => 'admin.form-submissions.index', 'url' => null, 'perm' => 'form_submissions'],
             'comments' => ['title' => '评论', 'icon' => 'fas fa-comments', 'route' => 'admin.comments.index', 'url' => null, 'perm' => 'comments'],
             'stats' => ['title' => '统计', 'icon' => 'fas fa-chart-line', 'route' => 'admin.stats.index', 'url' => null, 'perm' => 'stats'],

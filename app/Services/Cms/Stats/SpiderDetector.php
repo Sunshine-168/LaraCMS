@@ -56,4 +56,42 @@ class SpiderDetector
 
         return [false, null];
     }
+
+    /** search | tool | ai | other */
+    public function group(?string $name): string
+    {
+        return match ((string) $name) {
+            'Baiduspider', 'Googlebot', 'Bingbot', 'YandexBot', 'Sogou', '360Spider',
+            'Bytespider', 'DuckDuckBot', 'Yahoo', 'Applebot' => 'search',
+            'SemrushBot', 'AhrefsBot', 'MJ12bot', 'DotBot', 'PetalBot' => 'tool',
+            'ClaudeBot', 'GPTBot' => 'ai',
+            default => 'other',
+        };
+    }
+
+    public function groupLabel(string $group): string
+    {
+        return match ($group) {
+            'search' => '搜索引擎',
+            'tool' => 'SEO 工具',
+            'ai' => 'AI 爬虫',
+            default => '其他',
+        };
+    }
+
+    /** @return list<string> */
+    public function watchEngines(): array
+    {
+        return ['Baiduspider', 'Googlebot', 'Bingbot'];
+    }
+
+    public function watchLabel(string $name): string
+    {
+        return match ($name) {
+            'Baiduspider' => '百度',
+            'Googlebot' => 'Google',
+            'Bingbot' => 'Bing',
+            default => $name,
+        };
+    }
 }

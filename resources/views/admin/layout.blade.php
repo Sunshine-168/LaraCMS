@@ -90,7 +90,7 @@
                 @endif
                 @if($can('forms'))
                     <a href="{{ route('admin.forms.index') }}" class="{{ request()->routeIs('admin.forms.*') ? 'active' : '' }}">
-                        <i class="fas fa-wpforms"></i><span>表单定义</span>
+                        <i class="fas fa-clipboard-list"></i><span>表单定义</span>
                     </a>
                 @endif
                 @if($can('form_submissions'))

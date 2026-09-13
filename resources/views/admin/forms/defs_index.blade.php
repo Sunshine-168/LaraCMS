@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('title', '表单定义')
-@section('icon', 'wpforms')
+@section('icon', 'clipboard-list')
 @section('content')
     <div class="toolbar">
         <a class="btn" href="{{ route('admin.forms.create') }}"><i class="fas fa-plus"></i> 新建表单</a>
