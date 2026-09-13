@@ -15,11 +15,11 @@
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->adminRole?->name ?? '—' }}</td>
                 <td>{{ $user->is_active ? '启用' : '禁用' }}</td>
-                <td>
-                    <a href="{{ route('admin.admin-users.edit', $user) }}">编辑</a>
-                    <form action="{{ route('admin.admin-users.destroy', $user) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.admin-users.edit', $user) }}">编辑</a>
+                    <form action="{{ route('admin.admin-users.destroy', $user) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>

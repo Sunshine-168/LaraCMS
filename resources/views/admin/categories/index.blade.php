@@ -6,7 +6,7 @@
         <a class="btn" href="{{ route('admin.categories.create') }}"><i class="fas fa-plus"></i> 新建栏目</a>
     </div>
     <table class="data">
-        <thead><tr><th>ID</th><th>标题</th><th>Slug</th><th>类型</th><th>模型</th><th>菜单</th><th>操作</th></tr></thead>
+        <thead><tr><th>ID</th><th>标题</th><th>Slug</th><th>类型</th><th>模型</th><th>菜单</th><th class="col-actions">操作</th></tr></thead>
         <tbody>
         @forelse($categories as $category)
             <tr>
@@ -17,10 +17,10 @@
                 <td>{{ $category->modelDef?->name }}</td>
                 <td>{{ $category->is_menu ? '是' : '—' }}</td>
                 <td class="actions">
-                    <a href="{{ route('admin.categories.edit', $category) }}">编辑</a>
-                    <form action="{{ route('admin.categories.destroy', $category) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.categories.edit', $category) }}">编辑</a>
+                    <form action="{{ route('admin.categories.destroy', $category) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
-                        <button class="btn-link" type="submit" style="color:#dc3545!important">删除</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>

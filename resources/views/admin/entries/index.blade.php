@@ -44,7 +44,7 @@
             <button class="btn btn-muted" type="submit" onclick="return confirm('确认对所选内容执行操作？')">执行</button>
         </div>
         <table class="data">
-            <thead><tr><th style="width:36px"><input type="checkbox" id="checkAll"></th><th>ID</th><th>标题</th><th>模型</th><th>栏目</th><th>投稿</th><th>Flags</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th style="width:36px"><input type="checkbox" id="checkAll"></th><th>ID</th><th>标题</th><th>模型</th><th>栏目</th><th>投稿</th><th>Flags</th><th>状态</th><th class="col-actions">操作</th></tr></thead>
             <tbody>
             @forelse($entries as $entry)
                 <tr>
@@ -67,10 +67,10 @@
                         @endif
                     </td>
                     <td class="actions">
-                        <a href="{{ route('admin.entries.edit', $entry) }}">编辑</a>
-                        <form action="{{ route('admin.entries.destroy', $entry) }}" method="post" style="display:inline" onsubmit="return confirm('移入回收站？')">
+                        <a class="btn btn-sm btn-muted" href="{{ route('admin.entries.edit', $entry) }}">编辑</a>
+                        <form action="{{ route('admin.entries.destroy', $entry) }}" method="post" onsubmit="return confirm('移入回收站？')">
                             @csrf @method('DELETE')
-                            <button class="btn-link" type="submit" style="color:#dc3545!important">删除</button>
+                            <button class="btn btn-sm btn-danger" type="submit">删除</button>
                         </form>
                     </td>
                 </tr>

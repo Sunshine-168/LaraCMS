@@ -16,12 +16,12 @@
                 <td>{{ $locale->is_default ? '是' : '' }}</td>
                 <td>{{ $locale->hide_default ? '是' : '否' }}</td>
                 <td>{{ $locale->is_active ? '启用' : '停用' }}</td>
-                <td>
-                    <a href="{{ route('admin.locales.edit', $locale) }}">编辑</a>
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.locales.edit', $locale) }}">编辑</a>
                     @unless($locale->is_default)
-                        <form action="{{ route('admin.locales.destroy', $locale) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                        <form action="{{ route('admin.locales.destroy', $locale) }}" method="post" onsubmit="return confirm('确认删除？')">
                             @csrf @method('DELETE')
-                            <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                            <button class="btn btn-sm btn-danger" type="submit">删除</button>
                         </form>
                     @endunless
                 </td>

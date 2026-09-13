@@ -98,6 +98,30 @@ class DashboardService
     }
 
     /**
+     * 顶栏待办：有数才亮，点回仪表盘待办区
+     *
+     * @return array{entries:int,forms:int,comments:int,total:int,hint:string}
+     */
+    public function headerInbox(AdminUser $admin): array
+    {
+        $counts = $this->todoCounts($admin, $this->modules($admin));
+        $parts = [];
+        if ($counts['entries'] > 0) {
+            $parts[] = '待审 '.$counts['entries'];
+        }
+        if ($counts['forms'] > 0) {
+            $parts[] = '留言 '.$counts['forms'];
+        }
+        if ($counts['comments'] > 0) {
+            $parts[] = '评论 '.$counts['comments'];
+        }
+
+        return $counts + [
+            'hint' => $parts !== [] ? implode(' · ', $parts) : '没有待办',
+        ];
+    }
+
+    /**
      * @param  array{entries:int,forms:int,comments:int,total:int}  $todoCounts
      * @return list<array<string, mixed>>
      */

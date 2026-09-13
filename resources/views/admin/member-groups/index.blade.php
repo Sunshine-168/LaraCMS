@@ -12,11 +12,11 @@
                 <td>{{ $g->slug }}</td>
                 <td>{{ $g->sort }}</td>
                 <td>{{ $g->is_active ? '启用' : '停用' }}</td>
-                <td>
-                    <a href="{{ route('admin.member-groups.edit', $g) }}">编辑</a>
-                    <form method="post" action="{{ route('admin.member-groups.destroy', $g) }}" style="display:inline" onsubmit="return confirm('确定删除？')">
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.member-groups.edit', $g) }}">编辑</a>
+                    <form method="post" action="{{ route('admin.member-groups.destroy', $g) }}" onsubmit="return confirm('确定删除？')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="link-btn">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
                     </form>
                 </td>
             </tr>

@@ -42,13 +42,13 @@
                     @endif
                 </td>
                 <td class="actions">
-                    <a href="{{ route('admin.collectors.edit', $c) }}">编辑</a>
-                    <form action="{{ route('admin.collectors.run', $c) }}" method="post" style="display:inline">@csrf
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.collectors.edit', $c) }}">编辑</a>
+                    <form action="{{ route('admin.collectors.run', $c) }}" method="post">@csrf
                         <button class="btn btn-sm" type="submit">立即采集</button>
                     </form>
-                    <form action="{{ route('admin.collectors.destroy', $c) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                    <form action="{{ route('admin.collectors.destroy', $c) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger" type="submit">删</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>

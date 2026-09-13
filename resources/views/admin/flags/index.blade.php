@@ -14,11 +14,11 @@
                 <td>{{ $flag->title }}</td>
                 <td>{{ $flag->sort }}</td>
                 <td>{{ $flag->is_active ? '启用' : '停用' }}</td>
-                <td>
-                    <a href="{{ route('admin.flags.edit', $flag) }}">编辑</a>
-                    <form action="{{ route('admin.flags.destroy', $flag) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.flags.edit', $flag) }}">编辑</a>
+                    <form action="{{ route('admin.flags.destroy', $flag) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
-                        <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>

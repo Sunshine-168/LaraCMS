@@ -30,13 +30,13 @@
                     @endif
                 </td>
                 <td>{{ $row->is_active ? '是' : '否' }}</td>
-                <td style="white-space:nowrap">
-                    <a href="{{ route('admin.redirects.edit', $row) }}">编辑</a>
-                    <form action="{{ route('admin.redirects.toggle', $row) }}" method="post" style="display:inline">
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.redirects.edit', $row) }}">编辑</a>
+                    <form action="{{ route('admin.redirects.toggle', $row) }}" method="post">
                         @csrf
                         <button class="btn btn-sm btn-muted" type="submit">{{ $row->is_active ? '停用' : '启用' }}</button>
                     </form>
-                    <form action="{{ route('admin.redirects.destroy', $row) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                    <form action="{{ route('admin.redirects.destroy', $row) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>

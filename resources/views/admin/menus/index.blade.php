@@ -16,11 +16,11 @@
                 <td>{{ $menu->location }}</td>
                 <td>{{ $menu->items->count() }}</td>
                 <td>{{ $menu->is_active ? '是' : '否' }}</td>
-                <td>
-                    <a href="{{ route('admin.menus.edit', $menu) }}">编辑</a>
-                    <form action="{{ route('admin.menus.destroy', $menu) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.menus.edit', $menu) }}">编辑</a>
+                    <form action="{{ route('admin.menus.destroy', $menu) }}" method="post" onsubmit="return confirm('确认删除？')">
                         @csrf @method('DELETE')
-                        <button class="btn btn-danger" type="submit">删除</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>

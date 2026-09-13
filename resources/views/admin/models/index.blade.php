@@ -52,10 +52,10 @@
                             <td>{{ $field->is_filter ? '是' : '' }}</td>
                             <td>{{ $field->is_list ? '是' : '' }}</td>
                             <td class="actions">
-                                <a href="{{ route('admin.models.fields.edit', [$model, $field]) }}">编辑</a>
-                                <form action="{{ route('admin.models.fields.destroy', $field) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                                <a class="btn btn-sm btn-muted" href="{{ route('admin.models.fields.edit', [$model, $field]) }}">编辑</a>
+                                <form action="{{ route('admin.models.fields.destroy', $field) }}" method="post" onsubmit="return confirm('确认删除？')">
                                     @csrf @method('DELETE')
-                                    <button class="btn-link" type="submit" style="color:#dc3545!important">删</button>
+                                    <button class="btn btn-sm btn-danger" type="submit">删除</button>
                                 </form>
                             </td>
                         </tr>

@@ -25,12 +25,12 @@
                 <td>{{ $site->theme ?: '—' }}</td>
                 <td>{{ $site->is_default ? '是' : '' }}</td>
                 <td>{{ $site->is_active ? '启用' : '停用' }}</td>
-                <td>
-                    <a href="{{ route('admin.sites.edit', $site) }}">编辑</a>
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.sites.edit', $site) }}">编辑</a>
                     @unless($site->is_default)
-                        <form action="{{ route('admin.sites.destroy', $site) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除该站点及其全部内容？')">
+                        <form action="{{ route('admin.sites.destroy', $site) }}" method="post" onsubmit="return confirm('确认删除该站点及其全部内容？')">
                             @csrf @method('DELETE')
-                            <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                            <button class="btn btn-sm btn-danger" type="submit">删除</button>
                         </form>
                     @endunless
                 </td>

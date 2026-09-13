@@ -16,12 +16,12 @@
                 <td>{{ $role->is_super ? '超级管理员' : '自定义' }}</td>
                 <td>{{ $role->is_super ? '全部' : $role->permissions_count }}</td>
                 <td>{{ $role->users_count }}</td>
-                <td>
-                    <a href="{{ route('admin.roles.edit', $role) }}">编辑</a>
+                <td class="actions">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.roles.edit', $role) }}">编辑</a>
                     @unless($role->is_super)
-                        <form action="{{ route('admin.roles.destroy', $role) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除？')">
+                        <form action="{{ route('admin.roles.destroy', $role) }}" method="post" onsubmit="return confirm('确认删除？')">
                             @csrf @method('DELETE')
-                            <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                            <button class="btn btn-sm btn-danger" type="submit">删除</button>
                         </form>
                     @endunless
                 </td>

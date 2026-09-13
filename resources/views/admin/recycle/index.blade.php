@@ -19,10 +19,10 @@
                 <td>{{ $entry->modelDef?->name }}</td>
                 <td>{{ $entry->deleted_at }}</td>
                 <td class="actions">
-                    <form action="{{ route('admin.recycle.restore', $entry->id) }}" method="post" style="display:inline">@csrf
+                    <form action="{{ route('admin.recycle.restore', $entry->id) }}" method="post">@csrf
                         <button class="btn btn-sm" type="submit">还原</button>
                     </form>
-                    <form action="{{ route('admin.recycle.force', $entry->id) }}" method="post" style="display:inline" onsubmit="return confirm('彻底删除不可恢复，确认？')">
+                    <form action="{{ route('admin.recycle.force', $entry->id) }}" method="post" onsubmit="return confirm('彻底删除不可恢复，确认？')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger" type="submit">彻底删除</button>
                     </form>

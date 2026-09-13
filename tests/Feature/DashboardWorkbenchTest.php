@@ -87,7 +87,8 @@ class DashboardWorkbenchTest extends TestCase
             ->assertDontSee('今日蜘蛛')
             ->assertDontSee('站点健康')
             ->assertDontSee('采集模式')
-            ->assertDontSee(app()->version());
+            ->assertDontSee(app()->version())
+            ->assertDontSee('fa-database');
     }
 
     public function test_operator_sees_traffic_and_inbox_not_models(): void
@@ -159,6 +160,39 @@ class DashboardWorkbenchTest extends TestCase
             ->assertSee('张三')
             ->assertSee('待审评论')
             ->assertSee('采集任务最近失败')
-            ->assertDontSee('当前没有待审稿');
+            ->assertDontSee('当前没有待审稿')
+            ->assertSee('待办')
+            ->assertSee('看前台')
+            ->assertSee('退出登录')
+            ->assertDontSee('fa-database');
+    }
+
+    public function test_topbar_hides_cache_and_single_site_switcher(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('看前台')
+            ->assertSee('超级管理员')
+            ->assertDontSee('当前站点')
+            ->assertDontSee('fa-database');
+    }
+
+    public function test_topbar_shows_site_switch_only_when_multiple_sites(): void
+    {
+        Site::query()->create([
+            'name' => '第二站',
+            'domain' => 'site-b.test',
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('当前站点')
+            ->assertSee('第二站');
     }
 }

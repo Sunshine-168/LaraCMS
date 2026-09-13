@@ -14,6 +14,9 @@
     $can = fn (string $key) => $admin?->canPerm($key);
     $switchSites = $admin ? \App\Support\AdminSiteAccess::manageableSites($admin) : collect();
     $currentSite = \App\Support\CurrentSite::model();
+    $headerInbox = $admin
+        ? app(\App\Services\Admin\DashboardService::class)->headerInbox($admin)
+        : ['total' => 0, 'hint' => ''];
 @endphp
 <div class="shell">
     <div class="side-backdrop" id="sideBackdrop"></div>
@@ -183,34 +186,46 @@
     <div class="main-wrap">
         <header class="topbar">
             <div class="topbar-left">
-                <button type="button" class="btn btn-muted btn-sm" id="toggleSide" title="菜单"><i class="fas fa-bars"></i></button>
+                <button type="button" class="btn btn-muted btn-sm topbar-menu" id="toggleSide" title="菜单"><i class="fas fa-bars"></i></button>
                 <h1 class="topbar-title">@yield('title', '后台')</h1>
+                @if($headerInbox['total'] > 0)
+                    <a class="topbar-todo" href="{{ route('admin.dashboard') }}#dash-todos" title="{{ $headerInbox['hint'] }}">待办 {{ $headerInbox['total'] }}</a>
+                @endif
             </div>
             <div class="topbar-right">
-                @if($switchSites->count() > 0)
-                    <form method="post" action="{{ route('admin.site.switch') }}" style="display:inline;margin:0">
+                @if($switchSites->count() > 1)
+                    <form method="post" action="{{ route('admin.site.switch') }}" class="site-switch">
                         @csrf
-                        <select name="site_id" onchange="this.form.submit()" title="切换站点" style="max-width:180px">
+                        <label for="top-site">当前站点</label>
+                        <select id="top-site" name="site_id" onchange="this.form.submit()">
                             @foreach($switchSites as $s)
                                 <option value="{{ $s->id }}" @selected((int)($currentSite?->id) === (int)$s->id)>
-                                    {{ $s->name }}{{ $s->is_default ? ' *' : '' }}
+                                    {{ $s->name }}{{ $s->is_default ? '（默认）' : '' }}
                                 </option>
                             @endforeach
                         </select>
                     </form>
                 @endif
-                <a href="{{ url('/') }}" target="_blank" title="访问前台"><i class="fas fa-home"></i> 前台</a>
-                @if($can('html_cache'))
-                    <a href="{{ route('admin.html-cache.edit') }}" title="缓存"><i class="fas fa-database"></i> 缓存</a>
+                <a class="btn btn-sm" href="{{ url('/') }}" target="_blank" rel="noopener">看前台</a>
+                @if($headerInbox['total'] > 0)
+                    <a class="topbar-bell" href="{{ route('admin.dashboard') }}#dash-todos" title="{{ $headerInbox['hint'] }}">
+                        <i class="fas fa-inbox"></i>
+                        <span class="topbar-bell-count">{{ $headerInbox['total'] }}</span>
+                    </a>
                 @endif
-                <span class="user-chip">
-                    <span class="avatar">{{ mb_substr($admin?->name ?? 'A', 0, 1) }}</span>
-                    {{ $admin?->name }}
-                </span>
-                <form method="post" action="{{ route('admin.logout') }}" style="display:inline;margin:0">
-                    @csrf
-                    <button class="btn btn-muted btn-sm" type="submit"><i class="fas fa-sign-out-alt"></i> 退出</button>
-                </form>
+                <details class="account-menu">
+                    <summary class="user-chip">
+                        <span class="avatar">{{ mb_substr($admin?->name ?? 'A', 0, 1) }}</span>
+                        <span>{{ $admin?->name }}</span>
+                    </summary>
+                    <div class="account-menu-panel">
+                        <p class="muted">{{ $admin?->adminRole?->name ?? '管理员' }}</p>
+                        <form method="post" action="{{ route('admin.logout') }}">
+                            @csrf
+                            <button class="btn btn-muted btn-sm" type="submit">退出登录</button>
+                        </form>
+                    </div>
+                </details>
             </div>
         </header>
 

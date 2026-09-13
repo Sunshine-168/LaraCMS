@@ -9,7 +9,7 @@
     <p class="muted">前台用 <code>@@cmsForm(['slug' => 'contact'])</code> 或 POST <code>/form/{slug}</code>。标识 slug 用于模板与路由。</p>
     <table class="data">
         <thead>
-        <tr><th>ID</th><th>名称</th><th>Slug</th><th>字段数</th><th>留言</th><th>状态</th><th>操作</th></tr>
+        <tr><th>ID</th><th>名称</th><th>Slug</th><th>字段数</th><th>留言</th><th>状态</th><th class="col-actions">操作</th></tr>
         </thead>
         <tbody>
         @forelse($forms as $form)
@@ -29,10 +29,10 @@
                     @endif
                 </td>
                 <td class="actions">
-                    <a href="{{ route('admin.forms.edit', $form) }}">编辑</a>
-                    <form action="{{ route('admin.forms.destroy', $form) }}" method="post" style="display:inline" onsubmit="return confirm('删除表单将同时删除留言，确认？')">
+                    <a class="btn btn-sm btn-muted" href="{{ route('admin.forms.edit', $form) }}">编辑</a>
+                    <form action="{{ route('admin.forms.destroy', $form) }}" method="post" onsubmit="return confirm('删除表单将同时删除留言，确认？')">
                         @csrf @method('DELETE')
-                        <button class="btn-link" type="submit" style="color:#dc3545!important">删除</button>
+                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
                     </form>
                 </td>
             </tr>
