@@ -4,6 +4,7 @@ namespace App\Services\Admin;
 
 use App\Models\Admin\AdminQuickPanel;
 use App\Models\Admin\AdminUser;
+use App\Models\Cms\ContentModel;
 use App\Support\Result;
 use Illuminate\Support\Facades\DB;
 
@@ -12,39 +13,44 @@ class QuickPanelService
     /**
      * 可选快捷项目录（key => 定义）
      *
-     * @return array<string, array{title:string,icon:string,route:?string,url:?string,perm:?string}>
+     * @return array<string, array{title:string,icon:string,route:?string,url:?string,perm:?string,query?:array<string, mixed>}>
      */
     public function catalog(): array
     {
         return [
-            'entries' => ['title' => '内容', 'icon' => 'fas fa-file-alt', 'route' => 'admin.entries.index', 'url' => null, 'perm' => 'entries'],
+            'entries_write' => ['title' => '写内容', 'icon' => 'fas fa-pen', 'route' => 'admin.entries.create', 'url' => null, 'perm' => 'entries'],
+            'entries_review' => ['title' => '审稿', 'icon' => 'fas fa-check-double', 'route' => 'admin.entries.index', 'url' => null, 'perm' => 'entries', 'query' => ['status' => 'pending']],
+            'form_submissions' => ['title' => '收件箱', 'icon' => 'fas fa-inbox', 'route' => 'admin.form-submissions.index', 'url' => null, 'perm' => 'form_submissions', 'query' => ['status' => 'unread']],
+            'comments' => ['title' => '审评论', 'icon' => 'fas fa-comments', 'route' => 'admin.comments.index', 'url' => null, 'perm' => 'comments', 'query' => ['status' => 'pending']],
+            'media' => ['title' => '媒体上传', 'icon' => 'fas fa-photo-video', 'route' => 'admin.media.index', 'url' => null, 'perm' => 'media'],
+            'stats' => ['title' => '看流量', 'icon' => 'fas fa-chart-line', 'route' => 'admin.stats.index', 'url' => null, 'perm' => 'stats'],
+            'front' => ['title' => '看前台', 'icon' => 'fas fa-home', 'route' => null, 'url' => url('/'), 'perm' => null],
+            'settings' => ['title' => '站点设置', 'icon' => 'fas fa-cog', 'route' => 'admin.settings.edit', 'url' => null, 'perm' => 'settings'],
+            'entries' => ['title' => '内容列表', 'icon' => 'fas fa-file-alt', 'route' => 'admin.entries.index', 'url' => null, 'perm' => 'entries'],
             'categories' => ['title' => '栏目', 'icon' => 'fas fa-sitemap', 'route' => 'admin.categories.index', 'url' => null, 'perm' => 'categories'],
-            'media' => ['title' => '媒体', 'icon' => 'fas fa-photo-video', 'route' => 'admin.media.index', 'url' => null, 'perm' => 'media'],
-            'forms' => ['title' => '表单', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.forms.index', 'url' => null, 'perm' => 'forms'],
-            'form_submissions' => ['title' => '留言', 'icon' => 'fas fa-inbox', 'route' => 'admin.form-submissions.index', 'url' => null, 'perm' => 'form_submissions'],
-            'comments' => ['title' => '评论', 'icon' => 'fas fa-comments', 'route' => 'admin.comments.index', 'url' => null, 'perm' => 'comments'],
-            'stats' => ['title' => '统计', 'icon' => 'fas fa-chart-line', 'route' => 'admin.stats.index', 'url' => null, 'perm' => 'stats'],
+            'forms' => ['title' => '表单定义', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.forms.index', 'url' => null, 'perm' => 'forms'],
             'menus' => ['title' => '菜单', 'icon' => 'fas fa-bars', 'route' => 'admin.menus.index', 'url' => null, 'perm' => 'menus'],
             'tags' => ['title' => '标签', 'icon' => 'fas fa-tags', 'route' => 'admin.tags.index', 'url' => null, 'perm' => 'tags'],
             'recommends' => ['title' => '推荐位', 'icon' => 'fas fa-th-large', 'route' => 'admin.recommends.index', 'url' => null, 'perm' => 'recommends'],
             'models' => ['title' => '模型', 'icon' => 'fas fa-cube', 'route' => 'admin.models.index', 'url' => null, 'perm' => 'models'],
-            'collectors' => ['title' => '采集', 'icon' => 'fas fa-cloud-download-alt', 'route' => 'admin.collectors.index', 'url' => null, 'perm' => 'collectors'],
+            'collectors' => ['title' => '采集任务', 'icon' => 'fas fa-cloud-download-alt', 'route' => 'admin.collectors.index', 'url' => null, 'perm' => 'collectors'],
             'members' => ['title' => '会员', 'icon' => 'fas fa-users', 'route' => 'admin.members.index', 'url' => null, 'perm' => 'members'],
             'redirects' => ['title' => '重定向', 'icon' => 'fas fa-exchange-alt', 'route' => 'admin.redirects.index', 'url' => null, 'perm' => 'redirects'],
             'html_cache' => ['title' => '缓存', 'icon' => 'fas fa-bolt', 'route' => 'admin.html-cache.edit', 'url' => null, 'perm' => 'html_cache'],
-            'settings' => ['title' => '设置', 'icon' => 'fas fa-cog', 'route' => 'admin.settings.edit', 'url' => null, 'perm' => 'settings'],
             'sites' => ['title' => '站点', 'icon' => 'fas fa-globe', 'route' => 'admin.sites.index', 'url' => null, 'perm' => 'sites'],
             'locales' => ['title' => '语言', 'icon' => 'fas fa-language', 'route' => 'admin.locales.index', 'url' => null, 'perm' => 'locales'],
-            'front' => ['title' => '前台', 'icon' => 'fas fa-home', 'route' => null, 'url' => url('/'), 'perm' => null],
         ];
     }
 
     /** @return list<string> */
     public function defaultKeys(AdminUser $admin): array
     {
-        $keys = ['entries', 'categories', 'media', 'forms', 'form_submissions', 'stats', 'menus', 'front'];
-        if ($admin->isSuperAdmin() || $admin->canPerm('models')) {
-            $keys = array_merge($keys, ['recommends', 'models', 'collectors', 'html_cache', 'settings']);
+        if ($admin->isSuperAdmin()) {
+            $keys = ['entries_write', 'entries_review', 'form_submissions', 'media', 'front', 'settings'];
+        } elseif ($admin->canPerm('entries')) {
+            $keys = ['entries_write', 'entries_review', 'form_submissions', 'comments', 'media', 'front'];
+        } else {
+            $keys = ['stats', 'form_submissions', 'comments', 'media', 'front'];
         }
 
         return array_values(array_filter($keys, fn ($k) => $this->canUse($admin, $k)));
@@ -82,9 +88,15 @@ class QuickPanelService
             }
             $item = $catalog[$key];
             $url = $item['url'] ?? null;
+            if ($key === 'entries_write') {
+                $modelId = ContentModel::query()->where('is_active', true)->orderBy('sort_order')->value('id');
+                if ($modelId) {
+                    $item['query'] = ['model_id' => $modelId];
+                }
+            }
             if (! $url && ! empty($item['route'])) {
                 try {
-                    $url = route($item['route']);
+                    $url = route($item['route'], $item['query'] ?? []);
                 } catch (\Throwable) {
                     continue;
                 }

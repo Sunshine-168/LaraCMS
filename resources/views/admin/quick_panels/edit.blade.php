@@ -2,7 +2,7 @@
 @section('title', '配置快捷面板')
 @section('icon', 'th')
 @section('content')
-    <p class="muted">勾选显示在仪表盘的快捷入口（仅列出你有权限的模块）。全部取消勾选并保存将恢复系统默认组合。</p>
+    <p class="muted">勾选首页「接下来做什么」里的动作（按任务命名，仅列出你有权限的项）。首页最多显示 8 个。全部取消并保存将恢复默认组合。</p>
     <form method="post" action="{{ route('admin.quick-panels.update') }}">
         @csrf
         @method('PUT')
