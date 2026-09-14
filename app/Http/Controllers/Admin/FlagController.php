@@ -4,18 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cms\CmsFlag;
-use App\Support\CurrentSite;
+use App\Services\Admin\FlagAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FlagController extends Controller
 {
+    public function __construct(private readonly FlagAdminService $flags) {}
+
     public function index(): View
     {
         return view('admin.flags.index', [
-            'flags' => CmsFlag::query()->orderBy('sort')->orderBy('id')->get(),
+            'flags' => $this->flags->all(),
         ]);
     }
 
@@ -23,52 +24,56 @@ class FlagController extends Controller
     {
         return view('admin.flags.form', [
             'flag' => new CmsFlag(['is_active' => true, 'sort' => 0]),
+            'usage' => 0,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:40', 'regex:/^[A-Za-z][A-Za-z0-9_\-]*$/', Rule::unique('cms_flags', 'name')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))],
-            'title' => 'required|string|max:80',
-            'sort' => 'nullable|integer|min:0|max:9999',
-        ]);
-        CmsFlag::query()->create([
-            'name' => $data['name'],
-            'title' => $data['title'],
-            'sort' => (int) ($request->input('sort', 0)),
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        $result = $this->flags->save(null, $request->all());
+        $redirect = redirect()->route('admin.flags.index')
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+        if ($result['ok'] && ! $request->boolean('from_form')) {
+            $redirect->with('flag_quick_added', true);
+        }
 
-        return redirect()->route('admin.flags.index')->with('status', '已保存');
+        return $redirect;
     }
 
     public function edit(CmsFlag $flag): View
     {
-        return view('admin.flags.form', compact('flag'));
+        return view('admin.flags.form', [
+            'flag' => $flag,
+            'usage' => $this->flags->usageCount($flag),
+        ]);
     }
 
     public function update(Request $request, CmsFlag $flag): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:40', 'regex:/^[A-Za-z][A-Za-z0-9_\-]*$/', Rule::unique('cms_flags', 'name')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))->ignore($flag->id)],
-            'title' => 'required|string|max:80',
-            'sort' => 'nullable|integer|min:0|max:9999',
-        ]);
-        $flag->fill([
-            'name' => $data['name'],
-            'title' => $data['title'],
-            'sort' => (int) ($request->input('sort', 0)),
-            'is_active' => $request->boolean('is_active'),
-        ])->save();
+        $result = $this->flags->save($flag, $request->all());
 
-        return redirect()->route('admin.flags.index')->with('status', '已保存');
+        return redirect()->route('admin.flags.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    public function toggle(CmsFlag $flag): RedirectResponse
+    {
+        $result = $this->flags->toggle($flag);
+
+        return redirect()->route('admin.flags.index')->with('status', $result['msg']);
+    }
+
+    public function move(Request $request, CmsFlag $flag): RedirectResponse
+    {
+        $result = $this->flags->move($flag, (string) $request->input('dir'));
+
+        return redirect()->route('admin.flags.index')
+            ->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
     public function destroy(CmsFlag $flag): RedirectResponse
     {
-        $flag->delete();
+        $result = $this->flags->delete($flag);
 
-        return redirect()->route('admin.flags.index')->with('status', '已删除');
+        return redirect()->route('admin.flags.index')->with('status', $result['msg']);
     }
 }

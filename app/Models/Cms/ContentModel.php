@@ -40,4 +40,9 @@ class ContentModel extends Model
     {
         return $this->hasMany(Category::class, 'model_id');
     }
+
+    public static function kindLabel(?string $kind): string
+    {
+        return $kind === 'single' ? '单页' : '列表';
+    }
 }

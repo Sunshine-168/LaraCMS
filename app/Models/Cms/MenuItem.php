@@ -39,4 +39,14 @@ class MenuItem extends Model
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
     }
+
+    public static function typeLabel(?string $type): string
+    {
+        return match ($type) {
+            'url' => '链接',
+            'category' => '栏目',
+            'entry' => '文档',
+            default => $type ?: '链接',
+        };
+    }
 }

@@ -15,10 +15,81 @@ class CategoryService
 
     public function all(): Collection
     {
-        $q = Category::query()->with('modelDef')->orderBy('sort_order')->orderBy('id');
+        $q = Category::query()->with('modelDef')->withCount('entries')->orderBy('sort_order')->orderBy('id');
         AdminCategoryScope::applyToCategories($q);
 
         return $q->get();
+    }
+
+    /** 按父子层级展开，depth 从 0 起 */
+    public function flattenTree(): Collection
+    {
+        $all = $this->all();
+        $byParent = $all->groupBy(fn (Category $c) => (int) ($c->parent_id ?? 0));
+        $rows = collect();
+        $placed = [];
+        $append = function (Category $cat, int $depth) use (&$append, &$placed, &$rows, $byParent): void {
+            $id = (int) $cat->id;
+            if (isset($placed[$id])) {
+                return;
+            }
+            $cat->setAttribute('depth', $depth);
+            $rows->push($cat);
+            $placed[$id] = true;
+            foreach ($byParent->get($id, collect()) as $child) {
+                $append($child, $depth + 1);
+            }
+        };
+        foreach ($byParent->get(0, collect()) as $root) {
+            $append($root, 0);
+        }
+        foreach ($all as $cat) {
+            if (! isset($placed[(int) $cat->id])) {
+                $append($cat, 0);
+            }
+        }
+
+        return $rows;
+    }
+
+    public function parentsForSelect(?Category $current = null): Collection
+    {
+        $flat = $this->flattenTree();
+        if (! $current?->exists) {
+            return $flat;
+        }
+        $skipDepth = null;
+        return $flat->filter(function (Category $row) use ($current, &$skipDepth) {
+            if ($skipDepth !== null) {
+                if ($row->depth > $skipDepth) {
+                    return false;
+                }
+                $skipDepth = null;
+            }
+            if ((int) $row->id === (int) $current->id) {
+                $skipDepth = (int) $row->depth;
+
+                return false;
+            }
+
+            return true;
+        })->values();
+    }
+
+    /** @return list<int> */
+    public function descendantIds(int $id): array
+    {
+        $ids = [];
+        $walk = function (int $pid) use (&$walk, &$ids): void {
+            foreach (Category::query()->where('parent_id', $pid)->pluck('id') as $cid) {
+                $cid = (int) $cid;
+                $ids[] = $cid;
+                $walk($cid);
+            }
+        };
+        $walk($id);
+
+        return $ids;
     }
 
     public function save(?Category $category, array $input): array
@@ -39,7 +110,19 @@ class CategoryService
         $category->fill($packed);
         $category->type = $input['type'] ?? 'list';
         $category->model_id = $input['model_id'] ?: null;
-        $category->parent_id = $input['parent_id'] ?: null;
+        $parentId = $input['parent_id'] ? (int) $input['parent_id'] : null;
+        if ($parentId && $category->exists) {
+            if ($parentId === (int) $category->id) {
+                return Result::fail('不能选择自己作为上级栏目');
+            }
+            if (in_array($parentId, $this->descendantIds((int) $category->id), true)) {
+                return Result::fail('不能把栏目放到自己的下级下面');
+            }
+        }
+        if ($parentId && ! AdminCategoryScope::canAccess($parentId) && AdminCategoryScope::allowedIds() !== null) {
+            return Result::fail(AdminCategoryScope::denyMessage());
+        }
+        $category->parent_id = $parentId;
         $category->list_tpl = $input['list_tpl'] ?? null;
         $category->show_tpl = $input['show_tpl'] ?? null;
         $category->category_tpl = $input['category_tpl'] ?? null;

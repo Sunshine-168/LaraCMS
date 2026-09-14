@@ -27,4 +27,28 @@ class Recommend extends Model
     {
         return $this->hasMany(RecommendItem::class, 'recommend_id')->orderBy('sort_order');
     }
+
+    public static function typeLabel(string $type): string
+    {
+        return match ($type) {
+            'image' => '图片',
+            'link' => '链接',
+            'html' => 'HTML',
+            'entry' => '文档',
+            'query' => '自动取数',
+            default => $type,
+        };
+    }
+
+    public function listingCount(): string
+    {
+        if ($this->type === 'query') {
+            $n = (int) ($this->query_params['limit'] ?? 10);
+
+            return '自动最多 '.$n.' 篇';
+        }
+        $n = (int) ($this->items_count ?? $this->items->count());
+
+        return $n > 0 ? $n.' 条' : '还没有条目';
+    }
 }

@@ -26,7 +26,12 @@ class ModelController extends Controller
     public function index(): View
     {
         return view('admin.models.index', [
-            'models' => ContentModel::query()->with(['fields.categories'])->orderBy('sort_order')->orderBy('id')->get(),
+            'models' => ContentModel::query()
+                ->with(['fields.categories'])
+                ->withCount(['entries', 'categories'])
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(),
         ]);
     }
 

@@ -1,70 +1,110 @@
 @extends('admin.layout')
 @section('title', '内容模型')
 @section('icon', 'cube')
-@section('fullwidth', true)
+@section('header_actions')
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.import') }}"><i class="fas fa-file-import"></i> 导入</a>
+    <a class="btn btn-sm" href="{{ route('admin.models.create') }}"><i class="fas fa-plus"></i> 新建模型</a>
+@endsection
 @section('content')
-    <div class="card card-panel">
-        <div class="card-header">
-            <span><i class="fas fa-cube"></i> 内容模型</span>
-            <div class="actions">
-                <a class="btn btn-sm btn-muted" href="{{ route('admin.models.import') }}"><i class="fas fa-file-import"></i> 导入 JSON</a>
-                <a class="btn btn-sm" href="{{ route('admin.models.create') }}"><i class="fas fa-plus"></i> 新建模型</a>
-            </div>
-        </div>
-        <div class="card-body">
-            <p class="muted" style="margin:0">模型决定内容扩展字段与默认模板；支持复制 / 导出 JSON。删除前请先清空该模型下的内容与栏目。</p>
-        </div>
-    </div>
+    <div class="entry-index model-index">
+        <p class="muted recycle-lead">每种模型是一类内容。标题和正文是自带的，这里只加价格、来源这类扩展字段。删除模型前要先清空它的栏目和文章。</p>
 
-    @foreach($models as $model)
-        <div class="card card-panel" style="margin-top:14px;box-shadow:none">
-            <div class="card-header">
-                <span>
-                    {{ $model->name }}
-                    <span class="muted">({{ $model->slug }} / {{ $model->kind }})</span>
-                    @if(! $model->is_active)<span class="badge badge-off">停用</span>@endif
-                </span>
-                <div class="actions">
-                    <a class="btn btn-sm" href="{{ route('admin.models.fields.create', $model) }}">加字段</a>
-                    <a class="btn btn-sm btn-muted" href="{{ route('admin.models.edit', $model) }}">编辑</a>
-                    <a class="btn btn-sm btn-muted" href="{{ route('admin.models.export', $model) }}">导出</a>
-                    <form action="{{ route('admin.models.copy', $model) }}" method="post" style="display:inline">
-                        @csrf
-                        <button class="btn btn-sm btn-muted" type="submit">复制</button>
-                    </form>
-                    <form action="{{ route('admin.models.destroy', $model) }}" method="post" style="display:inline" onsubmit="return confirm('确认删除该模型？')">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger" type="submit">删模型</button>
-                    </form>
-                </div>
-            </div>
-            <div class="card-body" style="padding:0">
-                <table class="data" style="border:0;margin:0">
-                    <thead><tr><th>字段</th><th>标签</th><th>类型</th><th>栏目绑定</th><th>必填</th><th>筛选</th><th>列表</th><th>操作</th></tr></thead>
-                    <tbody>
-                    @forelse($model->fields as $field)
-                        <tr>
-                            <td>{{ $field->name }}</td>
-                            <td>{{ $field->label }}</td>
-                            <td><span class="badge">{{ $field->type }}</span></td>
-                            <td class="muted">{{ $field->categories->isEmpty() ? '全栏目' : $field->categories->count().' 个栏目' }}</td>
-                            <td>{{ $field->is_required ? '是' : '' }}</td>
-                            <td>{{ $field->is_filter ? '是' : '' }}</td>
-                            <td>{{ $field->is_list ? '是' : '' }}</td>
-                            <td class="actions">
-                                <a class="btn btn-sm btn-muted" href="{{ route('admin.models.fields.edit', [$model, $field]) }}">编辑</a>
-                                <form action="{{ route('admin.models.fields.destroy', $field) }}" method="post" onsubmit="return confirm('确认删除？')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" type="submit">删除</button>
+        @forelse($models as $model)
+            <div class="model-block">
+                <div class="model-head">
+                    <div>
+                        <div class="entry-row-title-line">
+                            <a class="entry-row-title" href="{{ route('admin.models.edit', $model) }}">{{ $model->name }}</a>
+                            @unless($model->is_active)
+                                <span class="badge badge-off">停用</span>
+                            @endunless
+                        </div>
+                        <div class="entry-row-meta">
+                            {{ $model->slug }}
+                            · {{ \App\Models\Cms\ContentModel::kindLabel($model->kind) }}
+                            ·
+                            @if($model->entries_count > 0)
+                                <a href="{{ route('admin.entries.index', ['model_id' => $model->id]) }}">{{ $model->entries_count }} 篇</a>
+                            @else
+                                0 篇
+                            @endif
+                            · {{ $model->categories_count }} 个栏目
+                        </div>
+                    </div>
+                    <div class="model-head-actions">
+                        <a class="btn btn-sm" href="{{ route('admin.models.fields.create', $model) }}">加字段</a>
+                        <details class="create-menu">
+                            <summary class="btn btn-sm btn-muted">更多</summary>
+                            <div class="create-menu-list">
+                                <a href="{{ route('admin.models.edit', $model) }}">编辑模型</a>
+                                <a href="{{ route('admin.models.export', $model) }}">导出 JSON</a>
+                                <form action="{{ route('admin.models.copy', $model) }}" method="post">
+                                    @csrf
+                                    <button type="submit">复制一份</button>
                                 </form>
-                            </td>
+                                @if($model->entries_count === 0 && $model->categories_count === 0)
+                                    <form action="{{ route('admin.models.destroy', $model) }}" method="post" onsubmit="return confirm(@json('确定删除「'.$model->name.'」？扩展字段也会删掉。'))">
+                                        @csrf @method('DELETE')
+                                        <button class="is-danger" type="submit">删除模型</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                @if($model->fields->isEmpty())
+                    <p class="muted model-empty-fields">还没有扩展字段。标题、正文是系统自带的。</p>
+                @else
+                    <table class="data">
+                        <thead>
+                        <tr>
+                            <th>字段</th>
+                            <th style="width:120px">类型</th>
+                            <th class="col-actions">操作</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="muted">暂无扩展字段</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        @foreach($model->fields as $field)
+                            <tr>
+                                <td>
+                                    <a class="entry-row-title" href="{{ route('admin.models.fields.edit', [$model, $field]) }}">{{ $field->label ?: $field->name }}</a>
+                                    <div class="entry-row-meta">{{ $field->name }}</div>
+                                    @if($field->is_required || $field->is_filter || $field->is_list || $field->categories->isNotEmpty())
+                                        <div class="entry-row-tags">
+                                            @if($field->is_required)
+                                                <span class="badge">必填</span>
+                                            @endif
+                                            @if($field->is_filter)
+                                                <span class="badge">可筛选</span>
+                                            @endif
+                                            @if($field->is_list)
+                                                <span class="badge">列表显示</span>
+                                            @endif
+                                            @if($field->categories->isNotEmpty())
+                                                <span class="badge">{{ $field->categories->count() }} 个栏目</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+                                <td><span class="badge">{{ \App\Models\Cms\ModelField::typeLabel($field->type) }}</span></td>
+                                <td class="actions">
+                                    <form action="{{ route('admin.models.fields.destroy', $field) }}" method="post" onsubmit="return confirm(@json('删除「'.($field->label ?: $field->name).'」后，写内容页不再出现这项，已填的数据还在。确定？'))">
+                                        @csrf @method('DELETE')
+                                        <button class="btn-quiet" type="submit">删除</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                @endif
             </div>
-        </div>
-    @endforeach
+        @empty
+            <div class="list-empty">
+                <p>还没有内容模型。</p>
+                <a class="btn" href="{{ route('admin.models.create') }}">新建模型</a>
+            </div>
+        @endforelse
+    </div>
 @endsection

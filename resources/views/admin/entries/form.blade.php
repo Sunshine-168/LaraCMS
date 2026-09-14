@@ -62,9 +62,18 @@
                                             <div class="images-thumbs"></div>
                                         </div>
                                     @elseif(in_array($field->type, ['image', 'file'], true))
-                                        <div class="cover-row">
-                                            <input type="text" id="attr_{{ $field->name }}" name="attrs[{{ $field->name }}]" value="{{ is_array($val) ? implode(',', $val) : $val }}">
-                                            <button type="button" class="btn btn-muted" data-media-pick="#attr_{{ $field->name }}">选择媒体</button>
+                                        @php $fileVal = is_array($val) ? implode(',', $val) : $val; @endphp
+                                        <div class="media-field" @if($field->type === 'image') data-media-preview="#attr_{{ $field->name }}" @endif>
+                                            @if($field->type === 'image')
+                                                <div class="media-preview" @if(! $fileVal) hidden @endif>
+                                                    <img src="{{ $fileVal }}" alt="{{ $field->label }}预览">
+                                                    <button type="button" class="media-preview-clear" title="移除">&times;</button>
+                                                </div>
+                                            @endif
+                                            <div class="cover-row">
+                                                <input type="text" id="attr_{{ $field->name }}" name="attrs[{{ $field->name }}]" value="{{ $fileVal }}">
+                                                <button type="button" class="btn btn-muted" data-media-pick="#attr_{{ $field->name }}">选择媒体</button>
+                                            </div>
                                         </div>
                                     @elseif($field->relatedModelSlug())
                                         @php
@@ -178,9 +187,16 @@
                         @endif
 
                         <label>封面</label>
-                        <div class="cover-row">
-                            <input type="text" id="entryCover" name="cover" value="{{ old('cover', $entry->cover) }}" placeholder="图片地址">
-                            <button type="button" class="btn btn-muted" data-media-pick="#entryCover">选择</button>
+                        @php $coverVal = old('cover', $entry->cover); @endphp
+                        <div class="media-field" data-media-preview="#entryCover">
+                            <div class="media-preview" @if(! $coverVal) hidden @endif>
+                                <img src="{{ $coverVal }}" alt="封面预览">
+                                <button type="button" class="media-preview-clear" title="移除封面">&times;</button>
+                            </div>
+                            <div class="cover-row">
+                                <input type="text" id="entryCover" name="cover" value="{{ $coverVal }}" placeholder="图片地址">
+                                <button type="button" class="btn btn-muted" data-media-pick="#entryCover">选择</button>
+                            </div>
                         </div>
 
                         @if($tags->isNotEmpty())

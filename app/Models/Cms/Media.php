@@ -15,6 +15,11 @@ class Media extends Model
 
     protected $fillable = ['site_id', 'disk', 'path', 'filename', 'mime', 'size', 'alt', 'collection'];
 
+    public function isImage(): bool
+    {
+        return str_starts_with((string) $this->mime, 'image/');
+    }
+
     public function url(): string
     {
         return Cdn::url(Storage::disk($this->disk)->url($this->path));

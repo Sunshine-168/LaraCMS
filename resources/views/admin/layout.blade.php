@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', '后台') - CMS</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     @stack('styles')
@@ -68,7 +69,7 @@
                 @endif
                 @if($can('flags'))
                     <a href="{{ route('admin.flags.index') }}" class="{{ request()->routeIs('admin.flags.*') ? 'active' : '' }}">
-                        <i class="fas fa-flag"></i><span>Flags 字典</span>
+                        <i class="fas fa-flag"></i><span>推荐属性</span>
                     </a>
                 @endif
                 @if($can('recommends'))
@@ -83,7 +84,7 @@
                 @endif
                 @if($can('media'))
                     <a href="{{ route('admin.media.index') }}" class="{{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
-                        <i class="fas fa-photo-video"></i><span>媒体附件</span>
+                        <i class="fas fa-photo-video"></i><span>媒体库</span>
                     </a>
                 @endif
                 @if($can('menus'))

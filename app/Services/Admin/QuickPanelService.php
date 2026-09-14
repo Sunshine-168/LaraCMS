@@ -29,7 +29,7 @@ class QuickPanelService
             'entries' => ['title' => '内容列表', 'icon' => 'fas fa-file-alt', 'route' => 'admin.entries.index', 'url' => null, 'perm' => 'entries'],
             'categories' => ['title' => '栏目', 'icon' => 'fas fa-sitemap', 'route' => 'admin.categories.index', 'url' => null, 'perm' => 'categories'],
             'forms' => ['title' => '表单定义', 'icon' => 'fas fa-clipboard-list', 'route' => 'admin.forms.index', 'url' => null, 'perm' => 'forms'],
-            'menus' => ['title' => '菜单', 'icon' => 'fas fa-bars', 'route' => 'admin.menus.index', 'url' => null, 'perm' => 'menus'],
+            'menus' => ['title' => '导航菜单', 'icon' => 'fas fa-bars', 'route' => 'admin.menus.index', 'url' => null, 'perm' => 'menus'],
             'tags' => ['title' => '标签', 'icon' => 'fas fa-tags', 'route' => 'admin.tags.index', 'url' => null, 'perm' => 'tags'],
             'recommends' => ['title' => '推荐位', 'icon' => 'fas fa-th-large', 'route' => 'admin.recommends.index', 'url' => null, 'perm' => 'recommends'],
             'models' => ['title' => '模型', 'icon' => 'fas fa-cube', 'route' => 'admin.models.index', 'url' => null, 'perm' => 'models'],

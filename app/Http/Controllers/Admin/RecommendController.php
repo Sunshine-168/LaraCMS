@@ -76,4 +76,11 @@ class RecommendController extends Controller
 
         return redirect()->route('admin.recommends.index')->with('status', $result['msg']);
     }
+
+    public function toggle(Recommend $recommend): RedirectResponse
+    {
+        $result = $this->recommendService->toggle($recommend);
+
+        return redirect()->route('admin.recommends.index')->with('status', $result['msg']);
+    }
 }

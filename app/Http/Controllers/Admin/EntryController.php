@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cms\Category;
+use App\Models\Cms\CmsFlag;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
 use App\Models\Cms\EntryRevision;
 use App\Models\Cms\Recommend;
 use App\Models\Cms\Setting;
 use App\Models\Cms\Tag;
+use App\Services\Admin\CategoryService;
 use App\Services\Admin\EntryService;
-use App\Support\AdminCategoryScope;
 use App\Support\Locale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,35 +19,52 @@ use Illuminate\View\View;
 
 class EntryController extends Controller
 {
-    public function __construct(private readonly EntryService $entryService) {}
+    public function __construct(
+        private readonly EntryService $entryService,
+        private readonly CategoryService $categoryService,
+    ) {}
 
     /** 内容列表 */
     public function index(Request $request): View
     {
         $modelId = $request->integer('model_id') ?: null;
-        $status = $request->query('status');
+        $status = is_string($request->query('status')) ? $request->query('status') : null;
+        $keyword = trim((string) $request->query('q', ''));
+        $categoryId = $request->integer('category_id') ?: null;
+        $tagId = $request->integer('tag_id') ?: null;
+        $flag = trim((string) $request->query('flag', ''));
+        $models = ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $filterTag = $tagId ? Tag::query()->find($tagId) : null;
+        $filterFlag = $flag !== '' ? CmsFlag::query()->where('name', $flag)->first() : null;
 
         return view('admin.entries.index', [
-            'entries' => $this->entryService->paginate($modelId, is_string($status) ? $status : null),
-            'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'entries' => $this->entryService->paginate($modelId, $status, 15, $keyword, $categoryId, $tagId, $flag ?: null),
+            'models' => $models,
             'modelId' => $modelId,
+            'currentModel' => $models->firstWhere('id', $modelId),
             'status' => $status,
-            'pendingCount' => $this->entryService->pendingCount(),
-            'categories' => $this->scopedCategories(),
+            'q' => $keyword,
+            'categoryId' => $categoryId,
+            'tagId' => $tagId,
+            'flag' => $flag,
+            'filterTag' => $filterTag,
+            'filterFlag' => $filterFlag,
+            'pendingCount' => $this->entryService->pendingCount($modelId),
+            'categories' => $this->scopedCategories($modelId),
             'recommends' => Recommend::query()->where('is_active', true)->orderBy('id')->get(),
+            'flagOptions' => CmsFlag::options(),
             'canPublish' => $this->entryService->canPublish(),
         ]);
     }
 
     protected function scopedCategories(?int $modelId = null)
     {
-        $q = Category::query()->orderBy('sort_order');
+        $rows = $this->categoryService->flattenTree();
         if ($modelId) {
-            $q->where('model_id', $modelId);
+            $rows = $rows->filter(fn ($c) => (int) $c->model_id === (int) $modelId)->values();
         }
-        AdminCategoryScope::applyToCategories($q);
 
-        return $q->get();
+        return $rows;
     }
 
     /** 新建内容 */
@@ -156,7 +173,20 @@ class EntryController extends Controller
             default => ['ok' => false, 'msg' => '未知操作'],
         };
 
-        return redirect()->route('admin.entries.index', ['model_id' => $request->input('model_id')])
+        return redirect()->route('admin.entries.index', $this->listQuery($request))
             ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    /** @return array<string, int|string> */
+    protected function listQuery(Request $request): array
+    {
+        return array_filter([
+            'model_id' => $request->input('model_id'),
+            'status' => $request->input('keep_status'),
+            'q' => $request->input('keep_q'),
+            'category_id' => $request->input('keep_category_id'),
+            'tag_id' => $request->input('keep_tag_id'),
+            'flag' => $request->input('keep_flag'),
+        ], fn ($v) => $v !== null && $v !== '');
     }
 }

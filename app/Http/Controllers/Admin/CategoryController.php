@@ -19,18 +19,33 @@ class CategoryController extends Controller
     public function index(): View
     {
         return view('admin.categories.index', [
-            'categories' => $this->categoryService->all(),
+            'categories' => $this->categoryService->flattenTree(),
         ]);
     }
 
     /** 新建栏目 */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $category = new Category(['status' => 'published', 'type' => 'list', 'is_menu' => true, 'page_size' => 10]);
+        $parent = null;
+        $parentId = $request->integer('parent_id') ?: null;
+        if ($parentId) {
+            $parent = Category::query()->find($parentId);
+            if ($parent) {
+                $category->parent_id = $parent->id;
+                $category->type = $parent->type;
+                $category->model_id = $parent->model_id;
+                $category->page_size = $parent->page_size ?: 10;
+                $category->is_menu = false;
+            }
+        }
+
         return view('admin.categories.form', [
-            'category' => new Category(['status' => 'published', 'type' => 'list', 'is_menu' => true, 'page_size' => 10]),
+            'category' => $category,
+            'parent' => $parent,
             'locales' => Locale::codes(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
-            'parents' => Category::query()->orderBy('sort_order')->orderBy('id')->get(),
+            'parents' => $this->categoryService->parentsForSelect(),
         ]);
     }
 
@@ -39,7 +54,10 @@ class CategoryController extends Controller
     {
         $result = $this->categoryService->save(null, $request->all());
 
-        return redirect()->route('admin.categories.index')->with('status', $result['msg']);
+        return redirect()->route('admin.categories.index')->with(
+            $result['ok'] ? 'status' : 'error',
+            $result['msg']
+        );
     }
 
     /** 编辑栏目 */
@@ -47,9 +65,10 @@ class CategoryController extends Controller
     {
         return view('admin.categories.form', [
             'category' => $category,
+            'parent' => $category->parent,
             'locales' => Locale::codes(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
-            'parents' => Category::query()->where('id', '!=', $category->id)->orderBy('sort_order')->orderBy('id')->get(),
+            'parents' => $this->categoryService->parentsForSelect($category),
         ]);
     }
 
@@ -58,7 +77,10 @@ class CategoryController extends Controller
     {
         $result = $this->categoryService->save($category, $request->all());
 
-        return redirect()->route('admin.categories.index')->with('status', $result['msg']);
+        return redirect()->route('admin.categories.index')->with(
+            $result['ok'] ? 'status' : 'error',
+            $result['msg']
+        );
     }
 
     /** 删除栏目 */

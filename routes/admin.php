@@ -57,8 +57,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.perm:recycle')->group(function () {
             Route::get('recycle', [RecycleController::class, 'index'])->name('recycle.index');
             Route::post('recycle/empty', [RecycleController::class, 'empty'])->name('recycle.empty');
-            Route::post('recycle/{entry}/restore', [RecycleController::class, 'restore'])->name('recycle.restore');
-            Route::delete('recycle/{entry}', [RecycleController::class, 'forceDestroy'])->name('recycle.force');
+            Route::post('recycle/batch', [RecycleController::class, 'batch'])->name('recycle.batch');
+            Route::post('recycle/{entry}/restore', [RecycleController::class, 'restore'])->name('recycle.restore')->whereNumber('entry');
+            Route::delete('recycle/{entry}', [RecycleController::class, 'forceDestroy'])->name('recycle.force')->whereNumber('entry');
         });
         Route::middleware('admin.perm:categories')->group(function () {
             Route::resource('categories', CategoryController::class)->except(['show']);
@@ -67,6 +68,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('tags', TagController::class)->except(['show']);
         });
         Route::middleware('admin.perm:flags')->group(function () {
+            Route::post('flags/{flag}/toggle', [FlagController::class, 'toggle'])->name('flags.toggle');
+            Route::post('flags/{flag}/move', [FlagController::class, 'move'])->name('flags.move');
             Route::resource('flags', FlagController::class)->except(['show']);
         });
         Route::middleware('admin.perm:locales')->group(function () {
@@ -99,11 +102,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('redirects', RedirectController::class)->except(['show']);
         });
         Route::middleware('admin.perm:menus')->group(function () {
+            Route::post('menus/{menu}/toggle', [MenuController::class, 'toggle'])->name('menus.toggle');
             Route::resource('menus', MenuController::class)->except(['show']);
+        });
+        Route::middleware('admin.perm:media,entries')->group(function () {
+            Route::get('media/json', [MediaController::class, 'json'])->name('media.json');
+            Route::post('media/upload', [MediaController::class, 'upload'])->name('media.upload');
         });
         Route::middleware('admin.perm:media')->group(function () {
             Route::get('media', [MediaController::class, 'index'])->name('media.index');
-            Route::get('media/json', [MediaController::class, 'json'])->name('media.json');
             Route::post('media', [MediaController::class, 'store'])->name('media.store');
             Route::delete('media/{medium}', [MediaController::class, 'destroy'])->name('media.destroy');
         });
@@ -133,6 +140,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('models/fields/{field}', [ModelController::class, 'destroyField'])->name('models.fields.destroy');
         });
         Route::middleware('admin.perm:recommends')->group(function () {
+            Route::post('recommends/{recommend}/toggle', [RecommendController::class, 'toggle'])->name('recommends.toggle');
             Route::resource('recommends', RecommendController::class)->except(['show']);
         });
         Route::middleware('admin.perm:members')->group(function () {

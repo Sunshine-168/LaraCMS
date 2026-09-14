@@ -8,6 +8,7 @@ use App\Services\Cms\HtmlCacheService;
 use App\Support\Result;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RecommendService
 {
@@ -15,23 +16,33 @@ class RecommendService
 
     public function all(): Collection
     {
-        return Recommend::query()->with('items')->orderBy('id')->get();
+        return Recommend::query()->withCount('items')->orderBy('id')->get();
     }
 
     public function save(?Recommend $recommend, array $input): array
     {
         return DB::transaction(function () use ($recommend, $input) {
             $recommend ??= new Recommend;
-            $name = trim((string) ($input['name'] ?? 'block'));
+            $title = trim((string) ($input['title'] ?? ''));
+            $name = strtolower(trim((string) ($input['name'] ?? '')));
+            if ($name === '' && $title !== '') {
+                $name = Str::slug($title);
+            }
+            if ($name === '') {
+                return Result::fail('请填写标识码，如 home_banner');
+            }
+            if ($title === '') {
+                $title = $name;
+            }
             $dup = Recommend::query()
                 ->where('name', $name)
                 ->when($recommend->exists, fn ($q) => $q->where('id', '!=', $recommend->id))
                 ->exists();
             if ($dup) {
-                return Result::fail('推荐位标识已存在');
+                return Result::fail('标识码「'.$name.'」已存在');
             }
             $recommend->name = $name;
-            $recommend->title = $input['title'] ?? $recommend->name;
+            $recommend->title = $title;
             $type = (string) ($input['type'] ?? 'image');
             if (! in_array($type, ['image', 'link', 'html', 'entry', 'query'], true)) {
                 $type = 'image';
@@ -69,16 +80,26 @@ class RecommendService
 
             $this->htmlCache->forgetAll('recommend:'.$recommend->id);
 
-            return Result::ok($recommend->load('items'), '保存成功');
+            return Result::ok($recommend->load('items'), '已保存');
         });
+    }
+
+    public function toggle(Recommend $recommend): array
+    {
+        $recommend->is_active = ! $recommend->is_active;
+        $recommend->save();
+        $this->htmlCache->forgetAll('recommend:'.$recommend->id);
+
+        return Result::ok($recommend, $recommend->is_active ? '已启用，前台会再显示' : '已停用，前台不再调用');
     }
 
     public function delete(Recommend $recommend): array
     {
+        $n = $recommend->items()->count();
         $this->htmlCache->forgetAll('recommend:'.$recommend->id);
         $recommend->delete();
 
-        return Result::ok(null, '已删除');
+        return Result::ok(null, $n > 0 ? '已删除推荐位和 '.$n.' 条条目' : '已删除');
     }
 
     /** @param  array<string, mixed>  $input */

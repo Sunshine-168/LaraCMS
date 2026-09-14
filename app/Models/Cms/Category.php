@@ -48,6 +48,17 @@ class Category extends Model
         return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
     }
 
+    public static function typeLabel(?string $type): string
+    {
+        return match ($type) {
+            'hub' => '频道',
+            'list' => '列表',
+            'single' => '单页',
+            'link' => '外链',
+            default => $type ?: '—',
+        };
+    }
+
     public function entries(): HasMany
     {
         return $this->hasMany(Entry::class, 'category_id');

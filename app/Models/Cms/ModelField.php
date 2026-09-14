@@ -60,4 +60,27 @@ class ModelField extends Model
 
         return null;
     }
+
+    public static function typeLabel(string $type): string
+    {
+        return match ($type) {
+            'text' => '单行文本',
+            'textarea' => '多行文本',
+            'editor' => '编辑器',
+            'number' => '数字',
+            'url' => '链接',
+            'image' => '图片',
+            'images' => '图集',
+            'file' => '文件',
+            'date' => '日期',
+            'datetime' => '日期时间',
+            'select' => '下拉',
+            'radio' => '单选',
+            'checkbox' => '多选',
+            'switch' => '开关',
+            'map' => '地图',
+            'entry' => '关联文档',
+            default => $type,
+        };
+    }
 }

@@ -17,34 +17,86 @@ class EntryService
 {
     public function __construct(private readonly HtmlCacheService $htmlCache) {}
 
-    public function paginate(?int $modelId = null, ?string $status = null, int $perPage = 15): LengthAwarePaginator
+    public function paginate(
+        ?int $modelId = null,
+        ?string $status = null,
+        int $perPage = 15,
+        ?string $keyword = null,
+        ?int $categoryId = null,
+        ?int $tagId = null,
+        ?string $flag = null,
+    ): LengthAwarePaginator {
+        $query = Entry::query()
+            ->with(['category', 'modelDef', 'member'])
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id');
+        if ($modelId) {
+            $query->where('model_id', $modelId);
+        }
+        $status = (string) $status;
+        if ($status === 'scheduled') {
+            $query->where('status', 'published')->where('published_at', '>', now());
+        } elseif ($status === 'published') {
+            $query->published();
+        } elseif (in_array($status, ['draft', 'pending'], true)) {
+            $query->where('status', $status);
+        }
+        $keyword = trim((string) $keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $query->where(function ($inner) use ($keyword, $like) {
+                $inner->where('search_text', 'like', $like)
+                    ->orWhere('title', 'like', $like);
+                if (ctype_digit($keyword)) {
+                    $inner->orWhere('id', (int) $keyword);
+                }
+            });
+        }
+        if ($categoryId) {
+            $query->inCategories([$categoryId]);
+        }
+        if ($tagId) {
+            $query->whereHas('tags', fn ($q) => $q->where('cms_tags.id', $tagId));
+        }
+        if ($flag) {
+            $query->withFlag($flag);
+        }
+        AdminCategoryScope::applyToEntries($query);
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function pendingCount(?int $modelId = null): int
     {
-        $q = Entry::query()->with(['category', 'categories', 'modelDef', 'member'])->orderByDesc('id');
+        $q = Entry::query()->where('status', 'pending');
         if ($modelId) {
             $q->where('model_id', $modelId);
         }
-        if (in_array((string) $status, ['draft', 'pending', 'published'], true)) {
-            $q->where('status', $status);
-        }
-        AdminCategoryScope::applyToEntries($q);
-
-        return $q->paginate($perPage);
-    }
-
-    public function pendingCount(): int
-    {
-        $q = Entry::query()->where('status', 'pending');
         AdminCategoryScope::applyToEntries($q);
 
         return $q->count();
     }
 
-    public function paginateTrashed(int $perPage = 20): LengthAwarePaginator
+    public function paginateTrashed(int $perPage = 20, ?string $keyword = null, ?int $modelId = null): LengthAwarePaginator
     {
-        $q = Entry::onlyTrashed()->with(['category', 'categories', 'modelDef'])->orderByDesc('deleted_at');
-        AdminCategoryScope::applyToEntries($q);
+        $query = Entry::onlyTrashed()->with(['category', 'modelDef'])->orderByDesc('deleted_at')->orderByDesc('id');
+        if ($modelId) {
+            $query->where('model_id', $modelId);
+        }
+        $keyword = trim((string) $keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $query->where(function ($inner) use ($keyword, $like) {
+                $inner->where('search_text', 'like', $like)
+                    ->orWhere('title', 'like', $like);
+                if (ctype_digit($keyword)) {
+                    $inner->orWhere('id', (int) $keyword);
+                }
+            });
+        }
+        AdminCategoryScope::applyToEntries($query);
 
-        return $q->paginate($perPage);
+        return $query->paginate($perPage)->withQueryString();
     }
 
     public function save(?Entry $entry, array $input): array
@@ -178,7 +230,49 @@ class EntryService
         $entry->restore();
         $this->htmlCache->forgetByEntry($entry);
 
-        return Result::ok($entry, '已还原');
+        return Result::ok($entry, '已还原，可在内容列表中继续编辑');
+    }
+
+    /** @param  list<int>  $ids */
+    public function restoreMany(array $ids): array
+    {
+        if ($ids === []) {
+            return Result::fail('请先勾选要还原的内容');
+        }
+        $query = Entry::onlyTrashed()->whereIn('id', $ids);
+        AdminCategoryScope::applyToEntries($query);
+        $count = 0;
+        foreach ($query->get() as $entry) {
+            $result = $this->restore($entry);
+            if ($result['ok']) {
+                $count++;
+            }
+        }
+
+        return $count > 0
+            ? Result::ok(null, '已还原 '.$count.' 篇，可在内容列表中继续编辑')
+            : Result::fail('没有可还原的内容');
+    }
+
+    /** @param  list<int>  $ids */
+    public function forceDeleteMany(array $ids): array
+    {
+        if ($ids === []) {
+            return Result::fail('请先勾选要删除的内容');
+        }
+        $query = Entry::onlyTrashed()->whereIn('id', $ids);
+        AdminCategoryScope::applyToEntries($query);
+        $count = 0;
+        foreach ($query->get() as $entry) {
+            $result = $this->forceDelete($entry);
+            if ($result['ok']) {
+                $count++;
+            }
+        }
+
+        return $count > 0
+            ? Result::ok(null, '已彻底删除 '.$count.' 篇')
+            : Result::fail('没有可删除的内容');
     }
 
     public function forceDelete(Entry $entry): array

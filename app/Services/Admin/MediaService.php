@@ -4,7 +4,6 @@ namespace App\Services\Admin;
 
 use App\Models\Cms\Media;
 use App\Models\Cms\Setting;
-use App\Support\Cdn;
 use App\Support\Result;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -13,9 +12,26 @@ use Illuminate\Support\Facades\Storage;
 class MediaService
 {
     /** 媒体分页 */
-    public function paginate(int $perPage = 24): LengthAwarePaginator
+    public function paginate(int $perPage = 24, ?string $keyword = null, ?string $type = null): LengthAwarePaginator
     {
-        return Media::query()->orderByDesc('id')->paginate($perPage);
+        $query = Media::query()->orderByDesc('id');
+        $keyword = trim((string) $keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $query->where(function ($inner) use ($like) {
+                $inner->where('filename', 'like', $like)
+                    ->orWhere('alt', 'like', $like);
+            });
+        }
+        if ($type === 'image') {
+            $query->where('mime', 'like', 'image/%');
+        } elseif ($type === 'file') {
+            $query->where(function ($inner) {
+                $inner->whereNull('mime')->orWhere('mime', 'not like', 'image/%');
+            });
+        }
+
+        return $query->paginate($perPage)->withQueryString();
     }
 
     /** 供选择器使用的最近图片 */
@@ -26,13 +42,19 @@ class MediaService
             ->orderByDesc('id')
             ->limit($limit)
             ->get()
-            ->map(fn (Media $m) => [
-                'id' => $m->id,
-                'url' => Cdn::url(Storage::disk($m->disk)->url($m->path)),
-                'filename' => $m->filename,
-                'alt' => $m->alt,
-            ])
+            ->map(fn (Media $m) => $this->toPickerItem($m))
             ->all();
+    }
+
+    /** @return array{id:int,url:string,filename:string,alt:?string} */
+    public function toPickerItem(Media $media): array
+    {
+        return [
+            'id' => $media->id,
+            'url' => $media->url(),
+            'filename' => $media->filename,
+            'alt' => $media->alt,
+        ];
     }
 
     /** 上传文件（图片可缩略 / 水印） */

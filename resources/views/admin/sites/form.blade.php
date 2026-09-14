@@ -21,7 +21,7 @@
         <label><input type="checkbox" name="is_default" value="1" @checked(old('is_default', $site->is_default))> 设为默认站点</label>
         <label><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $site->is_active ?? true))> 启用</label>
         @unless($site->exists)
-            <p class="muted">新建站点会从默认站复制基础设置、语言与 Flags，不会复制栏目与内容。</p>
+            <p class="muted">新建站点会从默认站复制基础设置、语言与推荐属性，不会复制栏目与内容。</p>
         @endunless
         <p style="margin-top:16px">
             <button class="btn" type="submit">保存</button>

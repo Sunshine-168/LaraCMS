@@ -24,4 +24,29 @@ class Menu extends Model
     {
         return $this->hasMany(MenuItem::class, 'menu_id')->orderBy('sort_order');
     }
+
+    /** @return array<string, string> */
+    public static function locations(): array
+    {
+        return [
+            'header' => '页头',
+            'footer' => '页脚',
+            'sidebar' => '侧栏',
+            'mobile' => '移动端',
+        ];
+    }
+
+    public static function locationLabel(?string $location): string
+    {
+        $location = (string) $location;
+
+        return self::locations()[$location] ?? ($location !== '' ? $location : '—');
+    }
+
+    public function listingCount(): string
+    {
+        $n = (int) ($this->items_count ?? $this->items->count());
+
+        return $n > 0 ? $n.' 项' : '还没有条目';
+    }
 }

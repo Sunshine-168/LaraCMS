@@ -97,7 +97,7 @@ class ContentModelService
                 ]);
             }
 
-            return Result::ok($model, '已复制为 '.$model->slug);
+            return Result::ok($model, '已复制为 '.$model->name);
         });
     }
 

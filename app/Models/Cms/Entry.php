@@ -252,6 +252,21 @@ class Entry extends Model
         $this->search_text = mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags(implode(' ', $parts))) ?: ''), 0, 5000);
     }
 
+    public function scopeWithFlag(Builder $query, string $flag): Builder
+    {
+        $flag = trim($flag);
+        if ($flag === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $w) use ($flag) {
+            $w->where('flags', $flag)
+                ->orWhere('flags', 'like', $flag.',%')
+                ->orWhere('flags', 'like', '%,'.$flag.',%')
+                ->orWhere('flags', 'like', '%,'.$flag);
+        });
+    }
+
     public function hasFlag(string $flag): bool
     {
         $flags = array_filter(array_map('trim', explode(',', (string) $this->flags)));
