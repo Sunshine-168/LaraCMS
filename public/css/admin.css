@@ -680,16 +680,27 @@ textarea { min-height: 140px; resize: vertical; }
 }
 
 /* Pagination */
-.pagination { display: flex; gap: 4px; list-style: none; padding: 14px 0 0; margin: 0; flex-wrap: wrap; }
+.pagination { display: flex; gap: 4px; list-style: none; padding: 14px 0 0; margin: 0; flex-wrap: wrap; align-items: center; }
+.pagination .page-link,
 .pagination li a, .pagination li span {
-    display: inline-block;
-    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     color: var(--muted);
     background: #fff;
+    font-size: 13px;
+    line-height: 1;
 }
+.pagination .page-item.active .page-link,
 .pagination li.active span { background: var(--primary); border-color: var(--primary); color: #fff; }
+.pagination .page-item.disabled .page-link,
+.pagination li.disabled span { color: var(--muted2); background: var(--hover); }
+.pagination svg { width: 14px; height: 14px; display: block; }
 
 hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 

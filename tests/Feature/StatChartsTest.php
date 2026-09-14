@@ -253,4 +253,18 @@ class StatChartsTest extends TestCase
         $this->assertStringContainsString('首页', $csv);
         $this->assertStringContainsString('新闻中心', $csv);
     }
+
+    public function test_pagination_uses_compact_bootstrap_not_tailwind_svg(): void
+    {
+        $html = (new \Illuminate\Pagination\LengthAwarePaginator(
+            collect(range(1, 40)),
+            80,
+            40,
+            1,
+            ['path' => '/admin/stats/logs']
+        ))->links()->toHtml();
+
+        $this->assertStringContainsString('pagination', $html);
+        $this->assertStringNotContainsString('w-5 h-5', $html);
+    }
 }

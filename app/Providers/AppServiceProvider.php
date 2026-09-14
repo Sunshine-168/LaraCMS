@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Cms\Setting;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -16,6 +17,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrapFour();
+
         Password::defaults(function () {
             $min = (int) config('security.password.min', 10);
 
