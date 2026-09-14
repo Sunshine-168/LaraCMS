@@ -44,7 +44,10 @@ class PublishBackupCdnTest extends TestCase
         $this->actingAs($editor, 'admin')
             ->get(route('admin.entries.create', ['model_id' => $article->id]))
             ->assertOk()
-            ->assertSee('无发布权限')
+            ->assertSee('没有发布权限')
+            ->assertSee('写内容')
+            ->assertSee('搜索引擎（可选）')
+            ->assertDontSee('(zh_cn)')
             ->assertDontSee('>已发布</option>', false);
 
         $svc = app(EntryService::class);
@@ -72,6 +75,27 @@ class PublishBackupCdnTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('status');
         $this->assertTrue($entry->fresh()->isLive());
+    }
+
+    public function test_entries_index_batch_execute_is_not_spoofed_as_delete(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.entries.index'))
+            ->assertOk()
+            ->assertSee('form="batchForm"', false);
+
+        $entry = Entry::query()->first();
+        $this->assertNotNull($entry);
+        $this->actingAs($admin, 'admin')
+            ->from(route('admin.entries.index'))
+            ->post(route('admin.entries.batch'), [
+                'action' => 'pending',
+                'ids' => [$entry->id],
+            ])
+            ->assertRedirect(route('admin.entries.index'))
+            ->assertSessionHas('status');
+        $this->assertSame('pending', $entry->fresh()->status);
     }
 
     public function test_editor_saving_published_entry_keeps_it_live(): void

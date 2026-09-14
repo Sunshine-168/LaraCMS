@@ -49,10 +49,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::middleware('admin.perm:entries')->group(function () {
-            Route::post('entries/{entry}/preview', [EntryController::class, 'issuePreview'])->name('entries.preview');
-            Route::post('entries/{entry}/revisions/{revision}/restore', [EntryController::class, 'restoreRevision'])->name('entries.revisions.restore');
+            Route::post('entries/{entry}/preview', [EntryController::class, 'issuePreview'])->name('entries.preview')->whereNumber('entry');
+            Route::post('entries/{entry}/revisions/{revision}/restore', [EntryController::class, 'restoreRevision'])->name('entries.revisions.restore')->whereNumber('entry');
             Route::post('entries/batch', [EntryController::class, 'batch'])->name('entries.batch');
-            Route::resource('entries', EntryController::class)->except(['show']);
+            Route::resource('entries', EntryController::class)->except(['show'])->whereNumber('entry');
         });
         Route::middleware('admin.perm:recycle')->group(function () {
             Route::get('recycle', [RecycleController::class, 'index'])->name('recycle.index');

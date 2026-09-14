@@ -536,51 +536,56 @@ table.info th {
     cursor: pointer;
     font-size: 13px;
 }
+.actions {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* 表格操作列：链接和表单按钮必须同一盒模型，不能把 td 设成 flex */
 table.data th.col-actions,
 table.data td.actions {
+    display: table-cell;
     width: 1%;
     white-space: nowrap;
-    text-align: right;
-}
-.actions,
-td.actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    flex-wrap: nowrap;
-}
-.actions form {
-    display: inline-flex;
-    margin: 0;
+    text-align: left;
     vertical-align: middle;
 }
-.actions a:not(.btn),
-.actions .btn-link,
-.actions .link-btn {
+td.actions > a,
+td.actions > form,
+.row-actions > a,
+.row-actions > form {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 6px 0 0;
+}
+td.actions > form:last-child,
+.row-actions > form:last-child { margin-right: 0; }
+td.actions form,
+.row-actions form {
+    padding: 0;
+    border: 0;
+    background: none;
+}
+td.actions .btn,
+.row-actions .btn {
+    appearance: none;
+    -webkit-appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
     height: 28px;
+    min-height: 28px;
+    min-width: 52px;
     padding: 0 10px;
     margin: 0;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: #fff;
-    font: inherit;
+    font-family: inherit;
     font-size: 12px;
+    font-weight: 500;
     line-height: 1;
-    box-sizing: border-box;
-    cursor: pointer;
-}
-.actions a:not(.btn) { color: var(--primary); }
-.actions .btn-link,
-.actions .link-btn {
-    color: var(--danger) !important;
-}
-.actions .btn.btn-sm {
-    height: 28px;
-    padding: 0 10px;
+    vertical-align: middle;
 }
 
 /* Forms */
@@ -638,6 +643,75 @@ textarea { min-height: 140px; resize: vertical; }
 }
 .locale-pane { display: none; }
 .locale-pane.active { display: block; }
+.field-hint { margin: -4px 0 8px; }
+
+.entry-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 16px;
+    align-items: start;
+}
+.entry-aside { position: sticky; top: 68px; display: flex; flex-direction: column; gap: 16px; }
+.entry-form input[type=text],
+.entry-form input[type=url],
+.entry-form input[type=number],
+.entry-form input[type=date],
+.entry-form input[type=datetime-local],
+.entry-form select,
+.entry-form textarea {
+    max-width: none;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #c9cdd4;
+}
+.entry-form input[type=checkbox],
+.entry-form input[type=radio] {
+    width: auto;
+    max-width: none;
+    background: none;
+    border: 0;
+    padding: 0;
+}
+.entry-form .entry-title {
+    font-size: 20px;
+    font-weight: 600;
+    height: 44px;
+}
+.entry-form .cover-row,
+.entry-main .tox-tinymce { max-width: none; }
+.entry-save { display: flex; gap: 8px; margin-top: 16px; }
+.entry-save .btn { flex: 1; justify-content: center; }
+.entry-seo, .entry-more {
+    margin: 16px 0 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0 14px 12px;
+    background: #fafbfc;
+}
+.entry-seo > summary,
+.entry-more > summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 12px 0;
+}
+.entry-aside-more { margin: 0; }
+.entry-aside-more > summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+}
+.entry-aside-more > summary::-webkit-details-marker { display: none; }
+.choice-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 8px;
+}
+@media (max-width: 1100px) {
+    .entry-layout { grid-template-columns: 1fr; }
+    .entry-aside { position: static; }
+}
 
 /* Flash */
 .flash {

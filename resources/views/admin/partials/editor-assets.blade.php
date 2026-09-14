@@ -1,6 +1,7 @@
 @once
 <style>
     .tox-tinymce { max-width: 720px; }
+    .entry-main .tox-tinymce { max-width: none; }
     .media-picker-mask {
         display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9998;
         align-items:center; justify-content:center;

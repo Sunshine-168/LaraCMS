@@ -43,12 +43,13 @@
             </select>
             <button class="btn btn-muted" type="submit" onclick="return confirm('确认对所选内容执行操作？')">执行</button>
         </div>
+    </form>
         <table class="data">
             <thead><tr><th style="width:36px"><input type="checkbox" id="checkAll"></th><th>ID</th><th>标题</th><th>模型</th><th>栏目</th><th>投稿</th><th>Flags</th><th>状态</th><th class="col-actions">操作</th></tr></thead>
             <tbody>
             @forelse($entries as $entry)
                 <tr>
-                    <td><input type="checkbox" name="ids[]" value="{{ $entry->id }}" class="row-check"></td>
+                    <td><input type="checkbox" form="batchForm" name="ids[]" value="{{ $entry->id }}" class="row-check"></td>
                     <td>{{ $entry->id }}</td>
                     <td>{{ $entry->t('title') }}</td>
                     <td>{{ $entry->modelDef?->name }}</td>
@@ -79,7 +80,6 @@
             @endforelse
             </tbody>
         </table>
-    </form>
     {{ $entries->appends(request()->query())->links() }}
 @endsection
 @push('scripts')

@@ -1,6 +1,8 @@
 @php
     $fields = $fields ?? [];
+    $advanced = $advanced ?? [];
     $model = $model ?? null;
+    $hideCode = (bool) ($hideCode ?? false);
 @endphp
 <div class="tabs">
     @foreach($locales as $code)
@@ -12,15 +14,33 @@
 @foreach($locales as $code)
     <div class="locale-pane {{ $loop->first ? 'active' : '' }}" data-locale-pane="{{ $code }}">
         @foreach($fields as $field => $meta)
-            <label>{{ $meta['label'] }} ({{ $code }})</label>
-            @if(($meta['type'] ?? 'text') === 'editor')
-                <textarea class="cms-editor" name="locales[{{ $code }}][{{ $field }}]">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
-            @elseif(($meta['type'] ?? 'text') === 'textarea')
-                <textarea name="locales[{{ $code }}][{{ $field }}]">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
-            @else
-                <input type="text" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}">
-            @endif
+            <div class="{{ $meta['wrap'] ?? '' }}">
+                <label>{{ $meta['label'] }}@unless($hideCode) ({{ $code }})@endunless</label>
+                @if(! empty($meta['hint']))
+                    <p class="muted field-hint">{{ $meta['hint'] }}</p>
+                @endif
+                @if(($meta['type'] ?? 'text') === 'editor')
+                    <textarea class="cms-editor" name="locales[{{ $code }}][{{ $field }}]">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                @elseif(($meta['type'] ?? 'text') === 'textarea')
+                    <textarea name="locales[{{ $code }}][{{ $field }}]" rows="{{ $meta['rows'] ?? 4 }}">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                @else
+                    <input type="text" class="{{ $meta['class'] ?? '' }}" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}" placeholder="{{ $meta['placeholder'] ?? '' }}">
+                @endif
+            </div>
         @endforeach
+        @if($advanced !== [])
+            <details class="entry-seo">
+                <summary>搜索引擎（可选）</summary>
+                @foreach($advanced as $field => $meta)
+                    <label>{{ $meta['label'] }}</label>
+                    @if(($meta['type'] ?? 'text') === 'textarea')
+                        <textarea name="locales[{{ $code }}][{{ $field }}]" rows="3">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                    @else
+                        <input type="text" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}">
+                    @endif
+                @endforeach
+            </details>
+        @endif
     </div>
 @endforeach
 @push('scripts')
@@ -31,7 +51,11 @@ document.querySelectorAll('[data-locale-tab]').forEach(btn => {
         document.querySelectorAll('[data-locale-tab]').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('[data-locale-pane]').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
-        document.querySelector('[data-locale-pane="'+code+'"]').classList.add('active');
+        btn.closest('.tabs')?.parentElement?.querySelector('[data-locale-pane="'+code+'"]')?.classList.add('active')
+            || document.querySelector('[data-locale-pane="'+code+'"]').classList.add('active');
+        if (window.tinymce) {
+            window.tinymce.editors.forEach((ed) => { try { ed.dispatch('ResizeEditor'); } catch (e) {} });
+        }
     });
 });
 </script>
