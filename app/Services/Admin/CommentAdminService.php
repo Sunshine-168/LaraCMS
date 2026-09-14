@@ -14,7 +14,7 @@ class CommentAdminService
     {
     }
 
-    public function paginate(?string $status = null, ?int $entryId = null, int $perPage = 20): LengthAwarePaginator
+    public function paginate(?string $status = null, ?int $entryId = null, int $perPage = 20, ?string $keyword = null): LengthAwarePaginator
     {
         $q = Comment::query()->with(['entry', 'member', 'moderator'])->orderByDesc('id');
         if ($status && in_array($status, [
@@ -27,6 +27,15 @@ class CommentAdminService
         }
         if ($entryId) {
             $q->where('entry_id', $entryId);
+        }
+        $keyword = trim((string) $keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $q->where(function ($inner) use ($like) {
+                $inner->where('content', 'like', $like)
+                    ->orWhere('author_name', 'like', $like)
+                    ->orWhere('author_email', 'like', $like);
+            });
         }
 
         return $q->paginate($perPage)->withQueryString();
@@ -57,7 +66,12 @@ class CommentAdminService
             $this->htmlCache->forgetByEntry($comment->entry);
         }
 
-        return Result::ok($comment, '已更新为：'.Comment::statusLabel($status));
+        return Result::ok($comment, match ($status) {
+            Comment::STATUS_APPROVED => '已通过，将显示在前台',
+            Comment::STATUS_REJECTED => '已拒绝',
+            Comment::STATUS_SPAM => '已标为垃圾',
+            default => '已改回待审',
+        });
     }
 
     /** @param list<int> $ids */
@@ -75,7 +89,7 @@ class CommentAdminService
             }
         });
 
-        return Result::ok(['count' => $n], "已处理 {$n} 条");
+        return Result::ok(['count' => $n], $n > 0 ? '已处理 '.$n.' 条' : '没有处理任何评论');
     }
 
     public function delete(Comment $comment): array

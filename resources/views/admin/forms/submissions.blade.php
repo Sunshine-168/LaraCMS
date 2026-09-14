@@ -1,62 +1,127 @@
 @extends('admin.layout')
 @section('title', '留言收件箱')
 @section('icon', 'inbox')
+@php
+    $q = $q ?? '';
+    $formId = $formId ?? null;
+    $status = $status ?? '';
+    $unreadCount = $unreadCount ?? 0;
+    $hasFilters = $q !== '' || $formId || $status !== '';
+    $qs = function (array $extra = []) use ($q, $formId, $status) {
+        return route('admin.form-submissions.index', array_filter(
+            array_merge(['q' => $q, 'form_id' => $formId, 'status' => $status], $extra),
+            fn ($v) => $v !== '' && $v !== null
+        ));
+    };
+    $fmtTime = function ($dt) {
+        if (! $dt) {
+            return '—';
+        }
+        if ($dt->isToday()) {
+            return '今天 '.$dt->format('H:i');
+        }
+        if ($dt->isYesterday()) {
+            return '昨天 '.$dt->format('H:i');
+        }
+
+        return $dt->year === now()->year ? $dt->format('m-d H:i') : $dt->format('Y-m-d');
+    };
+@endphp
 @section('header_actions')
-    <span class="muted">未读 {{ $unreadCount }}</span>
+    @if($unreadCount > 0)
+        <span class="badge badge-warn">未读 {{ $unreadCount }}</span>
+    @endif
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.forms.index') }}">表单定义</a>
+    @if($submissions->total() > 0 || $hasFilters)
+        <a class="btn btn-muted btn-sm" href="{{ route('admin.form-submissions.export', array_filter(['form_id' => $formId, 'status' => $status, 'q' => $q])) }}">导出 CSV</a>
+    @endif
 @endsection
 @section('content')
-    <div class="toolbar">
-        <a class="btn btn-muted" href="{{ route('admin.forms.index') }}"><i class="fas fa-clipboard-list"></i> 表单定义</a>
-        <a class="btn btn-muted" href="{{ route('admin.form-submissions.export', request()->only(['form_id','status'])) }}"><i class="fas fa-file-csv"></i> 导出 CSV</a>
-        <form method="get" style="display:flex;gap:8px;align-items:center;margin:0;flex-wrap:wrap">
-            <select name="form_id" onchange="this.form.submit()" style="max-width:220px">
-                <option value="">全部表单</option>
-                @foreach($forms as $f)
-                    <option value="{{ $f->id }}" @selected((string)$formId === (string)$f->id)>{{ $f->name }}</option>
+    <div class="entry-index inbox-index">
+        <div class="entry-find">
+            <form method="get" class="filter-bar" id="inboxFindForm" action="{{ route('admin.form-submissions.index') }}">
+                @if($status !== '')
+                    <input type="hidden" name="status" value="{{ $status }}">
+                @endif
+                <input type="search" name="q" value="{{ $q }}" placeholder="搜索姓名、留言或邮箱" aria-label="搜索留言">
+                <button class="btn btn-muted" type="submit">搜索</button>
+                @if($forms->isNotEmpty())
+                    <span class="status-label">表单</span>
+                    <select name="form_id" onchange="this.form.submit()" aria-label="表单">
+                        <option value="">全部</option>
+                        @foreach($forms as $f)
+                            <option value="{{ $f->id }}" @selected((int) $formId === (int) $f->id)>{{ $f->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            </form>
+            <div class="entry-status-row">
+                <span class="status-label">状态</span>
+                <a class="chip {{ $status === '' ? 'active' : '' }}" href="{{ $qs(['status' => null]) }}">全部</a>
+                <a class="chip {{ $status === 'unread' ? 'active' : '' }}" href="{{ $qs(['status' => 'unread']) }}">未读{{ $unreadCount > 0 ? ' '.$unreadCount : '' }}</a>
+                <a class="chip {{ $status === 'replied' ? 'active' : '' }}" href="{{ $qs(['status' => 'replied']) }}">已回复</a>
+                @if($hasFilters)
+                    <a class="chip" href="{{ route('admin.form-submissions.index') }}">清除筛选</a>
+                @endif
+            </div>
+        </div>
+
+        @if($submissions->isEmpty())
+            <div class="list-empty">
+                @if($hasFilters)
+                    <p>没有符合条件的留言。</p>
+                    <a class="btn btn-muted" href="{{ route('admin.form-submissions.index') }}">清除筛选</a>
+                @else
+                    <p>还没有留言。</p>
+                    <p class="muted">前台表单提交后会出现在这里。可以回复到访客邮箱，或只留内部备注。</p>
+                    <a class="btn btn-muted" href="{{ route('admin.forms.index') }}">去表单定义</a>
+                @endif
+            </div>
+        @else
+            <p class="muted recycle-lead">点摘要打开详情。打开后会标成已读。未读和已回复会打标记。</p>
+            <table class="data">
+                <thead>
+                <tr>
+                    <th>留言</th>
+                    <th style="width:160px">时间</th>
+                    <th class="col-actions">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($submissions as $row)
+                    <tr @class(['is-unread' => ! $row->is_read && ! $row->replied_at])>
+                        <td>
+                            <div class="entry-row-title-line">
+                                <a class="entry-row-title" href="{{ route('admin.form-submissions.show', $row) }}">{{ $row->preview() }}</a>
+                                @if($row->replied_at)
+                                    <span class="badge badge-ok">已回复</span>
+                                @elseif(! $row->is_read)
+                                    <span class="badge badge-warn">未读</span>
+                                @endif
+                            </div>
+                            <div class="entry-row-meta">
+                                {{ $row->form?->name ?: '未知表单' }}
+                                @if($row->ip)
+                                    · {{ $row->ip }}
+                                @endif
+                            </div>
+                        </td>
+                        <td>{{ $fmtTime($row->created_at) }}</td>
+                        <td class="actions">
+                            <form action="{{ route('admin.form-submissions.destroy', $row) }}" method="post" onsubmit="return confirm(@json('确定删除这条留言？'))">
+                                @csrf @method('DELETE')
+                                <input type="hidden" name="keep_form_id" value="{{ $formId }}">
+                                <input type="hidden" name="keep_status" value="{{ $status }}">
+                                <input type="hidden" name="keep_q" value="{{ $q }}">
+                                <button class="btn-quiet" type="submit">删除</button>
+                            </form>
+                        </td>
+                    </tr>
                 @endforeach
-            </select>
-            <select name="status" onchange="this.form.submit()" style="max-width:140px">
-                <option value="" @selected($status === '')>全部状态</option>
-                <option value="unread" @selected($status === 'unread')>未读</option>
-                <option value="read" @selected($status === 'read')>已读</option>
-                <option value="replied" @selected($status === 'replied')>已回复</option>
-            </select>
-        </form>
+                </tbody>
+            </table>
+            <p class="muted entry-index-count">共 {{ $submissions->total() }} 条</p>
+            {{ $submissions->links() }}
+        @endif
     </div>
-    <table class="data">
-        <thead><tr><th>ID</th><th>状态</th><th>表单</th><th>摘要</th><th>IP</th><th>时间</th><th>操作</th></tr></thead>
-        <tbody>
-        @forelse($submissions as $row)
-            @php
-                $preview = collect($row->data ?? [])->map(fn ($v) => is_array($v) ? implode(', ', $v) : (string) $v)->filter()->take(2)->implode(' / ');
-            @endphp
-            <tr @if(! $row->is_read) style="font-weight:600" @endif>
-                <td>{{ $row->id }}</td>
-                <td>
-                    @if($row->replied_at)
-                        <span class="badge badge-ok">已回复</span>
-                    @elseif($row->is_read)
-                        <span class="badge">已读</span>
-                    @else
-                        <span class="badge badge-warn">未读</span>
-                    @endif
-                </td>
-                <td>{{ $row->form?->name }}</td>
-                <td>{{ \Illuminate\Support\Str::limit($preview, 80) }}</td>
-                <td>{{ $row->ip }}</td>
-                <td>{{ $row->created_at }}</td>
-                <td>
-                    <a class="btn btn-sm" href="{{ route('admin.form-submissions.show', $row) }}">查看</a>
-                    <form action="{{ route('admin.form-submissions.destroy', $row) }}" method="post" onsubmit="return confirm('确认删除？')" style="display:inline">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger" type="submit">删除</button>
-                    </form>
-                </td>
-            </tr>
-        @empty
-            <tr><td colspan="7" class="muted">暂无留言</td></tr>
-        @endforelse
-        </tbody>
-    </table>
-    {{ $submissions->links() }}
 @endsection

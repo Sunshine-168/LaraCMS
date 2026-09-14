@@ -19,13 +19,18 @@ class FormSubmissionController extends Controller
     public function index(Request $request): View
     {
         $formId = $request->integer('form_id') ?: null;
-        $status = (string) $request->input('status', '');
+        $status = (string) $request->query('status', '');
+        if (! in_array($status, ['unread', 'read', 'replied'], true)) {
+            $status = '';
+        }
+        $keyword = trim((string) $request->query('q', ''));
 
         return view('admin.forms.submissions', [
-            'submissions' => $this->submissions->paginate($formId, $status),
+            'submissions' => $this->submissions->paginate($formId, $status, 20, $keyword),
             'forms' => CmsForm::query()->orderBy('name')->get(),
             'formId' => $formId,
             'status' => $status,
+            'q' => $keyword,
             'unreadCount' => $this->submissions->unreadCount(),
         ]);
     }
@@ -72,7 +77,8 @@ class FormSubmissionController extends Controller
     {
         $formId = $request->integer('form_id') ?: null;
         $status = (string) $request->input('status', '');
-        $rows = $this->submissions->exportRows($formId, $status);
+        $keyword = trim((string) $request->query('q', ''));
+        $rows = $this->submissions->exportRows($formId, $status, 5000, $keyword);
 
         $filename = 'form-submissions-'.date('Ymd-His').'.csv';
 
@@ -97,10 +103,15 @@ class FormSubmissionController extends Controller
     }
 
     /** 删除留言 */
-    public function destroy(FormSubmission $submission): RedirectResponse
+    public function destroy(Request $request, FormSubmission $submission): RedirectResponse
     {
         $result = $this->submissions->delete($submission);
+        $back = array_filter([
+            'form_id' => $request->input('keep_form_id'),
+            'status' => $request->input('keep_status'),
+            'q' => $request->input('keep_q'),
+        ], fn ($v) => $v !== null && $v !== '');
 
-        return redirect()->route('admin.form-submissions.index')->with('status', $result['msg']);
+        return redirect()->route('admin.form-submissions.index', $back)->with('status', $result['msg']);
     }
 }

@@ -13,19 +13,22 @@
         @csrf
         @if($menu->exists) @method('PUT') @endif
 
-        <label for="menu-name">名称</label>
-        <input id="menu-name" type="text" name="name" value="{{ old('name', $menu->name) }}" placeholder="如 主导航" required autofocus>
-        <p class="muted field-hint">后台列表里看到的名字。</p>
-
-        <label for="menu-loc">出现位置</label>
-        <input id="menu-loc" type="text" name="location" list="menu-locations" value="{{ $location }}" placeholder="header" required>
-        <datalist id="menu-locations">
-            @foreach(\App\Models\Cms\Menu::locations() as $key => $label)
-                <option value="{{ $key }}">{{ $label }}</option>
-            @endforeach
-        </datalist>
-        <p class="muted field-hint">主题用 @@cmsMenu(['location' => 'header']) 读取。常用：页头 header、页脚 footer、侧栏 sidebar。没有启用的菜单时前台回退到栏目导航。</p>
-
+        <div class="menu-meta">
+            <div>
+                <label for="menu-name">名称</label>
+                <input id="menu-name" type="text" name="name" value="{{ old('name', $menu->name) }}" placeholder="如 主导航" required autofocus>
+            </div>
+            <div>
+                <label for="menu-loc">出现位置</label>
+                <input id="menu-loc" type="text" name="location" list="menu-locations" value="{{ $location }}" placeholder="header" required>
+                <datalist id="menu-locations">
+                    @foreach(\App\Models\Cms\Menu::locations() as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </datalist>
+            </div>
+        </div>
+        <p class="muted field-hint">主题用 @@cmsMenu(['location' => 'header']) 读取。常用：页头 header、页脚 footer。没有启用的菜单时前台回退到栏目导航。</p>
         <label class="inline">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $menu->is_active ?? true))>
@@ -33,7 +36,7 @@
         </label>
 
         <h3>菜单项</h3>
-        <p class="muted field-hint">链接填网址；栏目从列表里选；文档填内容 ID。上级留空就是顶级。标题都空的行会忽略。</p>
+        <p class="muted field-hint">一条一行。英文可空，保存时按中文补。上级选另一条，就是它的子菜单。</p>
         @php
             $rows = old('items');
             if (! $rows) {
@@ -62,51 +65,68 @@
                 ];
             })->values();
         @endphp
-        <div id="menu-items">
-            @foreach($rows as $i => $row)
-                @php $type = $row['type'] ?? 'url'; @endphp
-                <div class="menu-item" data-row="{{ $i }}">
-                    <label>中文标题</label>
-                    <input type="text" name="items[{{ $i }}][title_zh_cn]" value="{{ $row['title_zh_cn'] ?? '' }}">
-                    <label>英文标题</label>
-                    <input type="text" name="items[{{ $i }}][title_en]" value="{{ $row['title_en'] ?? '' }}">
-                    <label>类型</label>
-                    <select name="items[{{ $i }}][type]" class="menu-item-type">
-                        <option value="url" @selected($type === 'url')>链接</option>
-                        <option value="category" @selected($type === 'category')>栏目</option>
-                        <option value="entry" @selected($type === 'entry')>文档</option>
-                    </select>
-                    <div class="menu-item-target" data-for="url" @style(['display:none' => $type !== 'url'])>
-                        <label>链接</label>
-                        <input type="text" name="items[{{ $i }}][url]" value="{{ $row['url'] ?? '/' }}">
-                    </div>
-                    <div class="menu-item-target" data-for="category" @style(['display:none' => $type !== 'category'])>
-                        <label>栏目</label>
-                        <select name="items[{{ $i }}][category_id]" class="menu-item-category">
-                            <option value="">选择栏目</option>
-                            @foreach($categories as $c)
-                                <option value="{{ $c->id }}" @selected((string) ($row['reference_id'] ?? '') === (string) $c->id)>{{ str_repeat('— ', (int) ($c->depth ?? 0)).$c->t('title') }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="menu-item-target" data-for="entry" @style(['display:none' => $type !== 'entry'])>
-                        <label>文档 ID</label>
-                        <input type="number" name="items[{{ $i }}][entry_id]" value="{{ ($type === 'entry') ? ($row['reference_id'] ?? '') : '' }}">
-                    </div>
-                    <input type="hidden" name="items[{{ $i }}][reference_id]" class="menu-item-ref" value="{{ $row['reference_id'] ?? '' }}">
-                    <label>上级</label>
-                    <select name="items[{{ $i }}][parent_index]">
-                        <option value="">顶级</option>
-                        @for($p = 0; $p < $i; $p++)
-                            <option value="{{ $p }}" @selected((string) ($row['parent_index'] ?? '') === (string) $p)>{{ $rowTitles[$p] ?? ('第 '.($p + 1).' 条') }}</option>
-                        @endfor
-                    </select>
-                </div>
-            @endforeach
+        <div class="menu-items-wrap">
+            <table class="data menu-items-table" id="menu-items">
+                <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>英文</th>
+                    <th>指向</th>
+                    <th>上级</th>
+                    <th class="col-actions"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($rows as $i => $row)
+                    @php $type = $row['type'] ?? 'url'; @endphp
+                    <tr class="menu-item" data-row="{{ $i }}">
+                        <td>
+                            <input type="text" name="items[{{ $i }}][title_zh_cn]" value="{{ $row['title_zh_cn'] ?? '' }}" placeholder="标题" aria-label="标题">
+                        </td>
+                        <td>
+                            <input type="text" name="items[{{ $i }}][title_en]" value="{{ $row['title_en'] ?? '' }}" placeholder="可空" aria-label="英文标题">
+                        </td>
+                        <td class="menu-item-point">
+                            <select name="items[{{ $i }}][type]" class="menu-item-type" aria-label="类型">
+                                <option value="url" @selected($type === 'url')>链接</option>
+                                <option value="category" @selected($type === 'category')>栏目</option>
+                                <option value="entry" @selected($type === 'entry')>文档</option>
+                            </select>
+                            <div class="menu-item-target" data-for="url" @style(['display:none' => $type !== 'url'])>
+                                <input type="text" name="items[{{ $i }}][url]" value="{{ $row['url'] ?? '/' }}" placeholder="网址" aria-label="链接">
+                            </div>
+                            <div class="menu-item-target" data-for="category" @style(['display:none' => $type !== 'category'])>
+                                <select name="items[{{ $i }}][category_id]" class="menu-item-category" aria-label="栏目">
+                                    <option value="">选择栏目</option>
+                                    @foreach($categories as $c)
+                                        <option value="{{ $c->id }}" @selected((string) ($row['reference_id'] ?? '') === (string) $c->id)>{{ str_repeat('— ', (int) ($c->depth ?? 0)).$c->t('title') }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="menu-item-target" data-for="entry" @style(['display:none' => $type !== 'entry'])>
+                                <input type="number" name="items[{{ $i }}][entry_id]" value="{{ ($type === 'entry') ? ($row['reference_id'] ?? '') : '' }}" placeholder="文档 ID" aria-label="文档">
+                            </div>
+                            <input type="hidden" name="items[{{ $i }}][reference_id]" class="menu-item-ref" value="{{ $row['reference_id'] ?? '' }}">
+                        </td>
+                        <td>
+                            <select name="items[{{ $i }}][parent_index]" class="menu-item-parent" aria-label="上级">
+                                <option value="">顶级</option>
+                                @for($p = 0; $p < $i; $p++)
+                                    <option value="{{ $p }}" @selected((string) ($row['parent_index'] ?? '') === (string) $p)>{{ $rowTitles[$p] ?? ('第 '.($p + 1).' 条') }}</option>
+                                @endfor
+                            </select>
+                        </td>
+                        <td class="actions">
+                            <button type="button" class="btn-quiet remove-item">删除</button>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
         </div>
         <p><button type="button" class="btn btn-muted" id="add-item">增加一条</button></p>
 
-        <div class="form-actions">
+        <div class="form-actions menu-form-actions">
             <button class="btn" type="submit">{{ $menu->exists ? '保存' : '添加菜单' }}</button>
             <a class="btn btn-muted" href="{{ route('admin.menus.index') }}">取消</a>
         </div>
@@ -115,16 +135,21 @@
 @push('scripts')
 <script>
 (function () {
-    var wrap = document.getElementById('menu-items');
+    var table = document.getElementById('menu-items');
+    var body = table && table.querySelector('tbody');
     var idx = {{ count($rows) }};
     var catOptions = @json($catOptionsJson);
 
     function catSelectHtml(name, selected) {
-        var html = '<select name="' + name + '" class="menu-item-category"><option value="">选择栏目</option>';
+        var html = '<select name="' + name + '" class="menu-item-category" aria-label="栏目"><option value="">选择栏目</option>';
         catOptions.forEach(function (c) {
             html += '<option value="' + c.id + '"' + (String(selected) === String(c.id) ? ' selected' : '') + '>' + c.title + '</option>';
         });
         return html + '</select>';
+    }
+
+    function rows() {
+        return body ? Array.prototype.slice.call(body.querySelectorAll('.menu-item')) : [];
     }
 
     function syncRow(row) {
@@ -153,34 +178,55 @@
         syncRow(row);
     }
 
-    wrap?.querySelectorAll('.menu-item').forEach(bindRow);
+    rows().forEach(bindRow);
     document.querySelector('.menu-form')?.addEventListener('submit', function () {
-        wrap?.querySelectorAll('.menu-item').forEach(syncRow);
+        rows().forEach(syncRow);
     });
 
     document.getElementById('add-item')?.addEventListener('click', function () {
         var parents = '<option value="">顶级</option>';
-        wrap.querySelectorAll('.menu-item').forEach(function (row, p) {
+        rows().forEach(function (row, p) {
             var title = row.querySelector('input[name$="[title_zh_cn]"]');
             var label = (title && title.value.trim()) ? title.value.trim() : ('第 ' + (p + 1) + ' 条');
             parents += '<option value="' + p + '">' + label.replace(/[&<>"]/g, '') + '</option>';
         });
-        var div = document.createElement('div');
-        div.className = 'menu-item';
-        div.setAttribute('data-row', String(idx));
-        div.innerHTML =
-            '<label>中文标题</label><input type="text" name="items[' + idx + '][title_zh_cn]">' +
-            '<label>英文标题</label><input type="text" name="items[' + idx + '][title_en]">' +
-            '<label>类型</label><select name="items[' + idx + '][type]" class="menu-item-type">' +
+        var tr = document.createElement('tr');
+        tr.className = 'menu-item';
+        tr.setAttribute('data-row', String(idx));
+        tr.innerHTML =
+            '<td><input type="text" name="items[' + idx + '][title_zh_cn]" placeholder="标题" aria-label="标题"></td>' +
+            '<td><input type="text" name="items[' + idx + '][title_en]" placeholder="可空" aria-label="英文标题"></td>' +
+            '<td class="menu-item-point">' +
+            '<select name="items[' + idx + '][type]" class="menu-item-type" aria-label="类型">' +
             '<option value="url">链接</option><option value="category">栏目</option><option value="entry">文档</option></select>' +
-            '<div class="menu-item-target" data-for="url"><label>链接</label><input type="text" name="items[' + idx + '][url]" value="/"></div>' +
-            '<div class="menu-item-target" data-for="category" style="display:none"><label>栏目</label>' + catSelectHtml('items[' + idx + '][category_id]', '') + '</div>' +
-            '<div class="menu-item-target" data-for="entry" style="display:none"><label>文档 ID</label><input type="number" name="items[' + idx + '][entry_id]"></div>' +
+            '<div class="menu-item-target" data-for="url"><input type="text" name="items[' + idx + '][url]" value="/" placeholder="网址" aria-label="链接"></div>' +
+            '<div class="menu-item-target" data-for="category" style="display:none">' + catSelectHtml('items[' + idx + '][category_id]', '') + '</div>' +
+            '<div class="menu-item-target" data-for="entry" style="display:none"><input type="number" name="items[' + idx + '][entry_id]" placeholder="文档 ID" aria-label="文档"></div>' +
             '<input type="hidden" name="items[' + idx + '][reference_id]" class="menu-item-ref" value="">' +
-            '<label>上级</label><select name="items[' + idx + '][parent_index]">' + parents + '</select>';
-        wrap.appendChild(div);
-        bindRow(div);
+            '</td>' +
+            '<td><select name="items[' + idx + '][parent_index]" class="menu-item-parent" aria-label="上级">' + parents + '</select></td>' +
+            '<td class="actions"><button type="button" class="btn-quiet remove-item">删除</button></td>';
+        body.appendChild(tr);
+        bindRow(tr);
         idx++;
+        tr.querySelector('input[name$="[title_zh_cn]"]')?.focus();
+    });
+
+    body?.addEventListener('click', function (e) {
+        var btn = e.target.closest('.remove-item');
+        if (!btn) return;
+        var list = rows();
+        if (list.length <= 1) {
+            var row = btn.closest('.menu-item');
+            row.querySelectorAll('input[type=text], input[type=number]').forEach(function (el) { el.value = ''; });
+            var type = row.querySelector('.menu-item-type');
+            if (type) type.value = 'url';
+            var parent = row.querySelector('.menu-item-parent');
+            if (parent) parent.value = '';
+            syncRow(row);
+            return;
+        }
+        btn.closest('.menu-item').remove();
     });
 })();
 </script>

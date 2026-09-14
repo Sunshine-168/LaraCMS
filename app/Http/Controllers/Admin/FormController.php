@@ -74,6 +74,13 @@ class FormController extends Controller
         return redirect()->route('admin.forms.index')->with('status', $result['msg']);
     }
 
+    public function toggle(CmsForm $form): RedirectResponse
+    {
+        $result = $this->forms->toggle($form);
+
+        return redirect()->route('admin.forms.index')->with('status', $result['msg']);
+    }
+
     /** 删除 */
     public function destroy(CmsForm $form): RedirectResponse
     {

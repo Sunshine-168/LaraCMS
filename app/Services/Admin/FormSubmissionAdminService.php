@@ -11,18 +11,18 @@ use Illuminate\Support\Facades\Mail;
 
 class FormSubmissionAdminService
 {
-    public function paginate(?int $formId, ?string $status, int $perPage = 20): LengthAwarePaginator
+    public function paginate(?int $formId, ?string $status, int $perPage = 20, ?string $keyword = null): LengthAwarePaginator
     {
-        return $this->filtered($formId, $status)->paginate($perPage)->withQueryString();
+        return $this->filtered($formId, $status, $keyword)->paginate($perPage)->withQueryString();
     }
 
     /** @return Collection<int, FormSubmission> */
-    public function exportRows(?int $formId, ?string $status, int $limit = 5000)
+    public function exportRows(?int $formId, ?string $status, int $limit = 5000, ?string $keyword = null)
     {
-        return $this->filtered($formId, $status)->limit($limit)->get();
+        return $this->filtered($formId, $status, $keyword)->limit($limit)->get();
     }
 
-    protected function filtered(?int $formId, ?string $status)
+    protected function filtered(?int $formId, ?string $status, ?string $keyword = null)
     {
         $q = FormSubmission::query()->with('form')->orderByDesc('id');
         if ($formId) {
@@ -31,9 +31,20 @@ class FormSubmissionAdminService
         if ($status === 'unread') {
             $q->where('is_read', false);
         } elseif ($status === 'read') {
-            $q->where('is_read', true);
+            $q->where('is_read', true)->whereNull('replied_at');
         } elseif ($status === 'replied') {
             $q->whereNotNull('replied_at');
+        }
+        $keyword = trim((string) $keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $q->where(function ($inner) use ($like) {
+                $inner->where('ip', 'like', $like)
+                    ->orWhere('admin_note', 'like', $like);
+                foreach (['name', 'message', 'email', 'title', 'content'] as $key) {
+                    $inner->orWhere('data->'.$key, 'like', $like);
+                }
+            });
         }
 
         return $q;

@@ -61,10 +61,32 @@ class MenuWorkbenchTest extends TestCase
             ->assertSee('>文档</option>', false)
             ->assertSee('增加一条')
             ->assertSee('添加菜单')
+            ->assertSee('menu-items-table', false)
+            ->assertSee('>标题</th>', false)
             ->assertDontSee('父级行号')
             ->assertDontSee('引用 ID')
+            ->assertDontSee('>中文标题</label>', false)
+            ->assertDontSee('>英文标题</label>', false)
             ->assertDontSee('>URL</option>', false)
             ->assertDontSee('>栏目 ID</option>', false);
+    }
+
+    public function test_edit_items_are_a_compact_table(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $menu = Menu::query()->where('location', 'header')->with('items')->first();
+        $this->assertNotNull($menu);
+        $first = $menu->items->first();
+        $this->assertNotNull($first);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.menus.edit', $menu))
+            ->assertOk()
+            ->assertSee('menu-items-table', false)
+            ->assertSee($first->t('title'))
+            ->assertSee('>标题</th>', false)
+            ->assertSee('>指向</th>', false)
+            ->assertDontSee('>中文标题</label>', false);
     }
 
     public function test_toggle_hides_from_front(): void

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cms\Comment;
+use App\Models\Cms\Entry;
 use App\Services\Admin\CommentAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,16 +18,25 @@ class CommentController extends Controller
 
     public function index(Request $request): View
     {
-        $status = $request->input('status', 'pending');
+        $status = (string) $request->query('status', 'pending');
+        if (! in_array($status, ['pending', 'approved', 'rejected', 'spam', 'all'], true)) {
+            $status = 'pending';
+        }
+        $keyword = trim((string) $request->query('q', ''));
+        $entryId = $request->filled('entry_id') ? (int) $request->query('entry_id') : null;
 
         return view('admin.comments.index', [
             'comments' => $this->comments->paginate(
-                $status === 'all' ? null : (string) $status,
-                $request->filled('entry_id') ? (int) $request->input('entry_id') : null
+                $status === 'all' ? null : $status,
+                $entryId,
+                20,
+                $keyword
             ),
             'status' => $status,
             'pendingCount' => $this->comments->pendingCount(),
-            'entryId' => $request->input('entry_id'),
+            'entryId' => $entryId,
+            'q' => $keyword,
+            'filterEntry' => $entryId ? Entry::query()->find($entryId) : null,
         ]);
     }
 

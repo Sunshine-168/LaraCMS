@@ -65,4 +65,33 @@ class FormSubmission extends Model
 
         return $name;
     }
+
+    public function preview(int $limit = 80): string
+    {
+        $data = is_array($this->data) ? $this->data : [];
+        $parts = [];
+        foreach (['name', 'title', 'message', 'content', 'email'] as $key) {
+            $value = $data[$key] ?? null;
+            if (is_string($value) && trim($value) !== '') {
+                $parts[] = trim($value);
+            }
+        }
+        if ($parts === []) {
+            foreach ($data as $value) {
+                if (is_array($value)) {
+                    $value = implode(' ', $value);
+                }
+                if (is_string($value) && trim($value) !== '') {
+                    $parts[] = trim($value);
+                }
+                if (count($parts) >= 2) {
+                    break;
+                }
+            }
+        }
+
+        $text = implode(' · ', array_slice($parts, 0, 2));
+
+        return $text !== '' ? \Illuminate\Support\Str::limit($text, $limit) : '（无内容）';
+    }
 }

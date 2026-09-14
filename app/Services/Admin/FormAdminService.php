@@ -27,7 +27,7 @@ class FormAdminService
             ->when($form->exists, fn ($q) => $q->where('id', '!=', $form->id))
             ->exists();
         if ($exists) {
-            return Result::fail('标识 slug 已存在');
+            return Result::fail('这个标识码已经有了');
         }
 
         $form->fill([
@@ -42,11 +42,20 @@ class FormAdminService
         return Result::ok($form, '表单已保存');
     }
 
+    public function toggle(CmsForm $form): array
+    {
+        $form->is_active = ! $form->is_active;
+        $form->save();
+
+        return Result::ok($form, $form->is_active ? '已启用，前台可以提交' : '已停用，前台不再显示这个表单');
+    }
+
     public function delete(CmsForm $form): array
     {
+        $n = $form->submissions()->count();
         $form->delete();
 
-        return Result::ok(null, '已删除');
+        return Result::ok(null, $n > 0 ? '已删除表单和 '.$n.' 条留言' : '已删除');
     }
 
     /** @param  mixed  $raw */

@@ -1166,6 +1166,27 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     max-width: none;
 }
 .rec-index tr.is-off .entry-row-title { color: var(--muted); }
+.form-index tr.is-off .entry-row-title { color: var(--muted); }
+.inbox-index tr.is-unread .entry-row-title { font-weight: 600; }
+.comment-index tr.is-pending .entry-row-title { font-weight: 600; }
+.comment-excerpt {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-wrap;
+    font-weight: 600;
+}
+.inbox-show h3 { margin: 20px 0 8px; font-size: 14px; }
+.inbox-reply textarea { max-width: 720px; min-height: 120px; }
+.form-def-form h3 { margin: 20px 0 8px; font-size: 14px; }
+.form-def-form .data input[type=text],
+.form-def-form .data select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+}
+.form-def-form .data td .inline { margin: 0; }
 .rec-query {
     margin: 16px 0 0;
     padding: 12px 14px;
@@ -1182,10 +1203,47 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 }
 .menu-index tr.is-off .entry-row-title { color: var(--muted); }
 .menu-form h3 { margin: 20px 0 8px; font-size: 14px; }
-.menu-item {
-    border-top: 1px solid var(--line);
-    margin-top: 12px;
+.menu-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    max-width: 720px;
+}
+.menu-meta input { max-width: none; }
+.menu-items-wrap { overflow-x: auto; }
+.menu-items-table { margin: 0; }
+.menu-items-table th { white-space: nowrap; }
+.menu-items-table input[type=text],
+.menu-items-table input[type=number],
+.menu-items-table select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+}
+.menu-items-table td:nth-child(2) { width: 140px; }
+.menu-items-table td:nth-child(4) { width: 140px; }
+.menu-item-point {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 260px;
+}
+.menu-item-point .menu-item-type {
+    width: 88px;
+    flex: 0 0 88px;
+}
+.menu-item-point .menu-item-target { flex: 1; min-width: 0; }
+.menu-form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
     padding-top: 12px;
+    padding-bottom: 4px;
+    border-top: 1px solid var(--line);
+    z-index: 2;
+}
+@media (max-width: 800px) {
+    .menu-meta { grid-template-columns: 1fr; }
 }
 .media-drop { margin: 0 0 16px; }
 .media-drop-label {
