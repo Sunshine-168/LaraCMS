@@ -62,7 +62,7 @@ class SiteBackupService
     public function create(): array
     {
         if (! class_exists(ZipArchive::class)) {
-            return Result::fail('需要 PHP ZipArchive 扩展');
+            return Result::fail('这台服务器还不能打包备份，请联系运维');
         }
 
         $stamp = now()->format('Ymd-His');
@@ -113,7 +113,7 @@ class SiteBackupService
             return Result::fail('备份不存在');
         }
         if (! class_exists(ZipArchive::class)) {
-            return Result::fail('需要 PHP ZipArchive 扩展');
+            return Result::fail('这台服务器还不能还原备份，请联系运维');
         }
 
         $tmp = storage_path('app/backup-restore-'.uniqid());

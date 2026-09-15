@@ -21,7 +21,6 @@ class CacheController extends Controller
     public function edit(): View
     {
         return view('admin.cache.edit', [
-            'hasLock' => is_file(storage_path('app/install.lock')),
             'backups' => $this->backups->list(),
         ]);
     }
@@ -35,7 +34,7 @@ class CacheController extends Controller
         Artisan::call('route:clear');
         $this->htmlCache->forgetAll('admin:global-clear');
 
-        return redirect()->route('admin.cache.edit')->with('status', '已清理：config / view / cache / route / 全页 HTML');
+        return redirect()->route('admin.cache.edit')->with('status', '缓存已清空');
     }
 
     /** 重新导入演示数据（幂等 updateOrCreate） */
@@ -50,7 +49,7 @@ class CacheController extends Controller
             return redirect()->route('admin.cache.edit')->with('error', '导入失败：'.$e->getMessage());
         }
 
-        return redirect()->route('admin.cache.edit')->with('status', '演示数据已导入/更新（账号见 README）');
+        return redirect()->route('admin.cache.edit')->with('status', '演示数据已更新');
     }
 
     public function backup(): RedirectResponse

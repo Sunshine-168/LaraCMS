@@ -117,12 +117,14 @@ class RedirectService
             'source_path' => $source,
             'target_url' => $target,
             'status_code' => $code,
-            'is_active' => ! empty($input['is_active']),
+            'is_active' => array_key_exists('is_active', $input)
+                ? ! empty($input['is_active'])
+                : ($redirect->exists ? (bool) $redirect->is_active : true),
             'note' => trim((string) ($input['note'] ?? '')) ?: null,
         ]);
         $redirect->save();
 
-        return Result::ok($redirect, '重定向已保存');
+        return Result::ok($redirect, '这条跳转已保存');
     }
 
     public function delete(Redirect $redirect): array

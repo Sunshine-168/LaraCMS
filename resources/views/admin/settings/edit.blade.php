@@ -1,164 +1,276 @@
 @extends('admin.layout')
 @section('title', '站点设置')
 @section('icon', 'cog')
+@php
+    $s = $settings;
+    $tab = $tab ?? 'site';
+    $tabs = [
+        'site' => '网站',
+        'look' => '外观',
+        'interact' => '评论',
+        'more' => '更多',
+    ];
+    $logoUrl = ! empty($s['logo']) ? \App\Support\ThemeAppearance::mediaUrl($s['logo']) : '';
+    $faviconUrl = ! empty($s['favicon']) ? \App\Support\ThemeAppearance::mediaUrl($s['favicon']) : '';
+    $wm = $s['upload_watermark_image'] ?? '';
+    $wmUrl = $wm !== '' ? cms_media(\Illuminate\Support\Facades\Storage::disk('public')->url($wm)) : '';
+@endphp
 @section('content')
-    <form method="post" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+    <p class="muted recycle-lead">改网站名字、Logo 和评论规则。不常动的项在「更多」里。</p>
+
+    <form method="post" class="settings-page" id="settingsForm" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+        <input type="hidden" name="tab" id="settingsTab" value="{{ $tab }}">
 
-        <h3>基本信息</h3>
-        <label>站点名称</label>
-        <input type="text" name="site_name" value="{{ old('site_name', $settings['site_name'] ?? '') }}">
-        <label>站点描述</label>
-        <textarea name="site_description">{{ old('site_description', $settings['site_description'] ?? '') }}</textarea>
-        <label>关键词</label>
-        <input type="text" name="site_keywords" value="{{ old('site_keywords', $settings['site_keywords'] ?? '') }}">
-        <label>主题</label>
-        <select name="theme">
-            @foreach(config('cms.themes', []) as $theme)
-                <option value="{{ $theme }}" @selected(old('theme', $settings['theme'] ?? config('cms.theme')) === $theme)>{{ $theme }}</option>
+        <div class="tabs settings-tabs" id="settingsTabs">
+            @foreach($tabs as $key => $label)
+                <button type="button" class="{{ $tab === $key ? 'active' : '' }}" data-tab="{{ $key }}">{{ $label }}</button>
             @endforeach
-        </select>
+        </div>
 
-        <h3 style="margin-top:22px">外观与品牌</h3>
-        <p class="muted">运营可改 Logo、主色、页脚和首页文案，无需改主题模板。主色留空则沿用主题自带配色。首页主/副标题在未填时仍用各主题默认文案；企业/移动主题有推荐位 Banner 时 Banner 优先。</p>
-        <label>Logo</label>
-        @if(!empty($settings['logo']))
-            <p>
-                <img src="{{ \App\Support\ThemeAppearance::mediaUrl($settings['logo']) }}" alt="" style="max-height:48px;background:#eee;padding:4px">
-                <label class="inline"><input type="checkbox" name="logo_clear" value="1"> 清除 Logo</label>
-            </p>
-        @endif
-        <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
-        <label>Favicon</label>
-        @if(!empty($settings['favicon']))
-            <p>
-                <img src="{{ \App\Support\ThemeAppearance::mediaUrl($settings['favicon']) }}" alt="" style="max-height:32px;background:#eee;padding:4px">
-                <label class="inline"><input type="checkbox" name="favicon_clear" value="1"> 清除 Favicon</label>
-            </p>
-        @endif
-        <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon">
-        <label>主色（如 #1b4f72，留空用主题默认）</label>
-        <input type="text" name="primary_color" value="{{ old('primary_color', $settings['primary_color'] ?? '') }}" placeholder="#1b4f72" maxlength="7">
-        <label>首页主标题</label>
-        <input type="text" name="hero_title" value="{{ old('hero_title', $settings['hero_title'] ?? '') }}" maxlength="120">
-        <label>首页副标题</label>
-        <input type="text" name="hero_subtitle" value="{{ old('hero_subtitle', $settings['hero_subtitle'] ?? '') }}" maxlength="200">
-        <label>页脚补充文案</label>
-        <input type="text" name="footer_text" value="{{ old('footer_text', $settings['footer_text'] ?? '') }}" maxlength="500" placeholder="地址 / 电话 / 版权说明">
-        <label>ICP / 备案号</label>
-        <input type="text" name="icp" value="{{ old('icp', $settings['icp'] ?? '') }}" maxlength="80" placeholder="京ICP备00000000号-1">
+        <div class="settings-pane{{ $tab === 'site' ? ' active' : '' }}" data-pane="site">
+            <label for="site_name">网站名称</label>
+            <input id="site_name" type="text" name="site_name" value="{{ old('site_name', $s['site_name'] ?? '') }}" placeholder="会出现在浏览器标题和页脚">
 
-        <h3 style="margin-top:22px">站点状态</h3>
-        <label class="inline"><input type="checkbox" name="site_closed" value="1" @checked(old('site_closed', $settings['site_closed'] ?? '0') == '1')> 关闭前台（维护模式）</label>
-        <label>关站提示文案</label>
-        <input type="text" name="site_closed_message" value="{{ old('site_closed_message', $settings['site_closed_message'] ?? '站点维护中，请稍后再访。') }}">
+            <label for="site_description">一句话介绍</label>
+            <textarea id="site_description" name="site_description" rows="3">{{ old('site_description', $s['site_description'] ?? '') }}</textarea>
+            <p class="muted field-hint">搜索引擎和分享卡片会用到。尽量写清网站是做什么的。</p>
 
-        <h3 style="margin-top:22px">伪静态 URL</h3>
-        <p class="muted">栏目页始终为 /栏目slug；文档链接模式可切换。</p>
-        <label>文档 URL 模式</label>
-        <select name="url_mode">
-            @foreach(\App\Support\UrlMode::options() as $mode => $label)
-                <option value="{{ $mode }}" @selected(old('url_mode', $settings['url_mode'] ?? 'cat_entry') === $mode)>{{ $label }}</option>
-            @endforeach
-        </select>
+            <label for="site_keywords">搜索关键词</label>
+            <input id="site_keywords" type="text" name="site_keywords" value="{{ old('site_keywords', $s['site_keywords'] ?? '') }}" placeholder="用逗号分开，如 新闻,CMS">
+            <p class="muted field-hint">给搜索引擎看，前台访客一般看不到。</p>
 
-        <h3 style="margin-top:22px">REST API</h3>
-        <label class="inline"><input type="checkbox" name="api_enable" value="1" @checked(old('api_enable', $settings['api_enable'] ?? '0') == '1')> 启用 API Token 校验（关闭则公开只读）</label>
-        <label>API Token（启用校验时必填）</label>
-        <input type="text" name="api_token" value="{{ old('api_token', $settings['api_token'] ?? '') }}" placeholder="随机长字符串">
-        <p class="muted">接口前缀 /api：site/config、category/*、content/*、search?q=、tag/*、recommend?name=；POST form/{slug}、comment/{id}（有效 Token 可免验证码）</p>
+            <label for="theme">外观主题</label>
+            <select id="theme" name="theme">
+                @foreach(config('cms.themes', []) as $themeKey)
+                    <option value="{{ $themeKey }}" @selected(old('theme', $s['theme'] ?? config('cms.theme')) === $themeKey)>{{ \App\Models\Cms\Site::themeLabel($themeKey) }}</option>
+                @endforeach
+            </select>
+            <p class="muted field-hint">决定首页长什么样。多站点时，各站还可以单独指定。</p>
 
-        <h3 style="margin-top:22px">CDN 资源域名</h3>
-        <p class="muted">附件 /storage 与已用 APP_URL 保存的媒体地址会改写到该域名。留空则走站点 APP_URL。不要填带路径的管理后台地址。</p>
-        <label>CDN / 静态资源 URL</label>
-        <input type="url" name="cdn_url" value="{{ old('cdn_url', $settings['cdn_url'] ?? '') }}" placeholder="https://cdn.example.com">
+            <label class="inline">
+                <input type="checkbox" name="site_closed" value="1" @checked(old('site_closed', $s['site_closed'] ?? '0') == '1')>
+                暂时关闭网站
+            </label>
+            <label for="site_closed_message">关站时访客看到的说明</label>
+            <input id="site_closed_message" type="text" name="site_closed_message" value="{{ old('site_closed_message', $s['site_closed_message'] ?? '站点维护中，请稍后再访。') }}">
+        </div>
 
-        <h3 style="margin-top:22px">移动端分流</h3>
-        <p class="muted">配置移动主题后，按域名或 UA 自动切换主题（视图目录 themes/主题名）。</p>
-        <label>移动主题（留空关闭分流）</label>
-        <select name="mobile_theme">
-            <option value="">不启用</option>
-            @foreach(config('cms.themes', []) as $theme)
-                <option value="{{ $theme }}" @selected(old('mobile_theme', $settings['mobile_theme'] ?? '') === $theme)>{{ $theme }}</option>
-            @endforeach
-        </select>
-        <label>手机域名（逗号分隔，如 m.example.com）</label>
-        <input type="text" name="mobile_domain" value="{{ old('mobile_domain', $settings['mobile_domain'] ?? '') }}" placeholder="m.example.com">
-        <label>判定方式</label>
-        <select name="mobile_detect">
-            @foreach(['both'=>'域名或 UA','domain'=>'仅域名','ua'=>'仅 UA'] as $k => $label)
-                <option value="{{ $k }}" @selected(old('mobile_detect', $settings['mobile_detect'] ?? 'both') === $k)>{{ $label }}</option>
-            @endforeach
-        </select>
+        <div class="settings-pane{{ $tab === 'look' ? ' active' : '' }}" data-pane="look">
+            <p class="muted field-hint">改 Logo、颜色和页脚，不用改模板。首页标题留空则用主题自带文案。</p>
 
-        <h3 style="margin-top:22px">上传处理</h3>
-        <p class="muted">上传图片时生效（需 PHP GD）。宽度为 0 表示不缩放。</p>
-        <label>图片最大宽度（像素，超出等比缩小）</label>
-        <input type="number" name="upload_thumb_width" min="0" max="5000" value="{{ old('upload_thumb_width', $settings['upload_thumb_width'] ?? 0) }}">
-        <label>文字水印（留空关闭；中文需系统 TTF，否则建议用图片水印）</label>
-        <input type="text" name="upload_watermark_text" value="{{ old('upload_watermark_text', $settings['upload_watermark_text'] ?? '') }}" placeholder="© MySite">
-        <label>水印位置</label>
-        <select name="upload_watermark_position">
-            @foreach(['br'=>'右下','bl'=>'左下','tr'=>'右上','tl'=>'左上','center'=>'居中'] as $k => $label)
-                <option value="{{ $k }}" @selected(old('upload_watermark_position', $settings['upload_watermark_position'] ?? 'br') === $k)>{{ $label }}</option>
-            @endforeach
-        </select>
-        <label>图片水印（PNG/JPG，建议透明 PNG）</label>
-        @if(!empty($settings['upload_watermark_image']))
-            <p>
-                <img src="{{ cms_media(\Illuminate\Support\Facades\Storage::disk('public')->url($settings['upload_watermark_image'])) }}" alt="" style="max-height:64px;background:#eee;padding:4px">
-                <label class="inline"><input type="checkbox" name="upload_watermark_image_clear" value="1"> 清除图片水印</label>
-            </p>
-        @endif
-        <input type="file" name="watermark_image" accept="image/png,image/jpeg,image/webp,image/gif">
+            <label>网站 Logo</label>
+            <div class="settings-brand">
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="">
+                    <label class="inline"><input type="checkbox" name="logo_clear" value="1"> 去掉这张图</label>
+                @else
+                    <span class="muted">还没有 Logo</span>
+                @endif
+            </div>
+            <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
 
-        <h3 style="margin-top:22px">评论</h3>
-        <label class="inline"><input type="checkbox" name="comments_enabled" value="1" @checked(old('comments_enabled', $settings['comments_enabled'] ?? '1') == '1')> 启用内容评论</label>
-        <label class="inline"><input type="checkbox" name="comments_guest" value="1" @checked(old('comments_guest', $settings['comments_guest'] ?? '1') == '1')> 允许游客评论</label>
-        <label class="inline"><input type="checkbox" name="comments_auto_approve" value="1" @checked(old('comments_auto_approve', $settings['comments_auto_approve'] ?? '0') == '1')> 会员评论自动通过（游客仍需审核）</label>
-        <label>新评论通知邮箱（留空不发）</label>
-        <input type="email" name="comments_notify_email" value="{{ old('comments_notify_email', $settings['comments_notify_email'] ?? '') }}" placeholder="ops@example.com">
-        <label>同一 IP 发表间隔（秒）</label>
-        <input type="number" name="comments_rate_seconds" min="10" max="3600" value="{{ old('comments_rate_seconds', $settings['comments_rate_seconds'] ?? 60) }}">
+            <label>浏览器小图标</label>
+            <div class="settings-brand">
+                @if($faviconUrl)
+                    <img src="{{ $faviconUrl }}" alt="" style="max-height:32px">
+                    <label class="inline"><input type="checkbox" name="favicon_clear" value="1"> 去掉这张图</label>
+                @else
+                    <span class="muted">还没有小图标</span>
+                @endif
+            </div>
+            <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon">
+            <p class="muted field-hint">出现在浏览器标签上，建议用正方形小图。</p>
 
-        <h3 style="margin-top:22px">地图选点默认中心</h3>
-        <p class="muted">后台 map 字段 Leaflet 选点默认经纬度（OpenStreetMap）。</p>
-        <label>默认经度</label>
-        <input type="text" name="map_default_lng" value="{{ old('map_default_lng', $settings['map_default_lng'] ?? '116.397') }}">
-        <label>默认纬度</label>
-        <input type="text" name="map_default_lat" value="{{ old('map_default_lat', $settings['map_default_lat'] ?? '39.908') }}">
+            <label for="primary_color">主色</label>
+            <input id="primary_color" type="text" name="primary_color" value="{{ old('primary_color', $s['primary_color'] ?? '') }}" placeholder="#1b4f72" maxlength="7">
+            <p class="muted field-hint">如 #1b4f72。留空则用主题自带配色。</p>
 
-        <h3 style="margin-top:22px">内容 SEO</h3>
-        <label class="inline"><input type="checkbox" name="tag_autolink" value="1" @checked(old('tag_autolink', $settings['tag_autolink'] ?? '1') != '0')> 标签自动内链（正文命中标签标题时链接到 /tag）</label>
+            <label for="hero_title">首页大标题</label>
+            <input id="hero_title" type="text" name="hero_title" value="{{ old('hero_title', $s['hero_title'] ?? '') }}" maxlength="120">
+            <label for="hero_subtitle">首页副标题</label>
+            <input id="hero_subtitle" type="text" name="hero_subtitle" value="{{ old('hero_subtitle', $s['hero_subtitle'] ?? '') }}" maxlength="200">
+            <p class="muted field-hint">有推荐位大图时，大图优先于这两行字。</p>
 
-        <h3 style="margin-top:22px">第三方统计代码</h3>
-        <p class="muted">粘贴到前台 &lt;/body&gt; 前，如百度统计 / GA。</p>
-        <textarea name="analytics_code" rows="5" placeholder="<script>...</script>">{{ old('analytics_code', $settings['analytics_code'] ?? '') }}</textarea>
+            <label for="footer_text">页脚补充</label>
+            <input id="footer_text" type="text" name="footer_text" value="{{ old('footer_text', $s['footer_text'] ?? '') }}" maxlength="500" placeholder="地址、电话或版权说明">
 
-        <h3 style="margin-top:22px">邮件（SMTP）</h3>
-        <p class="muted">用于留言通知、找回密码等。密码留空表示不修改已保存值。</p>
-        <label>SMTP Host</label>
-        <input type="text" name="mail_host" value="{{ old('mail_host', $settings['mail_host'] ?? '') }}" placeholder="smtp.example.com">
-        <label>端口</label>
-        <input type="number" name="mail_port" value="{{ old('mail_port', $settings['mail_port'] ?? 587) }}">
-        <label>加密</label>
-        <select name="mail_encryption">
-            @foreach(['tls'=>'TLS','ssl'=>'SSL',''=>'无'] as $val => $label)
-                <option value="{{ $val }}" @selected(old('mail_encryption', $settings['mail_encryption'] ?? 'tls') === (string)$val)>{{ $label }}</option>
-            @endforeach
-        </select>
-        <label>用户名</label>
-        <input type="text" name="mail_username" value="{{ old('mail_username', $settings['mail_username'] ?? '') }}">
-        <label>密码</label>
-        <input type="password" name="mail_password" value="" autocomplete="new-password" placeholder="{{ !empty($settings['mail_password']) ? '已保存，留空不改' : '' }}">
-        <label>发件人邮箱</label>
-        <input type="email" name="mail_from_address" value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}">
-        <label>发件人名称</label>
-        <input type="text" name="mail_from_name" value="{{ old('mail_from_name', $settings['mail_from_name'] ?? '') }}">
+            <label for="icp">备案号</label>
+            <input id="icp" type="text" name="icp" value="{{ old('icp', $s['icp'] ?? '') }}" maxlength="80" placeholder="京ICP备00000000号-1">
+        </div>
 
-        <div class="form-actions">
-            <button class="btn" type="submit">保存</button>
+        <div class="settings-pane{{ $tab === 'interact' ? ' active' : '' }}" data-pane="interact">
+            <label class="inline">
+                <input type="checkbox" name="comments_enabled" value="1" @checked(old('comments_enabled', $s['comments_enabled'] ?? '1') == '1')>
+                允许在文章下留言
+            </label>
+            <label class="inline">
+                <input type="checkbox" name="comments_guest" value="1" @checked(old('comments_guest', $s['comments_guest'] ?? '1') == '1')>
+                没登录也能留
+            </label>
+            <label class="inline">
+                <input type="checkbox" name="comments_auto_approve" value="1" @checked(old('comments_auto_approve', $s['comments_auto_approve'] ?? '0') == '1')>
+                会员留言不用审（游客仍要审）
+            </label>
+
+            <label for="comments_notify_email">有新留言时通知这个邮箱</label>
+            <input id="comments_notify_email" type="email" name="comments_notify_email" value="{{ old('comments_notify_email', $s['comments_notify_email'] ?? '') }}" placeholder="ops@example.com">
+            <p class="muted field-hint">留空则不发通知。</p>
+
+            <label for="comments_rate_seconds">同一来源最短间隔（秒）</label>
+            <input id="comments_rate_seconds" type="number" name="comments_rate_seconds" min="10" max="3600" value="{{ old('comments_rate_seconds', $s['comments_rate_seconds'] ?? 60) }}">
+            <p class="muted field-hint">防止刷屏。建议 60 秒。</p>
+        </div>
+
+        <div class="settings-pane{{ $tab === 'more' ? ' active' : '' }}" data-pane="more">
+            <p class="muted field-hint">一般不用天天改。改文章链接方式后，旧地址可能打不开。</p>
+
+            <h3>文章地址</h3>
+            <label for="url_mode">文章链接怎么写</label>
+            <select id="url_mode" name="url_mode">
+                @foreach(\App\Support\UrlMode::options() as $mode => $label)
+                    <option value="{{ $mode }}" @selected(old('url_mode', $s['url_mode'] ?? 'cat_entry') === $mode)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <p class="muted field-hint">栏目页仍是「栏目名」。这里只影响单篇文章的地址。</p>
+
+            <h3>手机访问</h3>
+            <label for="mobile_theme">手机外观</label>
+            <select id="mobile_theme" name="mobile_theme">
+                <option value="">跟电脑一样</option>
+                @foreach(config('cms.themes', []) as $themeKey)
+                    <option value="{{ $themeKey }}" @selected(old('mobile_theme', $s['mobile_theme'] ?? '') === $themeKey)>{{ \App\Models\Cms\Site::themeLabel($themeKey) }}</option>
+                @endforeach
+            </select>
+            <label for="mobile_domain">手机专用域名</label>
+            <input id="mobile_domain" type="text" name="mobile_domain" value="{{ old('mobile_domain', $s['mobile_domain'] ?? '') }}" placeholder="m.example.com">
+            <p class="muted field-hint">多个域名用逗号分开。留空则只按是否手机浏览器来判断。</p>
+            <label for="mobile_detect">怎么判断是手机</label>
+            <select id="mobile_detect" name="mobile_detect">
+                @foreach(['both' => '手机域名或手机浏览器', 'domain' => '只认手机域名', 'ua' => '只认手机浏览器'] as $k => $label)
+                    <option value="{{ $k }}" @selected(old('mobile_detect', $s['mobile_detect'] ?? 'both') === $k)>{{ $label }}</option>
+                @endforeach
+            </select>
+
+            <h3>图片上传</h3>
+            <label for="upload_thumb_width">大图缩小到多宽</label>
+            <input id="upload_thumb_width" type="number" name="upload_thumb_width" min="0" max="5000" value="{{ old('upload_thumb_width', $s['upload_thumb_width'] ?? 0) }}">
+            <p class="muted field-hint">单位像素。填 0 表示不缩小。</p>
+            <label for="upload_watermark_text">文字水印</label>
+            <input id="upload_watermark_text" type="text" name="upload_watermark_text" value="{{ old('upload_watermark_text', $s['upload_watermark_text'] ?? '') }}" placeholder="© 本站">
+            <p class="muted field-hint">留空则不加文字。中文显示不正常时，改用下面的图片水印。</p>
+            <label for="upload_watermark_position">水印位置</label>
+            <select id="upload_watermark_position" name="upload_watermark_position">
+                @foreach(['br' => '右下', 'bl' => '左下', 'tr' => '右上', 'tl' => '左上', 'center' => '居中'] as $k => $label)
+                    <option value="{{ $k }}" @selected(old('upload_watermark_position', $s['upload_watermark_position'] ?? 'br') === $k)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <label>图片水印</label>
+            @if($wmUrl)
+                <div class="settings-brand">
+                    <img src="{{ $wmUrl }}" alt="" style="max-height:64px">
+                    <label class="inline"><input type="checkbox" name="upload_watermark_image_clear" value="1"> 去掉这张图</label>
+                </div>
+            @endif
+            <input type="file" name="watermark_image" accept="image/png,image/jpeg,image/webp,image/gif">
+
+            <h3>发信</h3>
+            <p class="muted field-hint">留言通知、找回密码会用到。密码留空表示不改已保存的值。</p>
+            <label for="mail_host">邮件服务器</label>
+            <input id="mail_host" type="text" name="mail_host" value="{{ old('mail_host', $s['mail_host'] ?? '') }}" placeholder="smtp.example.com">
+            <div class="settings-two">
+                <div>
+                    <label for="mail_port">端口</label>
+                    <input id="mail_port" type="number" name="mail_port" value="{{ old('mail_port', $s['mail_port'] ?? 587) }}">
+                </div>
+                <div>
+                    <label for="mail_encryption">传输加密</label>
+                    <select id="mail_encryption" name="mail_encryption">
+                        @foreach(['tls' => 'TLS（常用）', 'ssl' => 'SSL', '' => '不加密'] as $val => $label)
+                            <option value="{{ $val }}" @selected(old('mail_encryption', $s['mail_encryption'] ?? 'tls') === (string) $val)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <label for="mail_username">登录账号</label>
+            <input id="mail_username" type="text" name="mail_username" value="{{ old('mail_username', $s['mail_username'] ?? '') }}">
+            <label for="mail_password">密码</label>
+            <input id="mail_password" type="password" name="mail_password" value="" autocomplete="new-password" placeholder="{{ ! empty($s['mail_password']) ? '已保存，留空不改' : '' }}">
+            <label for="mail_from_address">发件人邮箱</label>
+            <input id="mail_from_address" type="email" name="mail_from_address" value="{{ old('mail_from_address', $s['mail_from_address'] ?? '') }}">
+            <label for="mail_from_name">发件人名称</label>
+            <input id="mail_from_name" type="text" name="mail_from_name" value="{{ old('mail_from_name', $s['mail_from_name'] ?? '') }}">
+
+            <h3>加速与接口</h3>
+            <label for="cdn_url">图片走这个域名</label>
+            <input id="cdn_url" type="url" name="cdn_url" value="{{ old('cdn_url', $s['cdn_url'] ?? '') }}" placeholder="https://cdn.example.com">
+            <p class="muted field-hint">附件会改到这个域名。留空则用本站地址。不要填后台地址。</p>
+            <label class="inline">
+                <input type="checkbox" name="api_enable" value="1" @checked(old('api_enable', $s['api_enable'] ?? '0') == '1')>
+                读内容需要密钥
+            </label>
+            <label for="api_token">接口密钥</label>
+            <input id="api_token" type="text" name="api_token" value="{{ old('api_token', $s['api_token'] ?? '') }}" placeholder="一串不容易猜的字符">
+            <p class="muted field-hint">勾选「需要密钥」时必填。关掉则谁都能读公开内容。</p>
+            <details class="settings-details">
+                <summary>有哪些接口</summary>
+                <p class="muted field-hint">读：站点配置、栏目、文章、搜索、标签、推荐位。写：表单提交、评论（带密钥可免验证码）。地址在网站根路径下的 /api。</p>
+            </details>
+
+            <h3>统计与内链</h3>
+            <label for="analytics_code">统计代码</label>
+            <textarea id="analytics_code" name="analytics_code" rows="5" placeholder="把统计平台给的代码贴在这里">{{ old('analytics_code', $s['analytics_code'] ?? '') }}</textarea>
+            <p class="muted field-hint">会插到前台页面底部，如百度统计、Google Analytics。</p>
+            <label class="inline">
+                <input type="checkbox" name="tag_autolink" value="1" @checked(old('tag_autolink', $s['tag_autolink'] ?? '1') != '0')>
+                正文里自动给标签加链接
+            </label>
+            <p class="muted field-hint">文章里出现标签名时，点过去会打开标签页。</p>
+
+            <details class="settings-details">
+                <summary>后台选点位置</summary>
+                <p class="muted field-hint">填内容选地点时，地图打开的默认位置。一般不用改。</p>
+                <div class="settings-two">
+                    <div>
+                        <label for="map_default_lng">经度</label>
+                        <input id="map_default_lng" type="text" name="map_default_lng" value="{{ old('map_default_lng', $s['map_default_lng'] ?? '116.397') }}">
+                    </div>
+                    <div>
+                        <label for="map_default_lat">纬度</label>
+                        <input id="map_default_lat" type="text" name="map_default_lat" value="{{ old('map_default_lat', $s['map_default_lat'] ?? '39.908') }}">
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <div class="form-actions settings-save">
+            <button class="btn" type="submit">保存设置</button>
         </div>
     </form>
 @endsection
+@push('scripts')
+<script>
+(function () {
+    var tabInput = document.getElementById('settingsTab');
+    var tabs = document.getElementById('settingsTabs');
+    if (!tabInput || !tabs) return;
+    tabs.querySelectorAll('[data-tab]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var tab = btn.getAttribute('data-tab');
+            tabInput.value = tab;
+            tabs.querySelectorAll('[data-tab]').forEach(function (item) {
+                item.classList.toggle('active', item === btn);
+            });
+            document.querySelectorAll('#settingsForm [data-pane]').forEach(function (pane) {
+                pane.classList.toggle('active', pane.getAttribute('data-pane') === tab);
+            });
+            var url = new URL(window.location.href);
+            if (tab === 'site') url.searchParams.delete('tab');
+            else url.searchParams.set('tab', tab);
+            history.replaceState(null, '', url);
+        });
+    });
+})();
+</script>
+@endpush

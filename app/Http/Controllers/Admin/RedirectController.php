@@ -15,10 +15,13 @@ class RedirectController extends Controller
     {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $keyword = trim((string) $request->query('q', ''));
+
         return view('admin.redirects.index', [
-            'redirects' => $this->redirects->paginate(),
+            'redirects' => $this->redirects->paginate(20, $keyword),
+            'q' => $keyword,
         ]);
     }
 
@@ -31,17 +34,19 @@ class RedirectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'source_path' => 'required|string|max:500',
-            'target_url' => 'required|string|max:1000',
-            'status_code' => 'required|in:301,302',
-        ]);
+        $this->validateRule($request);
         $result = $this->redirects->save(null, $request->all());
         if (! $result['ok']) {
             return back()->with('error', $result['msg'])->withInput();
         }
 
-        return redirect()->route('admin.redirects.index')->with('status', $result['msg']);
+        $back = array_filter(['q' => $request->input('keep_q')], fn ($v) => $v !== null && $v !== '');
+        $go = redirect()->route('admin.redirects.index', $back)->with('status', $result['msg']);
+        if (! $request->boolean('from_form')) {
+            $go->with('redirect_quick_added', true);
+        }
+
+        return $go;
     }
 
     public function edit(Redirect $redirect): View
@@ -51,11 +56,7 @@ class RedirectController extends Controller
 
     public function update(Request $request, Redirect $redirect): RedirectResponse
     {
-        $request->validate([
-            'source_path' => 'required|string|max:500',
-            'target_url' => 'required|string|max:1000',
-            'status_code' => 'required|in:301,302',
-        ]);
+        $this->validateRule($request);
         $result = $this->redirects->save($redirect, $request->all());
         if (! $result['ok']) {
             return back()->with('error', $result['msg'])->withInput();
@@ -64,11 +65,12 @@ class RedirectController extends Controller
         return redirect()->route('admin.redirects.index')->with('status', $result['msg']);
     }
 
-    public function destroy(Redirect $redirect): RedirectResponse
+    public function destroy(Request $request, Redirect $redirect): RedirectResponse
     {
         $result = $this->redirects->delete($redirect);
+        $back = array_filter(['q' => $request->input('keep_q')], fn ($v) => $v !== null && $v !== '');
 
-        return redirect()->route('admin.redirects.index')->with('status', $result['msg']);
+        return redirect()->route('admin.redirects.index', $back)->with('status', $result['msg']);
     }
 
     public function toggle(Redirect $redirect): RedirectResponse
@@ -76,5 +78,15 @@ class RedirectController extends Controller
         $result = $this->redirects->toggle($redirect);
 
         return back()->with('status', $result['msg']);
+    }
+
+    protected function validateRule(Request $request): void
+    {
+        $request->validate([
+            'source_path' => 'required|string|max:500',
+            'target_url' => 'required|string|max:1000',
+            'status_code' => 'nullable|in:301,302',
+            'note' => 'nullable|string|max:255',
+        ]);
     }
 }

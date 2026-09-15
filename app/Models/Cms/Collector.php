@@ -55,4 +55,14 @@ class Collector extends Model
 
         return $this->last_run_at->lte(now()->subMinutes(max(1, (int) $this->interval_minutes)));
     }
+
+    public static function typeLabel(?string $type): string
+    {
+        return match ($type) {
+            'html' => '网站页面',
+            'rss' => 'RSS 订阅',
+            'json' => 'JSON 接口',
+            default => $type ?: '未知',
+        };
+    }
 }

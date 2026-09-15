@@ -23,22 +23,29 @@ class HtmlCacheController extends Controller
     public function edit(): View
     {
         $cfg = $this->settings->getMany(['html_cache_enabled', 'html_cache_ttl']);
+        $ttl = ($cfg['html_cache_ttl'] !== null && $cfg['html_cache_ttl'] !== '')
+            ? (int) $cfg['html_cache_ttl']
+            : (int) config('cms.html_cache.ttl', 3600);
+        $lastBust = $this->htmlCache->lastBust();
+        $ttlOptions = HtmlCacheService::ttlOptions();
+        if (! array_key_exists($ttl, $ttlOptions)) {
+            $ttlOptions[$ttl] = '当前 '.$this->ttlPlain($ttl);
+        }
 
         return view('admin.html_cache.edit', [
             'enabled' => ($cfg['html_cache_enabled'] !== null && $cfg['html_cache_enabled'] !== '')
                 ? (bool) (int) $cfg['html_cache_enabled']
                 : (bool) config('cms.html_cache.enabled'),
-            'ttl' => ($cfg['html_cache_ttl'] !== null && $cfg['html_cache_ttl'] !== '')
-                ? (int) $cfg['html_cache_ttl']
-                : (int) config('cms.html_cache.ttl', 3600),
-            'lastBust' => $this->htmlCache->lastBust(),
-            'tagged' => $this->htmlCache->canTag(),
+            'ttl' => $ttl,
+            'ttlOptions' => $ttlOptions,
+            'lastBust' => $lastBust,
+            'lastBustLabel' => $this->htmlCache->bustLabel($lastBust),
             'diskEnabled' => $this->diskHtml->enabled(),
-            'diskRoot' => $this->diskHtml->rootPath(),
+            'diskCount' => $this->diskHtml->enabled() ? $this->diskHtml->fileCount() : 0,
         ]);
     }
 
-    /** 保存开关与 TTL */
+    /** 保存开关与保存时长 */
     public function update(Request $request): RedirectResponse
     {
         $request->validate([
@@ -50,7 +57,10 @@ class HtmlCacheController extends Controller
             'html_cache_ttl' => (string) max(0, (int) $request->input('html_cache_ttl', 3600)),
         ]);
 
-        return redirect()->route('admin.html-cache.edit')->with('status', '全页缓存设置已保存');
+        return redirect()->route('admin.html-cache.edit')->with(
+            'status',
+            $request->boolean('html_cache_enabled') ? '已开启全页缓存' : '已关闭全页缓存'
+        );
     }
 
     /** 清空 */
@@ -58,36 +68,38 @@ class HtmlCacheController extends Controller
     {
         $this->htmlCache->forgetAll('admin:clear');
 
-        return redirect()->route('admin.html-cache.edit')->with('status', '全页 HTML 缓存已清空');
+        return redirect()->route('admin.html-cache.edit')->with('status', '已清空。访客下一次打开会重新生成页面。');
     }
 
     /** 预热 */
     public function warm(Request $request): RedirectResponse
     {
         if (! $this->htmlCache->enabled()) {
-            return redirect()->route('admin.html-cache.edit')->with('error', '请先启用全页缓存');
+            return redirect()->route('admin.html-cache.edit')->with('error', '请先打开全页缓存并保存');
         }
 
         $result = $this->htmlCache->warm((int) $request->input('entries', 30));
+        $msg = '已预热 '.$result['ok'].' 页';
+        if ($result['fail'] > 0) {
+            $msg .= '，'.$result['fail'].' 页没生成好';
+        }
 
-        return redirect()->route('admin.html-cache.edit')->with(
-            'status',
-            "预热完成：成功 {$result['ok']}，失败 {$result['fail']}"
-        );
+        return redirect()->route('admin.html-cache.edit')->with('status', $msg);
     }
 
     /** 生成磁盘整站 HTML */
     public function buildDisk(Request $request): RedirectResponse
     {
         if (! $this->diskHtml->enabled()) {
-            return redirect()->route('admin.html-cache.edit')->with('error', '磁盘静态化未启用（CMS_DISK_HTML）');
+            return redirect()->route('admin.html-cache.edit')->with('error', '磁盘静态页还没打开，需要运维先配置');
         }
         $result = $this->diskHtml->build((int) $request->input('entries', 200));
+        $msg = '已写成 '.$result['ok'].' 个静态文件';
+        if ($result['fail'] > 0) {
+            $msg .= '，'.$result['fail'].' 页没写上';
+        }
 
-        return redirect()->route('admin.html-cache.edit')->with(
-            'status',
-            "磁盘 HTML 生成：成功 {$result['ok']}，失败 {$result['fail']} → ".$this->diskHtml->rootPath()
-        );
+        return redirect()->route('admin.html-cache.edit')->with('status', $msg);
     }
 
     /** 清空磁盘 HTML */
@@ -95,6 +107,27 @@ class HtmlCacheController extends Controller
     {
         $n = $this->diskHtml->clear();
 
-        return redirect()->route('admin.html-cache.edit')->with('status', "已删除 {$n} 个磁盘 HTML 文件");
+        return redirect()->route('admin.html-cache.edit')->with(
+            'status',
+            $n > 0 ? '已删掉 '.$n.' 个静态文件' : '没有可删的静态文件'
+        );
+    }
+
+    protected function ttlPlain(int $seconds): string
+    {
+        if ($seconds <= 0) {
+            return '改内容后马上换新';
+        }
+        if ($seconds % 86400 === 0) {
+            return ($seconds / 86400).' 天';
+        }
+        if ($seconds % 3600 === 0) {
+            return ($seconds / 3600).' 小时';
+        }
+        if ($seconds % 60 === 0) {
+            return ($seconds / 60).' 分钟';
+        }
+
+        return $seconds.' 秒';
     }
 }

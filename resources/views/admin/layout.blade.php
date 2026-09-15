@@ -17,7 +17,9 @@
     $currentSite = \App\Support\CurrentSite::model();
     $headerInbox = $admin
         ? app(\App\Services\Admin\DashboardService::class)->headerInbox($admin)
-        : ['total' => 0, 'hint' => ''];
+        : ['total' => 0, 'hint' => '', 'entries' => 0, 'forms' => 0, 'comments' => 0];
+    $contentMoreOpen = request()->routeIs('admin.flags.*', 'admin.recommends.*', 'admin.models.*', 'admin.menus.*', 'admin.forms.*');
+    $showContentMore = $can('flags') || $can('recommends') || $can('models') || $can('menus') || $can('forms');
 @endphp
 <div class="shell">
     <div class="side-backdrop" id="sideBackdrop"></div>
@@ -30,157 +32,108 @@
             @if($can('dashboard') || $can('stats'))
                 <div class="nav-header">概览</div>
                 @if($can('dashboard'))
-                    <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="fas fa-tachometer-alt"></i><span>仪表盘</span>
-                    </a>
+                    <x-side-link :href="route('admin.dashboard')" icon="tachometer-alt" label="仪表盘" :active="request()->routeIs('admin.dashboard*')" />
                 @endif
                 @if($can('stats'))
-                    <a href="{{ route('admin.stats.index') }}" class="{{ request()->routeIs('admin.stats.*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i><span>流量统计</span>
-                    </a>
+                    <x-side-link :href="route('admin.stats.index')" icon="chart-line" label="统计" :active="request()->routeIs('admin.stats.*')" />
                 @endif
             @endif
 
-            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments'))
+            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('flags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments'))
                 <div class="nav-header">内容</div>
                 @if($can('entries'))
-                    <a href="{{ route('admin.entries.index') }}" class="{{ request()->routeIs('admin.entries.*') ? 'active' : '' }}">
-                        <i class="fas fa-file-alt"></i><span>内容管理</span>
-                        @php $pendingEntries = \App\Models\Cms\Entry::query()->where('status', 'pending')->count(); @endphp
-                        @if($pendingEntries > 0)
-                            <span class="badge badge-warn" style="margin-left:6px">{{ $pendingEntries }}</span>
-                        @endif
-                    </a>
-                @endif
-                @if($can('recycle'))
-                    <a href="{{ route('admin.recycle.index') }}" class="{{ request()->routeIs('admin.recycle.*') ? 'active' : '' }}">
-                        <i class="fas fa-trash-alt"></i><span>回收站</span>
-                    </a>
+                    <x-side-link :href="route('admin.entries.index')" icon="file-alt" label="内容" :active="request()->routeIs('admin.entries.*')" :count="$headerInbox['entries'] ?? 0" />
                 @endif
                 @if($can('categories'))
-                    <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                        <i class="fas fa-sitemap"></i><span>栏目管理</span>
-                    </a>
+                    <x-side-link :href="route('admin.categories.index')" icon="sitemap" label="栏目" :active="request()->routeIs('admin.categories.*')" />
                 @endif
                 @if($can('tags'))
-                    <a href="{{ route('admin.tags.index') }}" class="{{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
-                        <i class="fas fa-tags"></i><span>标签管理</span>
-                    </a>
-                @endif
-                @if($can('flags'))
-                    <a href="{{ route('admin.flags.index') }}" class="{{ request()->routeIs('admin.flags.*') ? 'active' : '' }}">
-                        <i class="fas fa-flag"></i><span>推荐属性</span>
-                    </a>
-                @endif
-                @if($can('recommends'))
-                    <a href="{{ route('admin.recommends.index') }}" class="{{ request()->routeIs('admin.recommends.*') ? 'active' : '' }}">
-                        <i class="fas fa-th-large"></i><span>推荐位</span>
-                    </a>
-                @endif
-                @if($can('models'))
-                    <a href="{{ route('admin.models.index') }}" class="{{ request()->routeIs('admin.models.*') ? 'active' : '' }}">
-                        <i class="fas fa-cube"></i><span>内容模型</span>
-                    </a>
+                    <x-side-link :href="route('admin.tags.index')" icon="tags" label="标签" :active="request()->routeIs('admin.tags.*')" />
                 @endif
                 @if($can('media'))
-                    <a href="{{ route('admin.media.index') }}" class="{{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
-                        <i class="fas fa-photo-video"></i><span>媒体库</span>
-                    </a>
-                @endif
-                @if($can('menus'))
-                    <a href="{{ route('admin.menus.index') }}" class="{{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
-                        <i class="fas fa-bars"></i><span>导航菜单</span>
-                    </a>
-                @endif
-                @if($can('forms'))
-                    <a href="{{ route('admin.forms.index') }}" class="{{ request()->routeIs('admin.forms.*') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list"></i><span>表单定义</span>
-                    </a>
+                    <x-side-link :href="route('admin.media.index')" icon="photo-video" label="媒体" :active="request()->routeIs('admin.media.*')" />
                 @endif
                 @if($can('form_submissions'))
-                    <a href="{{ route('admin.form-submissions.index') }}" class="{{ request()->routeIs('admin.form-submissions.*') ? 'active' : '' }}">
-                        <i class="fas fa-inbox"></i><span>留言收件箱</span>
-                        @php $unreadForms = \App\Models\Cms\FormSubmission::query()->where('is_read', false)->count(); @endphp
-                        @if($unreadForms > 0)
-                            <span class="badge badge-warn" style="margin-left:6px">{{ $unreadForms }}</span>
-                        @endif
-                    </a>
+                    <x-side-link :href="route('admin.form-submissions.index')" icon="inbox" label="留言" :active="request()->routeIs('admin.form-submissions.*')" :count="$headerInbox['forms'] ?? 0" />
                 @endif
                 @if($can('comments'))
-                    <a href="{{ route('admin.comments.index') }}" class="{{ request()->routeIs('admin.comments.*') ? 'active' : '' }}">
-                        <i class="fas fa-comments"></i><span>评论审核</span>
-                    </a>
+                    <x-side-link :href="route('admin.comments.index')" icon="comments" label="评论" :active="request()->routeIs('admin.comments.*')" :count="$headerInbox['comments'] ?? 0" />
+                @endif
+                @if($can('recycle'))
+                    <x-side-link :href="route('admin.recycle.index')" icon="trash-alt" label="回收站" :active="request()->routeIs('admin.recycle.*')" />
+                @endif
+                @if($showContentMore)
+                    <details class="nav-fold{{ $contentMoreOpen ? ' is-open' : '' }}" @if($contentMoreOpen) open @endif>
+                        <summary>更多</summary>
+                        <div class="side-sub">
+                            @if($can('flags'))
+                                <x-side-link :href="route('admin.flags.index')" icon="flag" label="推荐" :active="request()->routeIs('admin.flags.*')" />
+                            @endif
+                            @if($can('recommends'))
+                                <x-side-link :href="route('admin.recommends.index')" icon="th-large" label="推荐位" :active="request()->routeIs('admin.recommends.*')" />
+                            @endif
+                            @if($can('models'))
+                                <x-side-link :href="route('admin.models.index')" icon="cube" label="模型" :active="request()->routeIs('admin.models.*')" />
+                            @endif
+                            @if($can('menus'))
+                                <x-side-link :href="route('admin.menus.index')" icon="bars" label="导航" :active="request()->routeIs('admin.menus.*')" />
+                            @endif
+                            @if($can('forms'))
+                                <x-side-link :href="route('admin.forms.index')" icon="clipboard-list" label="表单" :active="request()->routeIs('admin.forms.*')" />
+                            @endif
+                        </div>
+                    </details>
                 @endif
             @endif
 
             @if($can('collectors') || $can('members') || $can('member_groups') || $can('html_cache') || $can('redirects'))
                 <div class="nav-header">运营</div>
                 @if($can('redirects'))
-                    <a href="{{ route('admin.redirects.index') }}" class="{{ request()->routeIs('admin.redirects.*') ? 'active' : '' }}">
-                        <i class="fas fa-exchange-alt"></i><span>重定向</span>
-                    </a>
+                    <x-side-link :href="route('admin.redirects.index')" icon="exchange-alt" label="跳转" :active="request()->routeIs('admin.redirects.*')" />
                 @endif
                 @if($can('collectors'))
-                    <a href="{{ route('admin.collectors.index') }}" class="{{ request()->routeIs('admin.collectors.*') ? 'active' : '' }}">
-                        <i class="fas fa-cloud-download-alt"></i><span>采集任务</span>
-                    </a>
+                    <x-side-link :href="route('admin.collectors.index')" icon="cloud-download-alt" label="采集" :active="request()->routeIs('admin.collectors.*')" />
                 @endif
                 @if($can('members'))
-                    <a href="{{ route('admin.members.index') }}" class="{{ request()->routeIs('admin.members.*') ? 'active' : '' }}">
-                        <i class="fas fa-users"></i><span>会员管理</span>
-                    </a>
+                    <x-side-link :href="route('admin.members.index')" icon="users" label="会员" :active="request()->routeIs('admin.members.*')" />
                 @endif
                 @if($can('member_groups'))
-                    <a href="{{ route('admin.member-groups.index') }}" class="{{ request()->routeIs('admin.member-groups.*') ? 'active' : '' }}">
-                        <i class="fas fa-user-tag"></i><span>会员分组</span>
-                    </a>
+                    <x-side-link :href="route('admin.member-groups.index')" icon="user-tag" label="分组" :active="request()->routeIs('admin.member-groups.*')" />
                 @endif
                 @if($can('html_cache'))
-                    <a href="{{ route('admin.html-cache.edit') }}" class="{{ request()->routeIs('admin.html-cache.*') ? 'active' : '' }}">
-                        <i class="fas fa-bolt"></i><span>全页缓存</span>
-                    </a>
+                    <x-side-link :href="route('admin.html-cache.edit')" icon="bolt" label="缓存" :active="request()->routeIs('admin.html-cache.*')" />
                 @endif
             @endif
 
             @if($can('sites') || $can('settings') || $can('logs') || $can('admin_users') || $can('roles') || $can('locales'))
                 <div class="nav-header">系统</div>
                 @if($can('sites'))
-                    <a href="{{ route('admin.sites.index') }}" class="{{ request()->routeIs('admin.sites.*') ? 'active' : '' }}">
-                        <i class="fas fa-globe"></i><span>站点管理</span>
-                    </a>
+                    <x-side-link :href="route('admin.sites.index')" icon="globe" label="站点" :active="request()->routeIs('admin.sites.*')" />
                 @endif
                 @if($can('settings'))
-                    <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i><span>站点设置</span>
-                    </a>
-                    <a href="{{ route('admin.cache.edit') }}" class="{{ request()->routeIs('admin.cache.*') ? 'active' : '' }}">
-                        <i class="fas fa-tools"></i><span>系统工具</span>
-                    </a>
+                    <x-side-link :href="route('admin.settings.edit')" icon="cog" label="设置" :active="request()->routeIs('admin.settings.*')" />
+                    <x-side-link :href="route('admin.cache.edit')" icon="tools" label="工具" :active="request()->routeIs('admin.cache.*')" />
                 @endif
                 @if($can('locales'))
-                    <a href="{{ route('admin.locales.index') }}" class="{{ request()->routeIs('admin.locales.*') ? 'active' : '' }}">
-                        <i class="fas fa-language"></i><span>语言管理</span>
-                    </a>
+                    <x-side-link :href="route('admin.locales.index')" icon="language" label="语言" :active="request()->routeIs('admin.locales.*')" />
                 @endif
                 @if($can('logs'))
-                    <a href="{{ route('admin.logs.index') }}" class="{{ request()->routeIs('admin.logs.*') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list"></i><span>操作日志</span>
-                    </a>
+                    <x-side-link :href="route('admin.logs.index')" icon="history" label="日志" :active="request()->routeIs('admin.logs.*')" />
                 @endif
                 @if($can('admin_users'))
-                    <a href="{{ route('admin.admin-users.index') }}" class="{{ request()->routeIs('admin.admin-users.*') ? 'active' : '' }}">
-                        <i class="fas fa-user-cog"></i><span>管理员</span>
-                    </a>
+                    <x-side-link :href="route('admin.admin-users.index')" icon="user-cog" label="管理员" :active="request()->routeIs('admin.admin-users.*')" />
                 @endif
                 @if($can('roles'))
-                    <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                        <i class="fas fa-user-shield"></i><span>角色权限</span>
-                    </a>
+                    <x-side-link :href="route('admin.roles.index')" icon="user-shield" label="权限" :active="request()->routeIs('admin.roles.*')" />
                 @endif
             @endif
         </nav>
         <div class="side-foot">
-            角色：{{ $admin?->adminRole?->name ?? '—' }}
+            <span class="side-foot-avatar">{{ mb_substr($admin?->name ?? 'A', 0, 1) }}</span>
+            <span class="side-foot-meta">
+                <strong>{{ $admin?->name ?? '管理员' }}</strong>
+                <em>{{ $admin?->adminRole?->name ?? '未分角色' }}</em>
+            </span>
         </div>
     </aside>
 

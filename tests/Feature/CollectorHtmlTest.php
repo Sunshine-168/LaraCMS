@@ -116,6 +116,97 @@ class CollectorHtmlTest extends TestCase
         $this->assertStringContainsString('内网', $result['msg']);
     }
 
+    public function test_html_paginates_with_page_query(): void
+    {
+        Http::fake([
+            'https://example.com/blog' => Http::response(
+                '<html><body>'.
+                '<article class="post"><h2><a href="/p/one">First Post</a></h2></article>'.
+                '</body></html>',
+                200
+            ),
+            'https://example.com/blog?page=2' => Http::response(
+                '<html><body>'.
+                '<article class="post"><h2><a href="/p/two">Second Post</a></h2></article>'.
+                '</body></html>',
+                200
+            ),
+            'https://example.com/p/one' => Http::response('<html><article class="body">Hello</article>', 200),
+            'https://example.com/p/two' => Http::response('<html><article class="body">World</article>', 200),
+        ]);
+
+        $collector = $this->makeCollector('html', 'https://example.com/blog', [
+            'item_selector' => 'article.post',
+            'link_selector' => 'h2 a',
+            'title_selector' => 'h2 a',
+            'detail_content_selector' => 'article.body',
+            'page_count' => 2,
+        ]);
+
+        $result = app(CollectorService::class)->run($collector);
+        $this->assertTrue($result['ok'], $result['msg'] ?? '');
+        $this->assertSame(2, $result['data']['created']);
+        $this->assertNotNull(Entry::query()->where('title->zh_cn', 'First Post')->first());
+        $this->assertNotNull(Entry::query()->where('title->zh_cn', 'Second Post')->first());
+    }
+
+    public function test_html_follows_next_page_link(): void
+    {
+        Http::fake([
+            'https://example.com/news' => Http::response(
+                '<html><body>'.
+                '<li class="item"><a href="/n/a">Alpha</a></li>'.
+                '<a class="next" href="/news?p=2">下一页</a>'.
+                '</body></html>',
+                200
+            ),
+            'https://example.com/news?p=2' => Http::response(
+                '<html><body>'.
+                '<li class="item"><a href="/n/b">Beta</a></li>'.
+                '</body></html>',
+                200
+            ),
+        ]);
+
+        $collector = $this->makeCollector('html', 'https://example.com/news', [
+            'item_selector' => 'li.item',
+            'link_selector' => 'a',
+            'page_count' => 2,
+            'next_selector' => 'a.next',
+        ]);
+
+        $result = app(CollectorService::class)->run($collector);
+        $this->assertTrue($result['ok'], $result['msg'] ?? '');
+        $this->assertSame(2, $result['data']['created']);
+        $this->assertNotNull(Entry::query()->where('title->zh_cn', 'Alpha')->first());
+        $this->assertNotNull(Entry::query()->where('title->zh_cn', 'Beta')->first());
+    }
+
+    public function test_html_page_url_template(): void
+    {
+        Http::fake([
+            'https://example.com/list_1.html' => Http::response(
+                '<html><body><article class="post"><h2><a href="/p/one">One</a></h2></article></body></html>',
+                200
+            ),
+            'https://example.com/list_2.html' => Http::response(
+                '<html><body><article class="post"><h2><a href="/p/two">Two</a></h2></article></body></html>',
+                200
+            ),
+        ]);
+
+        $collector = $this->makeCollector('html', 'https://example.com/list_1.html', [
+            'item_selector' => 'article.post',
+            'link_selector' => 'h2 a',
+            'page_count' => 2,
+            'page_url' => 'https://example.com/list_{page}.html',
+        ]);
+
+        $result = app(CollectorService::class)->run($collector);
+        $this->assertTrue($result['ok'], $result['msg'] ?? '');
+        $this->assertSame(2, $result['data']['created']);
+    }
+
     /** @param  array<string, mixed>  $options */
     protected function makeCollector(string $type, string $url, array $options): Collector
     {

@@ -92,6 +92,38 @@ class CollectorService
         }
     }
 
+    /**
+     * 试抓：只取标题和链接，不写内容、不记日志。
+     *
+     * @return array{ok:bool,msg:string,data:?array{items:list<array{title:string,link:string,summary:string}>,fetched:int}}
+     */
+    public function preview(Collector $collector): array
+    {
+        try {
+            $collector->limit_items = max(1, min(12, (int) ($collector->limit_items ?: 12)));
+            $items = match ($collector->type) {
+                'json' => $this->fetchJson($collector),
+                'html' => $this->fetchHtml($collector, withDetail: false),
+                default => $this->fetchRss($collector),
+            };
+            $rows = [];
+            foreach ($items as $item) {
+                $rows[] = [
+                    'title' => $item['title'],
+                    'link' => $item['link'],
+                    'summary' => Str::limit($item['summary'], 100, ''),
+                ];
+            }
+
+            return Result::ok(
+                ['items' => $rows, 'fetched' => count($rows)],
+                '抓到 '.count($rows).' 条，未写入内容。'
+            );
+        } catch (\Throwable $e) {
+            return Result::fail($e->getMessage(), ['items' => []]);
+        }
+    }
+
     /** @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}> */
     protected function fetchRss(Collector $collector): array
     {
@@ -153,40 +185,118 @@ class CollectorService
     }
 
     /**
-     * 列表页 CSS 选择器 + 可选详情页正文（只跟同源链接，不翻页、不爬全站）。
+     * 网站列表页 + 可选翻页 + 同源详情正文（不爬全站）。
      *
      * @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}>
      */
-    protected function fetchHtml(Collector $collector): array
+    protected function fetchHtml(Collector $collector, bool $withDetail = true): array
     {
         $this->assertPublicHttpUrl($collector->source_url);
         $opts = $collector->options ?? [];
         $itemSel = trim((string) ($opts['item_selector'] ?? ''));
         if ($itemSel === '') {
-            throw new \RuntimeException('HTML 采集需要填写 item_selector');
+            throw new \RuntimeException('请填写列表条目选择器');
         }
 
-        $listHtml = $this->httpGet($collector->source_url);
-        $xpath = $this->htmlXPath($listHtml);
-        $nodes = $xpath->query(CssSelector::toXPath($itemSel, false));
-        if ($nodes === false || $nodes->length === 0) {
-            throw new \RuntimeException('列表选择器未匹配到条目：'.$itemSel);
+        $max = max(1, min(100, (int) $collector->limit_items));
+        $pageCount = max(1, min(10, (int) ($opts['page_count'] ?? 1)));
+        $pageUrl = trim((string) ($opts['page_url'] ?? ''));
+        $nextSel = trim((string) ($opts['next_selector'] ?? ''));
+        $baseHost = $this->hostOf($collector->source_url);
+
+        $items = [];
+        $seenUrls = [];
+        $seenGuids = [];
+        $url = $collector->source_url;
+
+        for ($page = 1; $page <= $pageCount && count($items) < $max; $page++) {
+            if ($nextSel === '' && $page > 1) {
+                $url = $this->htmlPageUrl($collector->source_url, $pageUrl, $page);
+            }
+            if ($url === '' || isset($seenUrls[$url])) {
+                break;
+            }
+            $this->assertPublicHttpUrl($url);
+            if ($this->hostOf($url) !== $baseHost) {
+                if ($page === 1) {
+                    throw new \RuntimeException('翻页地址必须与列表页同站');
+                }
+                break;
+            }
+            $seenUrls[$url] = true;
+
+            try {
+                $html = $this->httpGet($url);
+            } catch (\Throwable $e) {
+                if ($page === 1) {
+                    throw $e;
+                }
+                break;
+            }
+
+            $xpath = $this->htmlXPath($html);
+            $nodes = $xpath->query(CssSelector::toXPath($itemSel, false));
+            if ($nodes === false || $nodes->length === 0) {
+                if ($page === 1) {
+                    throw new \RuntimeException('这一页没有匹配到列表条目，请检查选择器');
+                }
+                break;
+            }
+
+            foreach ($this->parseHtmlListItems($collector, $xpath, $nodes, $url, $baseHost, $max - count($items), $withDetail) as $item) {
+                if (isset($seenGuids[$item['guid']])) {
+                    continue;
+                }
+                $seenGuids[$item['guid']] = true;
+                $items[] = $item;
+                if (count($items) >= $max) {
+                    break;
+                }
+            }
+
+            if ($nextSel !== '' && $page < $pageCount && count($items) < $max) {
+                $nextHref = $this->docAttr($xpath, $nextSel, 'href');
+                $next = $nextHref ? $this->absoluteUrl($url, $nextHref) : '';
+                if ($next === '' || $this->hostOf($next) !== $baseHost) {
+                    break;
+                }
+                $url = $next;
+            }
         }
 
+        return $items;
+    }
+
+    /**
+     * @param  \DOMNodeList<\DOMNode>  $nodes
+     * @return list<array{guid:string,title:string,link:string,summary:string,content:string,published:?string,cover:?string}>
+     */
+    protected function parseHtmlListItems(
+        Collector $collector,
+        \DOMXPath $xpath,
+        \DOMNodeList $nodes,
+        string $listUrl,
+        string $baseHost,
+        int $remain,
+        bool $withDetail,
+    ): array {
+        $opts = $collector->options ?? [];
         $linkSel = trim((string) ($opts['link_selector'] ?? 'a'));
         $titleSel = trim((string) ($opts['title_selector'] ?? ''));
         $summarySel = trim((string) ($opts['summary_selector'] ?? ''));
         $coverSel = trim((string) ($opts['cover_selector'] ?? ''));
         $detailSel = trim((string) ($opts['detail_content_selector'] ?? ''));
-        $baseHost = $this->hostOf($collector->source_url);
 
         $items = [];
         foreach ($nodes as $node) {
+            if (count($items) >= $remain) {
+                break;
+            }
             if (! $node instanceof \DOMNode) {
                 continue;
             }
             $href = $this->firstAttr($xpath, $node, $linkSel !== '' ? $linkSel : 'a', 'href');
-            $link = $href ? $this->absoluteUrl($collector->source_url, $href) : '';
+            $link = $href ? $this->absoluteUrl($listUrl, $href) : '';
             $title = $titleSel !== ''
                 ? $this->firstText($xpath, $node, $titleSel)
                 : $this->firstText($xpath, $node, $linkSel !== '' ? $linkSel : 'a');
@@ -199,9 +309,11 @@ class CollectorService
             }
             $summary = $summarySel !== '' ? $this->firstText($xpath, $node, $summarySel) : '';
             $coverHref = $coverSel !== '' ? $this->firstAttr($xpath, $node, $coverSel, 'src') : null;
-            $cover = $coverHref ? $this->absoluteUrl($collector->source_url, $coverHref) : $this->guessCover($node instanceof \DOMElement ? ($node->ownerDocument?->saveHTML($node) ?: '') : '');
+            $cover = $coverHref
+                ? $this->absoluteUrl($listUrl, $coverHref)
+                : $this->guessCover($node instanceof \DOMElement ? ($node->ownerDocument?->saveHTML($node) ?: '') : '');
             $content = $summary;
-            if ($detailSel !== '' && $link !== '' && $this->hostOf($link) === $baseHost) {
+            if ($withDetail && $detailSel !== '' && $link !== '' && $this->hostOf($link) === $baseHost) {
                 try {
                     $this->assertPublicHttpUrl($link);
                     $detail = $this->httpGet($link, 15);
@@ -214,10 +326,8 @@ class CollectorService
                     // 详情失败仍用摘要入库
                 }
             }
-            $max = max(1, min(30, (int) $collector->limit_items));
-            $guid = $link !== '' ? $link : md5($title);
             $items[] = [
-                'guid' => $guid,
+                'guid' => $link !== '' ? $link : md5($title),
                 'title' => $title,
                 'link' => $link,
                 'summary' => $summary,
@@ -225,12 +335,49 @@ class CollectorService
                 'published' => null,
                 'cover' => $cover,
             ];
-            if (count($items) >= $max) {
-                break;
-            }
         }
 
         return $items;
+    }
+
+    protected function htmlPageUrl(string $source, string $template, int $page): string
+    {
+        if ($page <= 1) {
+            return $source;
+        }
+        if ($template !== '') {
+            if (! str_contains($template, '{page}')) {
+                throw new \RuntimeException('翻页地址请包含 {page}，例如 https://example.com/list?page={page}');
+            }
+
+            return str_replace('{page}', (string) $page, $template);
+        }
+
+        $parts = parse_url($source) ?: [];
+        parse_str($parts['query'] ?? '', $query);
+        $query['page'] = $page;
+        $qs = http_build_query($query);
+        $origin = ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? '');
+        if (! empty($parts['port'])) {
+            $origin .= ':'.$parts['port'];
+        }
+        $path = $parts['path'] ?? '/';
+
+        return $origin.$path.($qs !== '' ? '?'.$qs : '');
+    }
+
+    protected function docAttr(\DOMXPath $xpath, string $selector, string $attr): ?string
+    {
+        $nodes = $xpath->query(CssSelector::toXPath($selector, false));
+        if (! $nodes || $nodes->length === 0) {
+            return null;
+        }
+        $node = $nodes->item(0);
+        if ($node instanceof \DOMElement && $node->hasAttribute($attr)) {
+            return trim($node->getAttribute($attr));
+        }
+
+        return null;
     }
 
     protected function httpGet(string $url, int $timeout = 25): string

@@ -49,6 +49,22 @@ class DiskHtmlService
         return $count;
     }
 
+    public function fileCount(): int
+    {
+        $root = $this->rootPath();
+        if (! is_dir($root)) {
+            return 0;
+        }
+        $n = 0;
+        foreach (File::allFiles($root) as $file) {
+            if ($file->getExtension() === 'html') {
+                $n++;
+            }
+        }
+
+        return $n;
+    }
+
     /**
      * @return array{ok:int,fail:int,files:list<string>}
      */

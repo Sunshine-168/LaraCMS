@@ -19,10 +19,10 @@ class UrlMode
     public static function options(): array
     {
         return [
-            self::CAT_ENTRY => '/栏目slug/文档slug（默认）',
-            self::ENTRY_ID => '/e/{id}',
-            self::CAT_ID => '/c/{栏目id}/文档slug',
-            self::MODEL_CAT_ENTRY => '/模型slug/栏目slug/文档slug',
+            self::CAT_ENTRY => '栏目名/文章名（推荐）',
+            self::ENTRY_ID => '按编号，如 /e/12',
+            self::CAT_ID => '栏目编号加文章名',
+            self::MODEL_CAT_ENTRY => '类型/栏目/文章名',
         ];
     }
 

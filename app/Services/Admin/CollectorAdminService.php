@@ -13,17 +13,17 @@ class CollectorAdminService
         return Collector::query()->with(['modelDef', 'category'])->orderByDesc('id')->paginate($perPage);
     }
 
-    public function save(?Collector $collector, array $input): array
+    /** @return array<string, mixed> */
+    public function attributesFromInput(array $input): array
     {
-        $collector ??= new Collector;
-        $collector->fill([
+        return [
             'name' => $input['name'] ?? '未命名采集',
-            'type' => $input['type'] ?? 'rss',
+            'type' => $input['type'] ?? 'html',
             'source_url' => $input['source_url'] ?? '',
             'model_id' => (int) ($input['model_id'] ?? 0),
-            'category_id' => $input['category_id'] ?: null,
+            'category_id' => ! empty($input['category_id']) ? $input['category_id'] : null,
             'interval_minutes' => max(1, (int) ($input['interval_minutes'] ?? 60)),
-            'limit_items' => max(1, (int) ($input['limit_items'] ?? 20)),
+            'limit_items' => max(1, min(100, (int) ($input['limit_items'] ?? 10))),
             'is_active' => ! empty($input['is_active']),
             'publish_immediately' => ! empty($input['publish_immediately']),
             'options' => [
@@ -41,11 +41,31 @@ class CollectorAdminService
                 'summary_selector' => trim((string) ($input['summary_selector'] ?? '')),
                 'cover_selector' => trim((string) ($input['cover_selector'] ?? '')),
                 'detail_content_selector' => trim((string) ($input['detail_content_selector'] ?? '')),
+                'page_count' => max(1, min(10, (int) ($input['page_count'] ?? 1))),
+                'page_url' => trim((string) ($input['page_url'] ?? '')),
+                'next_selector' => trim((string) ($input['next_selector'] ?? '')),
             ],
-        ]);
+        ];
+    }
+
+    public function save(?Collector $collector, array $input): array
+    {
+        $collector ??= new Collector;
+        $collector->fill($this->attributesFromInput($input));
         $collector->save();
 
-        return Result::ok($collector, '采集器已保存');
+        return Result::ok($collector, '采集源已保存');
+    }
+
+    public function toggle(Collector $collector): array
+    {
+        $collector->is_active = ! $collector->is_active;
+        $collector->save();
+
+        return Result::ok(
+            $collector,
+            $collector->is_active ? '已启用，到点会自动采集' : '已停用，不再自动采集'
+        );
     }
 
     public function delete(Collector $collector): array

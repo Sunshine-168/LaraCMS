@@ -15,7 +15,7 @@ class SettingController extends Controller
     public function __construct(private readonly SettingService $settingService) {}
 
     /** 站点设置页 */
-    public function edit(): View
+    public function edit(Request $request): View
     {
         $keys = [
             'site_name', 'site_description', 'site_keywords', 'theme',
@@ -35,6 +35,7 @@ class SettingController extends Controller
 
         return view('admin.settings.edit', [
             'settings' => $this->settingService->getMany($keys),
+            'tab' => $this->tabFrom($request),
         ]);
     }
 
@@ -103,7 +104,16 @@ class SettingController extends Controller
         }
 
         $result = $this->settingService->save($data);
+        $tab = $this->tabFrom($request);
 
-        return redirect()->route('admin.settings.edit')->with('status', $result['msg']);
+        return redirect()->route('admin.settings.edit', $tab === 'site' ? [] : ['tab' => $tab])
+            ->with('status', $result['msg']);
+    }
+
+    private function tabFrom(Request $request): string
+    {
+        $tab = (string) $request->input('tab', $request->query('tab', 'site'));
+
+        return in_array($tab, ['site', 'look', 'interact', 'more'], true) ? $tab : 'site';
     }
 }

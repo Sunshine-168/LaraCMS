@@ -102,7 +102,7 @@ class Member extends Authenticatable
             return false;
         }
         $this->loadMissing('group');
-        if (! $this->group) {
+        if (! $this->group || ! $this->group->is_active) {
             return false;
         }
 

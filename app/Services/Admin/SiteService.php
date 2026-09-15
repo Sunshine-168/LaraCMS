@@ -30,8 +30,12 @@ class SiteService
 
         $site->name = trim((string) ($input['name'] ?? $site->name));
         $site->domain = $domain;
-        $site->is_active = ! empty($input['is_active']);
-        $site->is_default = ! empty($input['is_default']);
+        $site->is_active = array_key_exists('is_active', $input)
+            ? ! empty($input['is_active'])
+            : ($site->exists ? (bool) $site->is_active : true);
+        $site->is_default = array_key_exists('is_default', $input)
+            ? ! empty($input['is_default'])
+            : ($site->exists ? (bool) $site->is_default : false);
         $theme = trim((string) ($input['theme'] ?? ''));
         $site->theme = $theme !== '' ? $theme : null;
         $site->remark = trim((string) ($input['remark'] ?? '')) ?: null;
@@ -55,19 +59,44 @@ class SiteService
             }
         });
 
-        return Result::ok($site, $isNew ? '站点已创建（已复制基础设置）' : '站点已保存');
+        return Result::ok($site, $isNew ? '站点已添加。栏目和文章是空的，可在顶栏切过去接着改。' : '站点已保存');
+    }
+
+    public function toggle(Site $site): array
+    {
+        if ($site->is_default && $site->is_active) {
+            return Result::fail('默认站点不能停用');
+        }
+        $site->is_active = ! $site->is_active;
+        $site->save();
+
+        return Result::ok(
+            $site,
+            $site->is_active ? '已启用，这个域名可以打开' : '已停用，这个域名暂时打不开'
+        );
+    }
+
+    public function makeDefault(Site $site): array
+    {
+        if (! $site->is_active) {
+            return Result::fail('请先启用这个站点');
+        }
+        $site->is_default = true;
+        $site->save();
+
+        return Result::ok($site, '已设为默认站点');
     }
 
     public function delete(Site $site): array
     {
         if ($site->is_default) {
-            return Result::fail('不能删除默认站点');
+            return Result::fail('默认站点不能删除');
         }
         if (Site::query()->count() <= 1) {
             return Result::fail('至少保留一个站点');
         }
         $site->delete();
 
-        return Result::ok(null, '站点已删除（相关内容已级联删除）');
+        return Result::ok(null, '已删除这个站点');
     }
 }

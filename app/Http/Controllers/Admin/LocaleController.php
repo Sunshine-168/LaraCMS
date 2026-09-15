@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cms\CmsLocale;
+use App\Services\Admin\LocaleAdminService;
 use App\Support\CurrentSite;
 use App\Support\Locale;
-use App\Support\Result;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,10 +14,12 @@ use Illuminate\View\View;
 
 class LocaleController extends Controller
 {
+    public function __construct(private readonly LocaleAdminService $locales) {}
+
     public function index(): View
     {
         return view('admin.locales.index', [
-            'locales' => CmsLocale::query()->orderBy('sort')->orderBy('id')->get(),
+            'locales' => $this->locales->all(),
         ]);
     }
 
@@ -30,15 +32,18 @@ class LocaleController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'code' => ['required', 'string', 'max:16', 'regex:/^[a-z]{2}(_[a-z]{2})?$/', Rule::unique('cms_locales', 'code')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))],
-            'label' => 'required|string|max:80',
-            'native' => 'nullable|string|max:80',
-            'sort' => 'nullable|integer|min:0|max:9999',
-        ]);
-        $result = $this->save(null, $request->all() + $data);
+        $this->normalizeCode($request);
+        $request->validate($this->rules(), $this->messages());
+        $result = $this->locales->save(null, $request->all());
+        if (! $result['ok']) {
+            return back()->with('error', $result['msg'])->withInput();
+        }
+        $go = redirect()->route('admin.locales.index')->with('status', $result['msg']);
+        if (! $request->boolean('from_form')) {
+            $go->with('locale_quick_added', true);
+        }
 
-        return redirect()->route('admin.locales.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
+        return $go;
     }
 
     public function edit(CmsLocale $locale): View
@@ -48,45 +53,68 @@ class LocaleController extends Controller
 
     public function update(Request $request, CmsLocale $locale): RedirectResponse
     {
-        $request->validate([
-            'code' => ['required', 'string', 'max:16', 'regex:/^[a-z]{2}(_[a-z]{2})?$/', Rule::unique('cms_locales', 'code')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()))->ignore($locale->id)],
-            'label' => 'required|string|max:80',
-        ]);
-        $result = $this->save($locale, $request->all());
+        $this->normalizeCode($request);
+        $request->validate($this->rules($locale), $this->messages());
+        $result = $this->locales->save($locale, $request->all());
+        if (! $result['ok']) {
+            return back()->with('error', $result['msg'])->withInput();
+        }
 
-        return redirect()->route('admin.locales.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
+        return redirect()->route('admin.locales.index')->with('status', $result['msg']);
     }
 
     public function destroy(CmsLocale $locale): RedirectResponse
     {
-        if ($locale->is_default) {
-            return back()->with('error', '不能删除默认语言');
-        }
-        $locale->delete();
-        Locale::forgetCache();
+        $result = $this->locales->delete($locale);
 
-        return redirect()->route('admin.locales.index')->with('status', '已删除');
+        return redirect()->route('admin.locales.index')->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
-    /** @param  array<string, mixed>  $input */
-    protected function save(?CmsLocale $locale, array $input): array
+    public function toggle(CmsLocale $locale): RedirectResponse
     {
-        $locale ??= new CmsLocale;
-        $locale->code = Locale::normalize((string) ($input['code'] ?? ''));
-        $locale->label = $input['label'] ?? $locale->label;
-        $locale->native = $input['native'] ?? $locale->label;
-        $locale->sort = (int) ($input['sort'] ?? 0);
-        $locale->is_active = ! empty($input['is_active']);
-        $locale->hide_default = ! empty($input['hide_default']);
-        $makeDefault = ! empty($input['is_default']);
-        $locale->is_default = $makeDefault || (! $locale->exists && ! CmsLocale::query()->where('is_default', true)->exists());
-        $locale->save();
+        $result = $this->locales->toggle($locale);
 
-        if ($locale->is_default) {
-            CmsLocale::query()->where('id', '!=', $locale->id)->update(['is_default' => false]);
+        return back()->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    public function makeDefault(CmsLocale $locale): RedirectResponse
+    {
+        $result = $this->locales->makeDefault($locale);
+
+        return back()->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    /** @return array<string, mixed> */
+    private function rules(?CmsLocale $locale = null): array
+    {
+        $unique = Rule::unique('cms_locales', 'code')->where(fn ($q) => $q->where('site_id', CurrentSite::idOrDefault()));
+        if ($locale) {
+            $unique->ignore($locale->id);
         }
-        Locale::forgetCache();
 
-        return Result::ok($locale, '语言已保存');
+        return [
+            'code' => ['required', 'string', 'max:16', 'regex:/^[a-z]{2}(_[a-z]{2})?$/', $unique],
+            'label' => 'required|string|max:80',
+            'native' => 'nullable|string|max:80',
+            'sort' => 'nullable|integer|min:0|max:9999',
+        ];
+    }
+
+    /** @return array<string, string> */
+    private function messages(): array
+    {
+        return [
+            'code.required' => '请填写语言代码，如 en、ja',
+            'code.regex' => '代码用 en、ja、zh_cn 这种写法',
+            'code.unique' => '这个代码已经有了',
+            'label.required' => '请填写名称',
+        ];
+    }
+
+    private function normalizeCode(Request $request): void
+    {
+        $request->merge([
+            'code' => Locale::normalize((string) $request->input('code')),
+        ]);
     }
 }

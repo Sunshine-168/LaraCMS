@@ -48,4 +48,9 @@ class Redirect extends Model
     {
         Cache::forget(self::cacheKey($siteId));
     }
+
+    public function isTemporary(): bool
+    {
+        return (int) $this->status_code === 302;
+    }
 }

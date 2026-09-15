@@ -22,10 +22,22 @@ class MemberGroup extends Model
         ];
     }
 
+    /** @return array<string, string> */
+    public static function permissionLabels(): array
+    {
+        return [
+            'download' => '下载受保护文件',
+            'form_submit' => '提交表单',
+            'view_member_content' => '看会员内容',
+            'upload' => '上传文件',
+            'contribute' => '前台投稿',
+        ];
+    }
+
     /** @return list<string> */
     public static function permissionKeys(): array
     {
-        return ['download', 'form_submit', 'view_member_content', 'upload', 'contribute'];
+        return array_keys(self::permissionLabels());
     }
 
     public function allows(string $key): bool

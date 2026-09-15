@@ -13,9 +13,20 @@ class RedirectAdminService
     {
     }
 
-    public function paginate(int $perPage = 20): LengthAwarePaginator
+    public function paginate(int $perPage = 20, string $keyword = ''): LengthAwarePaginator
     {
-        return Redirect::query()->orderByDesc('id')->paginate($perPage);
+        $query = Redirect::query();
+        $keyword = trim($keyword);
+        if ($keyword !== '') {
+            $like = '%'.addcslashes($keyword, '%_\\').'%';
+            $query->where(function ($inner) use ($like) {
+                $inner->where('source_path', 'like', $like)
+                    ->orWhere('target_url', 'like', $like)
+                    ->orWhere('note', 'like', $like);
+            });
+        }
+
+        return $query->orderByDesc('id')->paginate($perPage)->withQueryString();
     }
 
     public function save(?Redirect $redirect, array $input): array
@@ -33,6 +44,9 @@ class RedirectAdminService
         $redirect->is_active = ! $redirect->is_active;
         $redirect->save();
 
-        return Result::ok($redirect, $redirect->is_active ? '已启用' : '已停用');
+        return Result::ok(
+            $redirect,
+            $redirect->is_active ? '已启用，访客会跳过去' : '已停用，旧地址不再跳转'
+        );
     }
 }

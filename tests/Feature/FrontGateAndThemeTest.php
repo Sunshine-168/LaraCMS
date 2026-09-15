@@ -201,7 +201,7 @@ class FrontGateAndThemeTest extends TestCase
             ->withSession(['admin_site_id' => Site::default()->id])
             ->get(route('admin.settings.edit'))
             ->assertOk()
-            ->assertSee('外观与品牌')
+            ->assertSee('外观')
             ->assertSee('备案号');
 
         $this->actingAs($admin, 'admin')

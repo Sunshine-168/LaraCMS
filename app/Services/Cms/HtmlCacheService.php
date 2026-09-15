@@ -201,6 +201,40 @@ class HtmlCacheService
         return is_array($v) ? $v : null;
     }
 
+    /** @return array<int, string> */
+    public static function ttlOptions(): array
+    {
+        return [
+            0 => '改内容后马上换新',
+            900 => '15 分钟',
+            3600 => '1 小时',
+            21600 => '6 小时',
+            86400 => '1 天',
+        ];
+    }
+
+    public function bustLabel(?array $bust): string
+    {
+        $reason = (string) ($bust['reason'] ?? '');
+        if ($reason === '') {
+            return '还没有刷新过';
+        }
+
+        return match (true) {
+            $reason === 'admin:clear' => '你手动清空了页面缓存',
+            $reason === 'admin:global-clear' => '在系统工具里清空了缓存',
+            $reason === 'settings' => '改了站点设置',
+            $reason === 'backup-restore' => '还原了备份',
+            $reason === 'artisan:html-clear' => '用命令行清空了缓存',
+            str_starts_with($reason, 'entry:batch') => '批量改了内容',
+            str_starts_with($reason, 'entry:') => '改了内容',
+            str_starts_with($reason, 'category:') => '改了栏目',
+            str_starts_with($reason, 'collector:') => '采集写入了内容',
+            str_starts_with($reason, 'recommend:') => '改了推荐位',
+            default => '内容有更新',
+        };
+    }
+
     /**
      * 预热：首页 + 栏目 + 最近发布内容（内核内请求，无需外部 HTTP）
      *

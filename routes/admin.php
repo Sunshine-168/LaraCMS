@@ -45,6 +45,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::middleware('admin.perm:sites')->group(function () {
+            Route::post('sites/{site}/toggle', [SiteController::class, 'toggle'])->name('sites.toggle');
+            Route::post('sites/{site}/default', [SiteController::class, 'makeDefault'])->name('sites.default');
             Route::resource('sites', SiteController::class)->except(['show']);
         });
 
@@ -73,6 +75,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('flags', FlagController::class)->except(['show']);
         });
         Route::middleware('admin.perm:locales')->group(function () {
+            Route::post('locales/{locale}/toggle', [LocaleController::class, 'toggle'])->name('locales.toggle');
+            Route::post('locales/{locale}/default', [LocaleController::class, 'makeDefault'])->name('locales.default');
             Route::resource('locales', LocaleController::class)->except(['show']);
         });
         Route::middleware('admin.perm:forms')->group(function () {
@@ -145,9 +149,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('recommends', RecommendController::class)->except(['show']);
         });
         Route::middleware('admin.perm:members')->group(function () {
+            Route::post('members/{member}/toggle', [MemberController::class, 'toggle'])->name('members.toggle');
             Route::resource('members', MemberController::class)->except(['show']);
         });
         Route::middleware('admin.perm:member_groups')->group(function () {
+            Route::post('member-groups/{member_group}/toggle', [MemberGroupController::class, 'toggle'])->name('member-groups.toggle');
+            Route::post('member-groups/{member_group}/move', [MemberGroupController::class, 'move'])->name('member-groups.move');
             Route::resource('member-groups', MemberGroupController::class)->except(['show']);
         });
         Route::middleware('admin.perm:collectors')->group(function () {
@@ -155,10 +162,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('collectors/create', [CollectorController::class, 'create'])->name('collectors.create');
             Route::post('collectors', [CollectorController::class, 'store'])->name('collectors.store');
             Route::get('collectors/logs', [CollectorController::class, 'logs'])->name('collectors.logs');
+            Route::post('collectors/preview', [CollectorController::class, 'preview'])->name('collectors.preview');
             Route::get('collectors/{collector}/edit', [CollectorController::class, 'edit'])->name('collectors.edit');
             Route::put('collectors/{collector}', [CollectorController::class, 'update'])->name('collectors.update');
             Route::delete('collectors/{collector}', [CollectorController::class, 'destroy'])->name('collectors.destroy');
             Route::post('collectors/{collector}/run', [CollectorController::class, 'run'])->name('collectors.run');
+            Route::post('collectors/{collector}/toggle', [CollectorController::class, 'toggle'])->name('collectors.toggle');
         });
         Route::middleware('admin.perm:settings')->group(function () {
             Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
@@ -184,6 +193,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('logs', [AdminLogController::class, 'index'])->name('logs.index');
         });
         Route::middleware('admin.perm:admin_users')->group(function () {
+            Route::post('admin-users/{admin_user}/toggle', [AdminUserController::class, 'toggle'])->name('admin-users.toggle');
             Route::resource('admin-users', AdminUserController::class)->except(['show']);
         });
         Route::middleware('admin.perm:roles')->group(function () {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cms\Site;
 use App\Services\Admin\SiteService;
 use App\Support\AdminSiteAccess;
+use App\Support\CurrentSite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,6 +21,7 @@ class SiteController extends Controller
     {
         return view('admin.sites.index', [
             'sites' => $this->sites->paginate(),
+            'currentId' => CurrentSite::id(),
         ]);
     }
 
@@ -41,8 +43,12 @@ class SiteController extends Controller
         if (! $result['ok']) {
             return back()->with('error', $result['msg'])->withInput();
         }
+        $go = redirect()->route('admin.sites.index')->with('status', $result['msg']);
+        if (! $request->boolean('from_form')) {
+            $go->with('site_quick_added', true);
+        }
 
-        return redirect()->route('admin.sites.index')->with('status', $result['msg']);
+        return $go;
     }
 
     public function edit(Site $site): View
@@ -50,6 +56,7 @@ class SiteController extends Controller
         return view('admin.sites.form', [
             'site' => $site,
             'themes' => (array) config('cms.themes', []),
+            'isCurrent' => (int) CurrentSite::id() === (int) $site->id,
         ]);
     }
 
@@ -77,6 +84,20 @@ class SiteController extends Controller
         return redirect()->route('admin.sites.index')->with('status', $result['msg']);
     }
 
+    public function toggle(Site $site): RedirectResponse
+    {
+        $result = $this->sites->toggle($site);
+
+        return back()->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    public function makeDefault(Site $site): RedirectResponse
+    {
+        $result = $this->sites->makeDefault($site);
+
+        return back()->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
     public function switch(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -93,6 +114,6 @@ class SiteController extends Controller
         }
         $request->session()->put('admin_site_id', $site->id);
 
-        return back()->with('status', '已切换到：'.$site->name);
+        return back()->with('status', '正在改：'.$site->name);
     }
 }
