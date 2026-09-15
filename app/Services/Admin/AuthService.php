@@ -6,6 +6,7 @@ use App\Models\Admin\AdminUser;
 use App\Support\Result;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AuthService
 {
@@ -20,10 +21,12 @@ class AuthService
 
         Auth::guard('admin')->login($user, $remember);
 
-        $user->forceFill([
-            'last_login_at' => now(),
-            'last_login_ip' => $ip ?: request()->ip(),
-        ])->save();
+        if (Schema::hasColumn('admin_users', 'last_login_at')) {
+            $user->forceFill([
+                'last_login_at' => now(),
+                'last_login_ip' => $ip ?: request()->ip(),
+            ])->save();
+        }
 
         return Result::ok($user, '登录成功');
     }

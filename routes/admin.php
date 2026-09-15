@@ -186,7 +186,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('html-cache', [HtmlCacheController::class, 'update'])->name('html-cache.update');
             Route::post('html-cache/clear', [HtmlCacheController::class, 'clear'])->name('html-cache.clear');
             Route::post('html-cache/warm', [HtmlCacheController::class, 'warm'])->name('html-cache.warm');
+            Route::put('html-cache/disk', [HtmlCacheController::class, 'updateDisk'])->name('html-cache.disk-update');
             Route::post('html-cache/disk-build', [HtmlCacheController::class, 'buildDisk'])->name('html-cache.disk-build');
+            Route::post('html-cache/disk-step', [HtmlCacheController::class, 'stepDisk'])->name('html-cache.disk-step');
+            Route::get('html-cache/disk-status', [HtmlCacheController::class, 'diskStatus'])->name('html-cache.disk-status');
+            Route::post('html-cache/disk-cancel', [HtmlCacheController::class, 'cancelDisk'])->name('html-cache.disk-cancel');
             Route::post('html-cache/disk-clear', [HtmlCacheController::class, 'clearDisk'])->name('html-cache.disk-clear');
         });
         Route::middleware('admin.perm:logs')->group(function () {

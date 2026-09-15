@@ -24,5 +24,6 @@ if [ ! -f storage/app/install.lock ]; then
 fi
 
 php artisan storage:link --force >/dev/null 2>&1 || true
+php artisan view:clear >/dev/null 2>&1 || true
 
 exec "$@"

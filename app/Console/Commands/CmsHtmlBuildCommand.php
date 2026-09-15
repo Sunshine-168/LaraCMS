@@ -16,7 +16,7 @@ class CmsHtmlBuildCommand extends Command
     public function handle(DiskHtmlService $disk): int
     {
         if (! $disk->enabled()) {
-            $this->error('CMS_DISK_HTML 未启用');
+            $this->error('磁盘静态页未启用，请先在后台打开');
 
             return self::FAILURE;
         }

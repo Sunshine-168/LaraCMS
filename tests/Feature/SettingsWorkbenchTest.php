@@ -51,6 +51,27 @@ class SettingsWorkbenchTest extends TestCase
             ->assertDontSee('地图选点默认中心');
     }
 
+    public function test_look_tab_has_image_preview_slots(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+
+        $this->actingAs($admin, 'admin')
+            ->withSession(['admin_site_id' => Site::default()->id])
+            ->get(route('admin.settings.edit', ['tab' => 'look']))
+            ->assertOk()
+            ->assertSee('data-file-preview', false)
+            ->assertSee('settings-file-thumb', false)
+            ->assertSee('还没有 Logo')
+            ->assertSee('还没有小图标')
+            ->assertSee('name="logo_file"', false)
+            ->assertSee('name="favicon_file"', false);
+
+        $this->get(route('admin.settings.edit', ['tab' => 'more']))
+            ->assertOk()
+            ->assertSee('还没有水印图')
+            ->assertSee('name="watermark_image"', false);
+    }
+
     public function test_more_tab_and_save_keeps_tab(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();

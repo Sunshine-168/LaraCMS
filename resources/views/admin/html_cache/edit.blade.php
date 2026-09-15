@@ -9,6 +9,7 @@
     $lastBustLabel = $lastBustLabel ?? '还没有刷新过';
     $diskEnabled = (bool) ($diskEnabled ?? false);
     $diskCount = (int) ($diskCount ?? 0);
+    $diskJob = $diskJob ?? ['status' => 'idle', 'percent' => 0, 'message' => ''];
 @endphp
 @section('content')
     <div class="html-cache-page">
@@ -75,29 +76,165 @@
             </p>
         </div>
 
-        <div class="html-cache-card">
-            <h3>磁盘静态页</h3>
-            @if($diskEnabled)
-                <p class="muted">已经打开。把页面写成文件，给服务器直接读，适合流量很大的站点。</p>
-                @if($diskCount > 0)
-                    <p>目前有 {{ $diskCount }} 个文件。</p>
+        <div class="html-cache-card" id="diskHtmlCard">
+            <div class="html-cache-status">
+                <h3>磁盘静态页</h3>
+                @if($diskEnabled)
+                    <span class="badge badge-ok">已打开</span>
                 @else
-                    <p class="muted">还没有生成过文件。</p>
+                    <span class="badge badge-off">未打开</span>
                 @endif
-                <div class="html-cache-actions">
-                    <form method="post" action="{{ route('admin.html-cache.disk-build') }}">
-                        @csrf
-                        <input type="hidden" name="entries" value="200">
-                        <button class="btn" type="submit">生成静态文件</button>
-                    </form>
-                    <form method="post" action="{{ route('admin.html-cache.disk-clear') }}" onsubmit="return confirm('删掉这些文件后，前台改回动态生成。确定？')">
-                        @csrf
-                        <button class="btn-quiet" type="submit">删掉静态文件</button>
-                    </form>
+            </div>
+            <p class="muted field-hint">把栏目和文章写成文件，访问多的站点会更快。生成时请不要关掉这个页面，进度会显示在下面。</p>
+            <form method="post" action="{{ route('admin.html-cache.disk-update') }}">
+                @csrf
+                @method('PUT')
+                <label class="inline">
+                    <input type="hidden" name="disk_html_enabled" value="0">
+                    <input type="checkbox" name="disk_html_enabled" value="1" @checked($diskEnabled)>
+                    启用，允许在后台生成静态文件
+                </label>
+                <div class="form-actions">
+                    <button class="btn btn-muted" type="submit">保存这项</button>
                 </div>
-            @else
-                <p class="muted" style="margin:0">这是给服务器直接读文件的进阶能力，默认不用开。需要时让运维打开后再来生成。</p>
-            @endif
+            </form>
+            <p id="diskHtmlCount" class="muted">
+                @if($diskCount > 0)
+                    目前有 {{ $diskCount }} 个文件。
+                @else
+                    还没有生成过文件。
+                @endif
+            </p>
+            <div class="html-cache-actions">
+                <button class="btn" type="button" id="diskBuildBtn" data-off="{{ $diskEnabled ? '0' : '1' }}" @disabled(! $diskEnabled)>开始生成</button>
+                <button class="btn-quiet" type="button" id="diskCancelBtn" hidden>停止</button>
+                <form method="post" action="{{ route('admin.html-cache.disk-clear') }}" onsubmit="return confirm('删掉这些文件后，前台改回动态生成。确定？')">
+                    @csrf
+                    <button class="btn-quiet" type="submit" id="diskClearBtn">删掉静态文件</button>
+                </form>
+            </div>
+            <p class="muted field-hint">
+                @if($diskEnabled)
+                    会生成首页、栏目和已发布的文章。页面多时会分批写，可以看到进度。
+                @else
+                    打开并保存后，才能生成。
+                @endif
+            </p>
+            <div class="disk-html-progress{{ in_array($diskJob['status'] ?? '', ['done', 'cancelled'], true) ? ' is-done' : '' }}"
+                 id="diskHtmlProgress"
+                 data-status="{{ $diskJob['status'] ?? 'idle' }}"
+                 data-percent="{{ $diskJob['percent'] ?? 0 }}"
+                 @if(($diskJob['status'] ?? 'idle') === 'idle') hidden @endif>
+                <div class="disk-html-bar"><i id="diskHtmlBar" style="width: {{ (int) ($diskJob['percent'] ?? 0) }}%"></i></div>
+                <p class="muted" id="diskHtmlMsg" style="margin:8px 0 0">{{ $diskJob['message'] ?? '' }}</p>
+            </div>
         </div>
     </div>
 @endsection
+@push('scripts')
+<script>
+(function () {
+    var btn = document.getElementById('diskBuildBtn');
+    var stopBtn = document.getElementById('diskCancelBtn');
+    var box = document.getElementById('diskHtmlProgress');
+    var bar = document.getElementById('diskHtmlBar');
+    var msg = document.getElementById('diskHtmlMsg');
+    var count = document.getElementById('diskHtmlCount');
+    if (!btn || !box || !bar || !msg) return;
+    var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    var urls = {
+        start: @json(route('admin.html-cache.disk-build')),
+        step: @json(route('admin.html-cache.disk-step')),
+        cancel: @json(route('admin.html-cache.disk-cancel'))
+    };
+    var looping = false;
+    function locked() {
+        return btn.getAttribute('data-off') === '1';
+    }
+
+    function headers() {
+        return {
+            'X-CSRF-TOKEN': csrf,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+    }
+
+    function paint(data) {
+        box.hidden = false;
+        bar.style.width = (data.percent || 0) + '%';
+        msg.textContent = data.message || ('已写 ' + (data.done || 0) + ' / ' + (data.total || 0));
+        box.classList.toggle('is-done', data.status === 'done');
+        box.classList.toggle('is-stop', data.status === 'cancelled' || data.status === 'error');
+        if (count && typeof data.file_count === 'number') {
+            count.textContent = data.file_count > 0
+                ? ('目前有 ' + data.file_count + ' 个文件。')
+                : '还没有生成过文件。';
+        }
+        var busy = data.status === 'running';
+        btn.disabled = busy || locked();
+        if (stopBtn) stopBtn.hidden = !busy;
+    }
+
+    async function post(url, body) {
+        var res = await fetch(url, { method: 'POST', headers: headers(), body: JSON.stringify(body || {}) });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+            throw new Error(data.message || '请求失败');
+        }
+        return data;
+    }
+
+    async function loop() {
+        looping = true;
+        try {
+            while (looping) {
+                var data = await post(urls.step, { chunk: 6 });
+                paint(data);
+                if (data.status !== 'running') break;
+            }
+        } catch (e) {
+            paint({ status: 'error', percent: 0, message: e.message || '生成中断了', done: 0, total: 0 });
+        }
+        looping = false;
+        btn.disabled = locked();
+        if (stopBtn) stopBtn.hidden = true;
+    }
+
+    btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        box.hidden = false;
+        msg.textContent = '正在列出要写的页面…';
+        bar.style.width = '0%';
+        box.classList.remove('is-done', 'is-stop');
+        try {
+            var data = await post(urls.start, { entries: 0 });
+            paint(data);
+            if (data.status === 'running') await loop();
+            else btn.disabled = locked();
+        } catch (e) {
+            paint({ status: 'error', percent: 0, message: e.message || '没能开始', done: 0, total: 0 });
+            btn.disabled = locked();
+        }
+    });
+
+    stopBtn?.addEventListener('click', async function () {
+        looping = false;
+        try {
+            paint(await post(urls.cancel, {}));
+        } catch (e) {
+            msg.textContent = e.message || '没能停止';
+        }
+        btn.disabled = locked();
+        stopBtn.hidden = true;
+    });
+
+    if (box.getAttribute('data-status') === 'running') {
+        loop();
+    } else if ((box.getAttribute('data-status') || 'idle') !== 'idle') {
+        stopBtn && (stopBtn.hidden = true);
+    }
+})();
+</script>
+@endpush

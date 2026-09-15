@@ -61,26 +61,23 @@
             <p class="muted field-hint">改 Logo、颜色和页脚，不用改模板。首页标题留空则用主题自带文案。</p>
 
             <label>网站 Logo</label>
-            <div class="settings-brand">
-                @if($logoUrl)
-                    <img src="{{ $logoUrl }}" alt="">
-                    <label class="inline"><input type="checkbox" name="logo_clear" value="1"> 去掉这张图</label>
-                @else
-                    <span class="muted">还没有 Logo</span>
-                @endif
-            </div>
-            <input type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+            @include('admin.settings._file-preview', [
+                'url' => $logoUrl,
+                'name' => 'logo_file',
+                'empty' => '还没有 Logo',
+                'clear' => 'logo_clear',
+                'kind' => 'logo',
+            ])
 
             <label>浏览器小图标</label>
-            <div class="settings-brand">
-                @if($faviconUrl)
-                    <img src="{{ $faviconUrl }}" alt="" style="max-height:32px">
-                    <label class="inline"><input type="checkbox" name="favicon_clear" value="1"> 去掉这张图</label>
-                @else
-                    <span class="muted">还没有小图标</span>
-                @endif
-            </div>
-            <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/x-icon">
+            @include('admin.settings._file-preview', [
+                'url' => $faviconUrl,
+                'name' => 'favicon_file',
+                'empty' => '还没有小图标',
+                'clear' => 'favicon_clear',
+                'kind' => 'favicon',
+                'accept' => 'image/png,image/jpeg,image/webp,image/gif,image/x-icon',
+            ])
             <p class="muted field-hint">出现在浏览器标签上，建议用正方形小图。</p>
 
             <label for="primary_color">主色</label>
@@ -167,13 +164,13 @@
                 @endforeach
             </select>
             <label>图片水印</label>
-            @if($wmUrl)
-                <div class="settings-brand">
-                    <img src="{{ $wmUrl }}" alt="" style="max-height:64px">
-                    <label class="inline"><input type="checkbox" name="upload_watermark_image_clear" value="1"> 去掉这张图</label>
-                </div>
-            @endif
-            <input type="file" name="watermark_image" accept="image/png,image/jpeg,image/webp,image/gif">
+            @include('admin.settings._file-preview', [
+                'url' => $wmUrl,
+                'name' => 'watermark_image',
+                'empty' => '还没有水印图',
+                'clear' => 'upload_watermark_image_clear',
+                'kind' => 'watermark',
+            ])
 
             <h3>发信</h3>
             <p class="muted field-hint">留言通知、找回密码会用到。密码留空表示不改已保存的值。</p>
@@ -254,22 +251,75 @@
 (function () {
     var tabInput = document.getElementById('settingsTab');
     var tabs = document.getElementById('settingsTabs');
-    if (!tabInput || !tabs) return;
-    tabs.querySelectorAll('[data-tab]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var tab = btn.getAttribute('data-tab');
-            tabInput.value = tab;
-            tabs.querySelectorAll('[data-tab]').forEach(function (item) {
-                item.classList.toggle('active', item === btn);
+    if (tabInput && tabs) {
+        tabs.querySelectorAll('[data-tab]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var tab = btn.getAttribute('data-tab');
+                tabInput.value = tab;
+                tabs.querySelectorAll('[data-tab]').forEach(function (item) {
+                    item.classList.toggle('active', item === btn);
+                });
+                document.querySelectorAll('#settingsForm [data-pane]').forEach(function (pane) {
+                    pane.classList.toggle('active', pane.getAttribute('data-pane') === tab);
+                });
+                var url = new URL(window.location.href);
+                if (tab === 'site') url.searchParams.delete('tab');
+                else url.searchParams.set('tab', tab);
+                history.replaceState(null, '', url);
             });
-            document.querySelectorAll('#settingsForm [data-pane]').forEach(function (pane) {
-                pane.classList.toggle('active', pane.getAttribute('data-pane') === tab);
-            });
-            var url = new URL(window.location.href);
-            if (tab === 'site') url.searchParams.delete('tab');
-            else url.searchParams.set('tab', tab);
-            history.replaceState(null, '', url);
         });
+    }
+
+    document.querySelectorAll('[data-file-preview]').forEach(function (root) {
+        var input = root.querySelector('[data-file-input]');
+        var img = root.querySelector('img');
+        var empty = root.querySelector('.settings-file-empty');
+        var thumb = root.querySelector('.settings-file-thumb');
+        var clear = root.querySelector('[data-file-clear]');
+        if (!input || !img || !empty || !thumb) return;
+        var objectUrl = '';
+        var saved = (img.getAttribute('data-saved-src') || '').trim();
+        var show = function (url) {
+            if (objectUrl && objectUrl !== url) {
+                URL.revokeObjectURL(objectUrl);
+                objectUrl = '';
+            }
+            if (!url) {
+                img.removeAttribute('src');
+                img.hidden = true;
+                empty.hidden = false;
+                thumb.classList.add('is-empty');
+                thumb.style.backgroundImage = 'none';
+                return;
+            }
+            img.hidden = false;
+            empty.hidden = true;
+            thumb.classList.remove('is-empty');
+            thumb.style.backgroundImage = 'url("' + String(url).replace(/"/g, '\\"') + '")';
+            if (img.getAttribute('src') !== url) {
+                img.src = url;
+            }
+        };
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            if (clear) clear.checked = false;
+            if (!file) {
+                show(saved);
+                return;
+            }
+            objectUrl = URL.createObjectURL(file);
+            show(objectUrl);
+        });
+        if (clear) {
+            clear.addEventListener('change', function () {
+                if (clear.checked) {
+                    input.value = '';
+                    show('');
+                } else {
+                    show(saved);
+                }
+            });
+        }
     });
 })();
 </script>
