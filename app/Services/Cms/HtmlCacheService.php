@@ -289,6 +289,7 @@ class HtmlCacheService
                     }
                 });
 
+            Locale::set($previous);
             $urls = array_values(array_unique($urls));
             $ok = 0;
             $fail = 0;

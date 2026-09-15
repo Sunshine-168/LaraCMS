@@ -343,6 +343,7 @@ class DiskHtmlService
                 }
             });
 
+            Locale::set($previous);
             $out = [];
             foreach ($urls as $url) {
                 $norm = $this->normalizeUrl((string) $url);

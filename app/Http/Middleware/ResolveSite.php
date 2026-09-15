@@ -47,11 +47,17 @@ class ResolveSite
         return $next($request);
     }
 
+    /** 请求结束后清掉，避免 PHPUnit 同进程里下一次还读到 /en 的内容语言 */
+    public function terminate(Request $request, Response $response): void
+    {
+        Locale::forgetCurrent();
+    }
+
     protected function resolveAdmin(Request $request): void
     {
         $admin = auth('admin')->user();
         if (! $admin) {
-            CurrentSite::set(Site::default());
+            $this->pinAdminContentLocale(Site::default());
 
             return;
         }
@@ -65,7 +71,14 @@ class ResolveSite
             $request->session()->flash('error', '无权切换到该站点，已回到可管理站点');
         }
         $request->session()->put('admin_site_id', $site->id);
+        $this->pinAdminContentLocale($site);
+    }
+
+    /** 后台列表用站点默认语言，不跟前台 /en 走 */
+    protected function pinAdminContentLocale(?Site $site): void
+    {
         CurrentSite::set($site);
+        Locale::set(Locale::default());
     }
 
     protected function resolveByHost(Request $request): void

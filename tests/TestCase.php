@@ -10,6 +10,17 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         \App\Support\Locale::forgetCurrent();
+        \App\Support\Locale::forgetCache();
+    }
+
+    protected function tearDown(): void
+    {
+        \App\Support\Locale::forgetCurrent();
+        try {
+            \App\Support\Locale::forgetCache();
+        } catch (\Throwable) {
+        }
+        parent::tearDown();
     }
 
     protected function seededEntry(string $slug): \App\Models\Cms\Entry
