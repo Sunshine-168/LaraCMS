@@ -3,14 +3,14 @@
 namespace App\Services\Admin;
 
 use App\Models\Cms\FormSubmission;
-use App\Support\MailConfig;
+use App\Services\Cms\OpsNotifyService;
 use App\Support\Result;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Mail;
 
 class FormSubmissionAdminService
 {
+    public function __construct(private readonly OpsNotifyService $opsNotify) {}
     public function paginate(?int $formId, ?string $status, int $perPage = 20, ?string $keyword = null): LengthAwarePaginator
     {
         return $this->filtered($formId, $status, $keyword)->paginate($perPage)->withQueryString();
@@ -79,17 +79,12 @@ class FormSubmissionAdminService
             return Result::fail('请填写回复内容再发送。');
         }
 
-        try {
-            MailConfig::applyFromSettings();
-            $formName = $submission->form?->name ?: '留言';
-            Mail::raw($note, function ($message) use ($email, $formName) {
-                $message->to($email)->subject('回复：'.$formName);
-            });
-            $submission->replied_at = now();
-            $submission->save();
-        } catch (\Throwable $e) {
-            return Result::fail('邮件发送失败：'.$e->getMessage().'。备注已保存。');
+        $formName = $submission->form?->name ?: '留言';
+        if (! $this->opsNotify->formReply($email, $formName, $note)) {
+            return Result::fail('邮件发送失败。请先在系统设置里配好 SMTP。备注已保存。');
         }
+        $submission->replied_at = now();
+        $submission->save();
 
         return Result::ok($submission, '已保存并发送回复');
     }

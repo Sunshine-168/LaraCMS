@@ -66,6 +66,7 @@ class CollectorHtmlTest extends TestCase
 
         $one = Entry::query()->where('title->zh_cn', 'First Post')->first();
         $this->assertNotNull($one);
+        $this->assertSame('', $one->translation('title', 'en'));
         $this->assertStringContainsString('Hello', (string) $one->t('content'));
         $this->assertSame('https://example.com/p/one', $one->attr('source_url'));
 

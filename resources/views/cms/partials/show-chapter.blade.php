@@ -5,7 +5,7 @@
         @if($manga)
             <a href="{{ $manga->url }}">{{ $manga->t('title') }}</a>
         @else
-            <a href="/comics">返回漫画库</a>
+            <a href="/comics">{{ cms_ui('back_comics') }}</a>
         @endif
     </p>
     <div class="pages" style="margin-top:16px">
@@ -15,5 +15,5 @@
             @endif
         @endforeach
     </div>
-    <p style="margin:20px 0">上一话：@cmsPrev · 下一话：@cmsNext</p>
+    <p style="margin:20px 0">{{ cms_ui('prev_chapter') }}：@cmsPrev · {{ cms_ui('next_chapter') }}：@cmsNext</p>
     @include('cms.comments')

@@ -25,6 +25,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:100',
+            'ui_locale' => 'nullable|in:zh_cn,en',
         ], [
             'name.required' => '请填写名称',
         ]);
@@ -33,6 +34,12 @@ class ProfileController extends Controller
         $result = $this->users->updateSelfName($user, (string) $request->input('name'));
         if (! $result['ok']) {
             return back()->with('error', $result['msg'])->withInput();
+        }
+        if ($request->filled('ui_locale')) {
+            $ui = $this->users->updateSelfUiLocale($user, (string) $request->input('ui_locale'));
+            if ($ui['ok'] && ! empty($ui['data']['cookie'])) {
+                return back()->with('status', $result['msg'])->withCookie($ui['data']['cookie']);
+            }
         }
 
         return back()->with('status', $result['msg']);

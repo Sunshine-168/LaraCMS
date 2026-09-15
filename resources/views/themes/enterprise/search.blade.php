@@ -1,9 +1,9 @@
 @extends('themes.enterprise.partials.layout')
 @section('content')
-    <h1>搜索</h1>
+    <h1>{{ cms_ui('search') }}</h1>
     @include('cms.partials.search-form')
     @if(($q ?? '') !== '')
-        <p class="muted">关键词：{{ $q }}</p>
+        <p class="muted">{{ cms_ui('keywords') }}：{{ $q }}</p>
         <div class="grid">
             @forelse($results as $item)
                 <article class="card-soft">
@@ -11,7 +11,7 @@
                     <p class="muted">@cmsSubstr(['name' => $item->t('excerpt') ?: $item->t('content'), 'len' => 100])</p>
                 </article>
             @empty
-                <p>没有结果</p>
+                <p>{{ cms_ui('no_results') }}</p>
             @endforelse
         </div>
         <div style="margin-top:16px">@cmsPaginate</div>

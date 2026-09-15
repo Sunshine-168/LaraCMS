@@ -5,6 +5,7 @@
     .brand{display:inline-flex;align-items:center;gap:10px}
     .brand img{max-height:36px;width:auto;display:block}
     footer{margin-top:36px;padding:24px 0;font-size:13px}
+    .lang a[aria-current="page"]{font-weight:700;text-decoration:none;pointer-events:none;opacity:.88}
 </style>
 @if(!empty($site['primary_color']))
     <style>

@@ -8,15 +8,16 @@ use App\Models\Cms\Member;
 use App\Models\Cms\Setting;
 use App\Support\Captcha;
 use App\Support\CurrentSite;
-use App\Support\MailConfig;
 use App\Support\Result;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
 
 class CommentService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache) {}
+    public function __construct(
+        private readonly HtmlCacheService $htmlCache,
+        private readonly OpsNotifyService $opsNotify,
+    ) {}
 
     public function enabled(): bool
     {
@@ -125,22 +126,6 @@ class CommentService
 
     protected function notifyAdmin(Entry $entry, Comment $comment): void
     {
-        $to = trim((string) Setting::getValue('comments_notify_email', ''));
-        if ($to === '') {
-            return;
-        }
-        try {
-            MailConfig::applyFromSettings();
-            $body = "内容：{$entry->t('title')}\n"
-                ."作者：{$comment->author_name}".($comment->author_email ? " <{$comment->author_email}>" : '')."\n"
-                ."状态：{$comment->status}\n"
-                ."IP：{$comment->ip}\n\n"
-                ."{$comment->content}\n";
-            Mail::raw($body, function ($message) use ($to, $entry) {
-                $message->to($to)->subject('【CMS】新评论：'.$entry->t('title'));
-            });
-        } catch (\Throwable) {
-            // 邮件失败不阻断提交
-        }
+        $this->opsNotify->comment($entry, $comment);
     }
 }

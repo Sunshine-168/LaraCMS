@@ -35,7 +35,54 @@ if (! function_exists('cms_route')) {
 if (! function_exists('cms_t')) {
     function cms_t(string $zh, string $en): string
     {
-        return Locale::isEnglish() ? $en : $zh;
+        return \App\Support\Locale::isEnglish() ? $en : $zh;
+    }
+}
+
+if (! function_exists('cms_ui')) {
+    function cms_ui(string $key, array $replace = []): string
+    {
+        $text = \App\Support\ThemeUi::get($key);
+        foreach ($replace as $search => $value) {
+            $text = str_replace(':'.$search, (string) $value, $text);
+        }
+
+        return $text;
+    }
+}
+
+if (! function_exists('cms_locale_url')) {
+    function cms_locale_url(string $targetLocale): string
+    {
+        $path = trim(request()->path(), '/');
+        foreach (\App\Support\Locale::codes() as $code) {
+            $public = \App\Support\Locale::toPublic($code);
+            if ($path === $public) {
+                $path = '';
+                break;
+            }
+            if (str_starts_with($path, $public.'/')) {
+                $path = substr($path, strlen($public) + 1);
+                break;
+            }
+        }
+        $prefix = trim(\App\Support\UrlMode::localePrefix($targetLocale), '/');
+        $joined = trim(($prefix === '' ? '' : $prefix).($path === '' ? '' : '/'.$path), '/');
+        $url = $joined === '' ? '/' : '/'.$joined;
+        $query = request()->query();
+        unset($query['locale']);
+        if ($query !== []) {
+            $url .= '?'.http_build_query($query);
+        }
+
+        return $url;
+    }
+}
+
+if (! function_exists('admin_t')) {
+    function admin_t(string $key, array $replace = []): string
+    {
+        return trans('admin.'.$key, $replace);
     }
 }
 

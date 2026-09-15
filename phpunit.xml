@@ -34,5 +34,6 @@
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="CMS_AUTH_CAPTCHA" value="false"/>
         <env name="CMS_DISK_HTML" value="false"/>
+        <env name="TRUST_PROXIES" value="" force="true"/>
     </php>
 </phpunit>

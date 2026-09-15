@@ -72,6 +72,22 @@ DB_PASSWORD=请换成强密码</code></pre>
     </div>
     <p class="hint">第一行 <code>try_files</code> 会优先读后台生成的磁盘静态页。没有文件时再交给 PHP。多站点把 <code>site_{{ $siteId }}</code> 改成对应站的编号。HTTPS 请在前面加证书或由面板处理。</p>
     <p class="muted">还要在 <code>.env</code> 写上 <code>APP_URL=https://www.example.com</code>，<code>APP_ENV=production</code>，<code>APP_DEBUG=false</code>。若站点在反向代理后面，再设 <code>TRUST_PROXIES=*</code>。</p>
+
+    <h3>nginx 反代到 Docker</h3>
+    <p class="muted">容器只映射 8000 时，浏览器直连看到的是 Docker 网关 IP。前面加 nginx，把真实客户端 IP 传进去：</p>
+    <div class="code">
+        <button type="button" class="copy" data-copy>复制</button>
+        <pre><code>location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+}</code></pre>
+    </div>
+    <p class="hint">容器环境变量里也要有 <code>TRUST_PROXIES=*</code>（本仓库 <code>docker-compose.yml</code> 已写上）。只映射端口、前面没有 nginx 时，程序拿不到访客公网 IP。</p>
     @if(!empty($scheduleUrl))
         <p class="hint">采集和统计清理要每分钟叫醒 Laravel，见「<a href="{{ $scheduleUrl }}">定时</a>」。</p>
     @endif

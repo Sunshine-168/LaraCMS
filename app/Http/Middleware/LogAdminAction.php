@@ -25,6 +25,7 @@ class LogAdminAction
         }
         if (str_contains($request->path(), 'admin/login')
             || str_contains($request->path(), 'admin/logout')
+            || str_contains($request->path(), 'admin/ui-locale')
             || str_contains($request->path(), 'html-cache/disk-step')) {
             return $response;
         }

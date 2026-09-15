@@ -16,11 +16,11 @@ class AdminUser extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role_id', 'is_active', 'allowed_category_ids',
-        'last_login_at', 'last_login_ip',
+        'last_login_at', 'last_login_ip', 'reset_token', 'reset_token_expires_at', 'ui_locale',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'reset_token',
     ];
 
     /** @var list<string>|null */
@@ -33,6 +33,7 @@ class AdminUser extends Authenticatable
             'is_active' => 'boolean',
             'allowed_category_ids' => 'array',
             'last_login_at' => 'datetime',
+            'reset_token_expires_at' => 'datetime',
         ];
     }
 

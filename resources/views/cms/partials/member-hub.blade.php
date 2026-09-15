@@ -1,5 +1,5 @@
 @if(!empty($canContribute))
-    <h2 style="margin-top:28px">我的投稿</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('my_posts') }}</h2>
     <p>
         <a href="{{ cms_route('member.entries.index') }}">全部投稿</a>
         @if(($contributeModels ?? collect())->isNotEmpty())
@@ -27,7 +27,7 @@
 @endif
 
 @if(($favorites ?? null) && $favorites->isNotEmpty())
-    <h2 style="margin-top:28px">我的收藏</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('my_favorites') }}</h2>
     <ul style="padding-left:18px">
         @foreach($favorites as $item)
             <li style="margin:8px 0">
@@ -41,12 +41,12 @@
     </ul>
     {{ $favorites->links() }}
 @else
-    <h2 style="margin-top:28px">我的收藏</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('my_favorites') }}</h2>
     <p class="muted">还没有收藏。</p>
 @endif
 
 @if(($comments ?? null) && $comments->isNotEmpty())
-    <h2 style="margin-top:28px">我的评论</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('my_comments') }}</h2>
     <ul style="padding-left:18px">
         @foreach($comments as $comment)
             <li style="margin:8px 0">
@@ -76,7 +76,7 @@
 @endif
 
 @if(($memberEntries ?? null) && $memberEntries->isNotEmpty())
-    <h2 style="margin-top:28px">会员内容</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('member_content') }}</h2>
     <ul style="padding-left:18px">
         @foreach($memberEntries as $item)
             <li style="margin:8px 0"><a href="{{ $item->url }}">{{ $item->t('title') }}</a></li>

@@ -583,10 +583,10 @@ class CollectorService
         Entry::query()->create([
             'category_id' => $collector->category_id,
             'model_id' => $collector->model_id,
-            'title' => [$locale => $item['title'], 'en' => $item['title']],
-            'slug' => [$locale => $slug, 'en' => $slug],
-            'excerpt' => [$locale => Str::limit($item['summary'], 200), 'en' => Str::limit($item['summary'], 200)],
-            'content' => [$locale => $body, 'en' => $body],
+            'title' => [$locale => $item['title']],
+            'slug' => [$locale => $slug],
+            'excerpt' => [$locale => Str::limit($item['summary'], 200)],
+            'content' => [$locale => $body],
             'cover' => $item['cover'] ?: null,
             'attrs' => [
                 'source_url' => $item['link'],

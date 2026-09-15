@@ -4,12 +4,16 @@ namespace App\Services\Admin;
 
 use App\Models\Cms\Menu;
 use App\Models\Cms\MenuItem;
+use App\Services\Cms\HtmlCacheService;
 use App\Support\Result;
+use App\Support\Translatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class MenuService
 {
+    public function __construct(private readonly HtmlCacheService $htmlCache) {}
+
     /** 菜单列表 */
     public function all(): Collection
     {
@@ -30,7 +34,7 @@ class MenuService
 
             $created = [];
             foreach ($input['items'] ?? [] as $i => $row) {
-                if (empty($row['title_zh_cn']) && empty($row['title_en'])) {
+                if (! Translatable::keyedLocalesHaveText($row, 'title')) {
                     continue;
                 }
                 $parentId = null;
@@ -41,12 +45,7 @@ class MenuService
                 $created[$i] = MenuItem::query()->create([
                     'menu_id' => $menu->id,
                     'parent_id' => $parentId,
-                    'title' => [
-                        'zh_cn' => $row['title_zh_cn'] ?? '',
-                        'en' => trim((string) ($row['title_en'] ?? '')) !== ''
-                            ? $row['title_en']
-                            : ($row['title_zh_cn'] ?? ''),
-                    ],
+                    'title' => Translatable::packKeyedLocales($row, 'title'),
                     'type' => $row['type'] ?? 'url',
                     'url' => $row['url'] ?? '#',
                     'reference_id' => $this->itemReferenceId($row),
@@ -55,7 +54,10 @@ class MenuService
                 ]);
             }
 
-            return Result::ok($menu->load('items'), '保存成功');
+            $saved = $menu->load('items');
+            $this->htmlCache->forgetAll('menu:'.$saved->id);
+
+            return Result::ok($saved, '保存成功');
         });
     }
 
@@ -76,6 +78,7 @@ class MenuService
     {
         $menu->is_active = ! $menu->is_active;
         $menu->save();
+        $this->htmlCache->forgetAll('menu:'.$menu->id);
 
         return Result::ok($menu, $menu->is_active ? '已启用，前台会按这个位置显示' : '已停用，前台改用栏目导航');
     }
@@ -84,6 +87,7 @@ class MenuService
     public function delete(Menu $menu): array
     {
         $n = $menu->items()->count();
+        $this->htmlCache->forgetAll('menu:'.$menu->id);
         $menu->delete();
 
         return Result::ok(null, $n > 0 ? '已删除菜单和 '.$n.' 个条目' : '已删除');

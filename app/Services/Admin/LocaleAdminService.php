@@ -3,12 +3,23 @@
 namespace App\Services\Admin;
 
 use App\Models\Cms\CmsLocale;
+use App\Models\Cms\Entry;
+use App\Models\Cms\Setting;
+use App\Services\Cms\DiskHtmlService;
+use App\Services\Cms\HtmlCacheService;
+use App\Support\AdminUi;
 use App\Support\Locale;
 use App\Support\Result;
+use App\Support\ThemeUi;
 use Illuminate\Support\Collection;
 
 class LocaleAdminService
 {
+    public function __construct(
+        private readonly HtmlCacheService $htmlCache,
+        private readonly DiskHtmlService $diskHtml,
+    ) {}
+
     public function all(): Collection
     {
         return CmsLocale::query()->orderBy('sort')->orderBy('id')->get();
@@ -22,22 +33,23 @@ class LocaleAdminService
 
         $label = trim((string) ($input['label'] ?? $locale->label ?? ''));
         if ($label === '') {
-            return Result::fail('请填写名称');
+            return Result::fail($this->msg('err_label'));
         }
 
-        $code = Locale::normalize(trim((string) ($input['code'] ?? $locale->code ?? '')));
-        if ($code === '') {
-            return Result::fail('请填写语言代码，如 en、ja');
-        }
-        if (! preg_match('/^[a-z]{2}(_[a-z]{2})?$/', $code)) {
-            return Result::fail('代码用 en、ja、zh_cn 这种写法');
-        }
-        $taken = CmsLocale::query()
-            ->where('code', $code)
-            ->when($locale->exists, fn ($q) => $q->where('id', '!=', $locale->id))
-            ->exists();
-        if ($taken) {
-            return Result::fail('这个代码已经有了');
+        if ($locale->exists) {
+            $code = (string) $locale->code;
+        } else {
+            $code = Locale::normalize(trim((string) ($input['code'] ?? '')));
+            if ($code === '') {
+                return Result::fail($this->msg('err_code'));
+            }
+            if (! preg_match('/^[a-z]{2}(_[a-z]{2})?$/', $code)) {
+                return Result::fail($this->msg('err_code_format'));
+            }
+            $taken = CmsLocale::query()->where('code', $code)->exists();
+            if ($taken) {
+                return Result::fail($this->msg('err_code_taken'));
+            }
         }
 
         $locale->code = $code;
@@ -92,30 +104,30 @@ class LocaleAdminService
         if ($locale->is_default) {
             CmsLocale::query()->where('id', '!=', $locale->id)->update(['is_default' => false]);
         }
-        Locale::forgetCache();
+        $this->bustFront();
 
-        return Result::ok($locale, $creating ? '已添加' : '已保存');
+        return Result::ok($locale, $creating ? $this->msg('msg_added') : $this->msg('msg_saved'));
     }
 
     public function toggle(CmsLocale $locale): array
     {
         if ($locale->is_default && $locale->is_active) {
-            return Result::fail('默认语言不能停用');
+            return Result::fail($this->msg('msg_default_locked'));
         }
         $locale->is_active = ! $locale->is_active;
         $locale->save();
-        Locale::forgetCache();
+        $this->bustFront();
 
         return Result::ok(
             $locale,
-            $locale->is_active ? '已启用，前台可以切这种语言' : '已停用，前台暂时不提供这种语言'
+            $locale->is_active ? $this->msg('msg_on') : $this->msg('msg_off')
         );
     }
 
     public function makeDefault(CmsLocale $locale): array
     {
         if (! $locale->is_active) {
-            return Result::fail('请先启用这种语言');
+            return Result::fail($this->msg('msg_need_enable'));
         }
         $prev = CmsLocale::query()->where('is_default', true)->where('id', '!=', $locale->id)->first();
         if ($prev) {
@@ -125,20 +137,84 @@ class LocaleAdminService
         $locale->is_active = true;
         $locale->save();
         CmsLocale::query()->where('id', '!=', $locale->id)->update(['is_default' => false]);
-        Locale::forgetCache();
+        $this->bustFront();
 
-        return Result::ok($locale, '已设为默认语言');
+        return Result::ok($locale, $this->msg('msg_made_default'));
     }
 
     public function delete(CmsLocale $locale): array
     {
         if ($locale->is_default) {
-            return Result::fail('默认语言不能删除');
+            return Result::fail($this->msg('msg_cannot_delete'));
         }
         $name = $locale->label ?: $locale->code;
         $locale->delete();
-        Locale::forgetCache();
+        $this->bustFront();
 
-        return Result::ok(null, '已删除「'.$name.'」');
+        return Result::ok(null, $this->msg('msg_deleted', ['name' => $name]));
+    }
+
+    /** @return array<string, array{total: int, filled: int}> */
+    public function coverage(): array
+    {
+        $total = Entry::query()->count();
+        $out = [];
+        foreach (CmsLocale::query()->orderBy('sort')->orderBy('id')->get() as $row) {
+            $filled = 0;
+            if ($total > 0) {
+                Entry::query()->select(['id', 'title'])->orderBy('id')->chunkById(200, function ($rows) use (&$filled, $row) {
+                    foreach ($rows as $entry) {
+                        if ($entry->translation('title', $row->code) !== '') {
+                            $filled++;
+                        }
+                    }
+                }, 'id');
+            }
+            $out[$row->code] = ['total' => $total, 'filled' => $filled];
+        }
+
+        return $out;
+    }
+
+    public function saveAdminUi(string $code, bool $forUser = true): array
+    {
+        if (! AdminUi::isValid($code)) {
+            return Result::fail($this->msg('err_ui'));
+        }
+        if ($forUser) {
+            $remembered = AdminUi::remember($code, true);
+            AdminUi::apply();
+
+            return Result::ok($remembered, $this->msg('msg_admin'));
+        }
+        Setting::setValue('admin_ui_locale', $code);
+
+        return Result::ok(null, $code === AdminUi::EN ? $this->msg('msg_site_en') : $this->msg('msg_site_zh'));
+    }
+
+    /** @param  array<string, array<string, string>>  $input */
+    public function saveThemeUi(array $input): array
+    {
+        ThemeUi::save($input);
+        $this->bustFront('theme-ui', false);
+
+        return Result::ok(null, $this->msg('msg_theme'));
+    }
+
+    private function bustFront(string $reason = 'locales', bool $localeCache = true): void
+    {
+        if ($localeCache) {
+            Locale::forgetCache();
+        }
+        $this->htmlCache->forgetAll($reason);
+        if ($this->diskHtml->enabled()) {
+            $this->diskHtml->clear();
+        }
+    }
+
+    /** @param  array<string, string>  $replace */
+    private function msg(string $key, array $replace = []): string
+    {
+        return trans('admin.locale.'.$key, $replace);
     }
 }

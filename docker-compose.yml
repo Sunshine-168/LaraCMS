@@ -10,3 +10,4 @@ services:
       DB_CONNECTION: sqlite
       DB_DATABASE: /var/www/html/database/database.sqlite
       CMS_AUTH_CAPTCHA: "false"
+      TRUST_PROXIES: "*"

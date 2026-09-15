@@ -77,6 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
             SiteClosed::class,
             RecordVisit::class,
+            \App\Http\Middleware\SetAdminUiLocale::class,
         ]);
 
         $middleware->api(prepend: [
@@ -84,5 +85,43 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api') || $request->is('api/*')) {
+                return null;
+            }
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                try {
+                    app(\App\Services\Cms\SiteFrontService::class)->bootSite();
+                } catch (\Throwable) {
+                }
+                try {
+                    $ctx = app(\App\Cms\CmsViewContext::class);
+                    $site = $ctx->site();
+                    $name = (string) ($site['title'] ?? config('app.name'));
+                    $ctx->setSeo('页面不存在 - '.$name, '', '')->setNoIndex(true);
+                } catch (\Throwable) {
+                }
+                $theme = (string) config('cms.theme', 'enterprise');
+                $layout = view()->exists("themes.{$theme}.partials.layout")
+                    ? "themes.{$theme}.partials.layout"
+                    : (view()->exists("themes.{$theme}.layout") ? "themes.{$theme}.layout" : 'errors.bare');
+
+                return response()->view('errors.404', [
+                    'layout' => $layout,
+                ], 404);
+            }
+            if (config('app.debug')) {
+                return null;
+            }
+            $status = $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                ? $e->getStatusCode()
+                : 500;
+            if ($status !== 500) {
+                return null;
+            }
+
+            return response()->view('errors.500', [
+                'siteName' => config('app.name'),
+            ], 500);
+        });
     })->create();

@@ -26,6 +26,8 @@ class CmsViewContext
 
     protected bool $isPreview = false;
 
+    protected bool $noIndex = false;
+
     public function setSite(array $site): self
     {
         $this->site = $site;
@@ -72,6 +74,18 @@ class CmsViewContext
     public function isPreview(): bool
     {
         return $this->isPreview;
+    }
+
+    public function setNoIndex(bool $noIndex): self
+    {
+        $this->noIndex = $noIndex;
+
+        return $this;
+    }
+
+    public function noIndex(): bool
+    {
+        return $this->noIndex;
     }
 
     public function setSeo(string $title, string $keywords = '', string $description = ''): self

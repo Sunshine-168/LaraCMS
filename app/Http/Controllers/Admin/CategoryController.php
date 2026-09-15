@@ -43,7 +43,7 @@ class CategoryController extends Controller
         return view('admin.categories.form', [
             'category' => $category,
             'parent' => $parent,
-            'locales' => Locale::codes(),
+            'locales' => Locale::codesDefaultFirst(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'parents' => $this->categoryService->parentsForSelect(),
         ]);
@@ -66,7 +66,7 @@ class CategoryController extends Controller
         return view('admin.categories.form', [
             'category' => $category,
             'parent' => $category->parent,
-            'locales' => Locale::codes(),
+            'locales' => Locale::codesDefaultFirst(),
             'models' => ContentModel::query()->where('is_active', true)->orderBy('sort_order')->get(),
             'parents' => $this->categoryService->parentsForSelect($category),
         ]);

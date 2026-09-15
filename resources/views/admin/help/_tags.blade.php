@@ -99,7 +99,8 @@
         <tr><td><code>cms_media($path)</code></td><td>附件地址，走 CDN 设置</td></tr>
         <tr><td><code>cms_route('download', $entry)</code></td><td>带语言前缀的命名路由</td></tr>
         <tr><td><code>cms_front_url('news')</code></td><td>前台路径</td></tr>
-        <tr><td><code>cms_t('中文', 'English')</code></td><td>按当前语言选一句</td></tr>
+        <tr><td><code>cms_ui('search')</code></td><td>主题短句，在「语言 → 主题文案」里改。搜索、登录、评论、翻页、上一篇、404 都走这里。可写 <code>cms_ui('hello', ['name' => $name])</code> 替换 <code>:name</code>。</td></tr>
+        <tr><td><code>cms_t('中文', 'English')</code></td><td>按当前内容语言选一句。只有中英时够用，新语言请改用 <code>cms_ui()</code>。</td></tr>
     </tbody>
 </table>
 <p class="hint">正文 HTML 不要用两个花括号（会转义标签），要用 Blade 的 raw 输出：<code>@verbatim{!! $entry->t('content') !!}@endverbatim</code>。不要在主题里新写一套标签，也不要引用别的 CMS 指令。</p>

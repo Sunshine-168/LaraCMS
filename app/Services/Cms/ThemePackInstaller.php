@@ -5,6 +5,7 @@ namespace App\Services\Cms;
 use App\Models\Cms\Category;
 use App\Models\Cms\ContentModel;
 use App\Services\Admin\ContentModelService;
+use App\Support\Locale;
 use App\Support\Result;
 
 /** 按主题包补模型/空栏目：没有才建，不改已有字段，不删内容。 */
@@ -53,9 +54,10 @@ class ThemePackInstaller
                 ? $spec['type']
                 : 'list';
             $max = (int) Category::query()->max('sort_order');
+            $locale = Locale::default();
             Category::query()->create([
-                'title' => ['zh_cn' => $title, 'en' => $title],
-                'slug' => ['zh_cn' => $catSlug, 'en' => $catSlug],
+                'title' => [$locale => $title],
+                'slug' => [$locale => $catSlug],
                 'type' => $type,
                 'model_id' => $model->id,
                 'list_tpl' => $spec['list_tpl'] ?? null,

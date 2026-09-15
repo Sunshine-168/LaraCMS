@@ -1,27 +1,30 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\AdminUi::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>后台登录 - CMS</title>
+    <title>{{ admin_t('auth.login_title') }} - CMS</title>
     <link rel="stylesheet" href="https://cdn.staticfile.net/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 </head>
 <body class="login-page">
 <div class="login-box">
-    <h1><i class="fas fa-lock" style="color:#007bff;margin-right:6px"></i>CMS 登录</h1>
-    <p class="sub">内容管理系统 · 栏目、模型、主题</p>
+    <h1><i class="fas fa-lock" style="color:#007bff;margin-right:6px"></i>{{ admin_t('auth.login_title') }}</h1>
+    <p class="sub">{{ admin_t('auth.sub') }}</p>
     <form method="post" action="{{ route('admin.login.submit') }}">
         @csrf
-        <label>邮箱</label>
+        <label>{{ admin_t('auth.email') }}</label>
         <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="admin@example.com">
-        <label>密码</label>
-        <input type="password" name="password" required placeholder="请输入密码">
-        <label class="remember"><input type="checkbox" name="remember" value="1"> 记住我</label>
+        <label>{{ admin_t('auth.password') }}</label>
+        <input type="password" name="password" required>
+        <label class="remember"><input type="checkbox" name="remember" value="1"> {{ admin_t('auth.remember') }}</label>
         @include('cms.partials.auth-captcha')
         @error('email')<div class="login-error">{{ $message }}</div>@enderror
-        <button type="submit">登 录</button>
+        @if(session('status'))<div class="login-status">{{ session('status') }}</div>@endif
+        <button type="submit">{{ admin_t('auth.submit') }}</button>
     </form>
+    <p class="login-links"><a href="{{ route('admin.password.forgot') }}">{{ admin_t('auth.forgot') }}</a></p>
+    @include('admin.auth._ui-switch')
 </div>
 </body>
 </html>

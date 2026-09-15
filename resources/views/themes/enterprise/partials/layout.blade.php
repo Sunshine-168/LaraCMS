@@ -26,7 +26,7 @@
         <nav>
             @include('cms.partials.header-nav')
             @include('cms.partials.front-toolbar', ['frontToolbarLogout' => true])
-            <span class="lang"><a href="/">中文</a> · <a href="/en">EN</a></span>
+            @include('cms.partials.lang-switch')
         </nav>
     </div>
 </header>

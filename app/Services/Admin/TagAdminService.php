@@ -43,7 +43,12 @@ class TagAdminService
                 ];
             }
         }
-        $packed = Translatable::packTranslations($input['locales'] ?? [], ['title', 'slug']);
+        $localeFields = ['title', 'slug'];
+        $packed = Translatable::packTranslations(
+            $input['locales'] ?? [],
+            $localeFields,
+            Translatable::existingTranslations($tag, $localeFields),
+        );
         $fallbackTitle = '';
         foreach (array_merge([Locale::default()], Locale::codes()) as $code) {
             $t = trim((string) ($packed['title'][$code] ?? ''));

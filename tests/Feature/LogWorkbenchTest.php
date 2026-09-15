@@ -267,6 +267,37 @@ class LogWorkbenchTest extends TestCase
             ->assertDontSee('新增了一项');
     }
 
+    public function test_list_paginates_twenty(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->assertNotNull($admin);
+
+        for ($i = 1; $i <= 21; $i++) {
+            AdminLog::query()->create([
+                'admin_id' => $admin->id,
+                'admin_name' => $admin->name,
+                'method' => 'POST',
+                'path' => '/admin/tags',
+                'detail' => sprintf('条目#%02d', $i),
+                'ip' => '127.0.0.1',
+                'status' => 302,
+            ]);
+        }
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.logs.index'))
+            ->assertOk()
+            ->assertSee('共 21 条')
+            ->assertSee('条目#21')
+            ->assertDontSee('条目#01')
+            ->assertSee('page=2', false);
+
+        $this->get(route('admin.logs.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('条目#01')
+            ->assertDontSee('条目#21');
+    }
+
     public function test_static_page_progress_is_not_logged(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();

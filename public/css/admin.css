@@ -937,6 +937,9 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     font-size: 14px;
 }
 .login-box button[type=submit]:hover { background: var(--primary-hover); }
+.login-box .login-links { margin: 14px 0 0; font-size: 13px; text-align: center; }
+.login-box .login-links a { color: var(--muted2); }
+.login-box .login-status { color: #0f766e; font-size: 13px; margin-top: 8px; line-height: 1.5; }
 .login-error { color: var(--danger); font-size: 13px; margin-top: 8px; }
 
 /* 窄屏可收起；默认桌面始终显示侧栏（避免被当成“后台挂了”） */
@@ -1801,6 +1804,46 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 }
 .locale-compose .field-hint { margin: 8px 0 0; }
 .locale-index tr.is-off .entry-row-title { color: var(--muted); }
+.locale-how { margin: 0 0 18px; }
+.locale-how h3 { margin: 0 0 8px; font-size: 15px; }
+.locale-how ol.help-steps {
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.65;
+}
+.locale-how ol.help-steps li { margin: 4px 0; }
+.locale-fill { color: var(--muted2); font-size: 13px; white-space: nowrap; }
+.locale-ui-form { max-width: 720px; }
+.locale-theme-form { max-width: none; overflow-x: auto; }
+.locale-ui-choices { display: flex; gap: 16px; margin: 6px 0 14px; }
+.locale-theme-form input[type=text] { width: 100%; max-width: none; }
+.locale-index td.actions .muted { align-self: center; }
+.ui-switch {
+    display: inline-flex;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    background: #fff;
+}
+.ui-switch button {
+    border: 0;
+    background: transparent;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--muted2);
+    cursor: pointer;
+}
+.ui-switch button.is-on {
+    background: var(--primary);
+    color: #fff;
+}
+.ui-switch-login { margin-top: 8px; }
+.ui-switch-login a { margin: 0 6px; color: var(--muted2); }
+.ui-switch-login a.is-on { color: var(--primary); font-weight: 600; }
 .locale-form { max-width: 480px; }
 .locale-form input[type=text],
 .locale-form input[type=number] { width: 100%; max-width: none; }
@@ -2322,9 +2365,9 @@ body.side-open { overflow: hidden; }
         max-width: none;
     }
     .form-actions { position: sticky; bottom: 0; background: #fff; padding-bottom: 8px; }
-    .html-cache-page,
-    .settings-page,
-    .help-page .help-body { max-width: none; }
+    .locale-index td.actions { white-space: normal; }
+    .locale-compose-row input.locale-code { flex: 1 1 100px; width: auto; max-width: none; }
+    .ui-switch button { padding: 4px 8px; }
     .html-cache-actions { flex-wrap: wrap; }
     .theme-add-row,
     .tag-compose-row { flex-wrap: wrap; }

@@ -73,29 +73,41 @@
         <div id="itemsBox" style="{{ $type === 'query' ? 'display:none' : '' }}">
             <h3>手工条目</h3>
             @php
+                $localeCols = \App\Support\Locale::configured();
+                $defaultCode = \App\Support\Locale::default();
                 $rows = old('items');
                 if (! $rows) {
-                    $rows = $recommend->items?->map(fn ($i) => [
-                        'title_zh_cn' => $i->t('title', 'zh_cn'),
-                        'title_en' => $i->t('title', 'en'),
-                        'notes_zh_cn' => $i->t('notes', 'zh_cn'),
-                        'notes_en' => $i->t('notes', 'en'),
-                        'image' => $i->image,
-                        'url' => $i->url,
-                        'html' => $i->html,
-                        'entry_id' => $i->entry_id,
-                    ])->all() ?: [[]];
+                    $empty = collect($localeCols)->mapWithKeys(fn ($meta, $code) => [
+                        'title_'.$code => '',
+                        'notes_'.$code => '',
+                    ])->all();
+                    $rows = $recommend->items?->map(function ($i) use ($localeCols) {
+                        $row = [
+                            'image' => $i->image,
+                            'url' => $i->url,
+                            'html' => $i->html,
+                            'entry_id' => $i->entry_id,
+                        ];
+                        foreach ($localeCols as $code => $meta) {
+                            $row['title_'.$code] = $i->translation('title', $code);
+                            $row['notes_'.$code] = $i->translation('notes', $code);
+                        }
+
+                        return $row;
+                    })->all() ?: [$empty];
                 }
             @endphp
             <div id="items">
                 @foreach($rows as $i => $row)
                     <div class="rec-item">
-                        <label>中文标题</label>
-                        <input type="text" name="items[{{ $i }}][title_zh_cn]" value="{{ $row['title_zh_cn'] ?? '' }}">
-                        <label>英文标题</label>
-                        <input type="text" name="items[{{ $i }}][title_en]" value="{{ $row['title_en'] ?? '' }}">
-                        <label>中文备注</label>
-                        <input type="text" name="items[{{ $i }}][notes_zh_cn]" value="{{ $row['notes_zh_cn'] ?? '' }}">
+                        @foreach($localeCols as $code => $meta)
+                            <label>{{ $code === $defaultCode ? '标题' : $meta['label'] }}</label>
+                            <input type="text" name="items[{{ $i }}][title_{{ $code }}]" value="{{ $row['title_'.$code] ?? '' }}">
+                        @endforeach
+                        @foreach($localeCols as $code => $meta)
+                            <label>{{ $code === $defaultCode ? '备注' : $meta['label'].' · 备注' }}</label>
+                            <input type="text" name="items[{{ $i }}][notes_{{ $code }}]" value="{{ $row['notes_'.$code] ?? '' }}">
+                        @endforeach
                         <label>图片 URL</label>
                         <input type="text" name="items[{{ $i }}][image]" value="{{ $row['image'] ?? '' }}">
                         <label>链接</label>
@@ -120,10 +132,17 @@
 <script>
 (function () {
     var idx = {{ count($rows ?? []) }};
+    var localeCols = @json(collect($localeCols ?? \App\Support\Locale::configured())->map(fn ($meta, $code) => ['code' => $code, 'label' => $meta['label'] ?? $code])->values());
+    var defaultCode = @json($defaultCode ?? \App\Support\Locale::default());
     document.getElementById('add')?.addEventListener('click', function () {
         var d = document.createElement('div');
         d.className = 'rec-item';
-        d.innerHTML = '<label>中文标题</label><input name="items[' + idx + '][title_zh_cn]"><label>英文标题</label><input name="items[' + idx + '][title_en]"><label>图片 URL</label><input name="items[' + idx + '][image]"><label>链接</label><input name="items[' + idx + '][url]">';
+        var html = '';
+        localeCols.forEach(function (loc) {
+            html += '<label>' + (loc.code === defaultCode ? '标题' : loc.label) + '</label><input name="items[' + idx + '][title_' + loc.code + ']">';
+        });
+        html += '<label>图片 URL</label><input name="items[' + idx + '][image]"><label>链接</label><input name="items[' + idx + '][url]">';
+        d.innerHTML = html;
         document.getElementById('items').appendChild(d);
         idx++;
     });

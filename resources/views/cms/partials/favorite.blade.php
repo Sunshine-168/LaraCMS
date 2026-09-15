@@ -7,10 +7,10 @@
     @if($favMember)
         <form method="post" action="{{ url(\App\Support\UrlMode::localePrefix().'/member/favorite/'.$entry->id) }}" style="display:inline">
             @csrf
-            <button type="submit">{{ $favMember->hasFavorited($entry->id) ? '取消收藏' : '收藏本文' }}</button>
+            <button type="submit">{{ $favMember->hasFavorited($entry->id) ? cms_ui('unfavorite') : cms_ui('favorite') }}</button>
         </form>
     @else
-        <p class="muted"><a href="{{ cms_front_url('member/login') }}">登录</a> 后可收藏本文</p>
+        <p class="muted">{!! str_replace(':link', '<a href="'.e(cms_front_url('member/login')).'">'.e(cms_ui('login')).'</a>', e(cms_ui('favorite_login'))) !!}</p>
     @endif
 </section>
 @endif

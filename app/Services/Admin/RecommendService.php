@@ -6,6 +6,7 @@ use App\Models\Cms\Recommend;
 use App\Models\Cms\RecommendItem;
 use App\Services\Cms\HtmlCacheService;
 use App\Support\Result;
+use App\Support\Translatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -55,19 +56,19 @@ class RecommendService
             RecommendItem::query()->where('recommend_id', $recommend->id)->delete();
             if ($type !== 'query') {
                 foreach ($input['items'] ?? [] as $i => $row) {
-                    if (empty($row['title_zh_cn']) && empty($row['image']) && empty($row['url']) && empty($row['html']) && empty($row['entry_id'])) {
+                    if (
+                        ! Translatable::keyedLocalesHaveText($row, 'title')
+                        && empty($row['image'])
+                        && empty($row['url'])
+                        && empty($row['html'])
+                        && empty($row['entry_id'])
+                    ) {
                         continue;
                     }
                     RecommendItem::query()->create([
                         'recommend_id' => $recommend->id,
-                        'title' => [
-                            'zh_cn' => $row['title_zh_cn'] ?? '',
-                            'en' => $row['title_en'] ?? ($row['title_zh_cn'] ?? ''),
-                        ],
-                        'notes' => [
-                            'zh_cn' => $row['notes_zh_cn'] ?? '',
-                            'en' => $row['notes_en'] ?? '',
-                        ],
+                        'title' => Translatable::packKeyedLocales($row, 'title'),
+                        'notes' => Translatable::packKeyedLocales($row, 'notes', false),
                         'image' => $row['image'] ?? null,
                         'url' => $row['url'] ?? null,
                         'html' => $row['html'] ?? null,

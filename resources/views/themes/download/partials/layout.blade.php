@@ -23,7 +23,7 @@
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
-        <a href="/en">EN</a>
+        @include('cms.partials.lang-switch')
     </nav>
 </div></header>
 <main class="wrap" style="padding:20px 0">@yield('content')</main>

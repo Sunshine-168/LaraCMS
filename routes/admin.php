@@ -36,6 +36,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.submit');
+    Route::get('forgot', [AuthController::class, 'showForgot'])->name('password.forgot');
+    Route::post('forgot', [AuthController::class, 'sendReset'])->middleware('throttle:5,1')->name('password.forgot.submit');
+    Route::get('reset', [AuthController::class, 'showReset'])->name('password.reset');
+    Route::post('reset', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('password.reset.submit');
 
     Route::middleware(['admin.auth', 'admin.log'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -43,6 +47,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
         Route::post('site/switch', [SiteController::class, 'switch'])->name('site.switch');
+        Route::post('ui-locale', [LocaleController::class, 'switchUi'])->name('ui-locale');
         Route::get('help', [HelpController::class, 'index'])->name('help');
         Route::get('/', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard');
         Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard.alt');
@@ -82,6 +87,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('flags', FlagController::class)->except(['show']);
         });
         Route::middleware('admin.perm:locales')->group(function () {
+            Route::put('locales-ui', [LocaleController::class, 'saveUi'])->name('locales.ui');
+            Route::put('locales-theme', [LocaleController::class, 'saveTheme'])->name('locales.theme');
             Route::post('locales/{locale}/toggle', [LocaleController::class, 'toggle'])->name('locales.toggle');
             Route::post('locales/{locale}/default', [LocaleController::class, 'makeDefault'])->name('locales.default');
             Route::resource('locales', LocaleController::class)->except(['show']);

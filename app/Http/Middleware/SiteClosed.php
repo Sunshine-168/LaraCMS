@@ -23,6 +23,10 @@ class SiteClosed
             || $request->is('install/*')
             || $request->is('preview/*')
             || $request->is('*/preview/*')
+            || $request->is('robots.txt')
+            || $request->is('*/robots.txt')
+            || $request->is('sitemap.xml')
+            || $request->is('*/sitemap.xml')
         ) {
             return $next($request);
         }

@@ -363,6 +363,27 @@ class SiteController extends Controller
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
+    public function robots(): Response
+    {
+        $this->site->bootSite();
+        $closed = (bool) (int) \App\Models\Cms\Setting::getValue('site_closed', '0');
+        $sitemap = rtrim((string) config('app.url'), '/').'/sitemap.xml';
+        $lines = ['User-agent: *'];
+        if ($closed) {
+            $lines[] = 'Disallow: /';
+        } else {
+            $lines[] = 'Allow: /';
+            $lines[] = 'Disallow: /admin';
+            $lines[] = 'Disallow: /install';
+            $lines[] = 'Disallow: /member';
+            $lines[] = 'Disallow: /preview';
+        }
+        $lines[] = 'Sitemap: '.$sitemap;
+        $lines[] = '';
+
+        return response(implode("\n", $lines), 200)->header('Content-Type', 'text/plain; charset=UTF-8');
+    }
+
     protected function memberAccessOrRedirect(Request $request, string $permission, string $loginMsg, string $permMsg): ?RedirectResponse
     {
         $member = Auth::guard('member')->user();

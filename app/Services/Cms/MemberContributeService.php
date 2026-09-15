@@ -17,6 +17,7 @@ class MemberContributeService
     public function __construct(
         private readonly HtmlCacheService $htmlCache,
         private readonly FieldBindService $fieldBind,
+        private readonly OpsNotifyService $opsNotify,
     ) {}
 
     public function modelsFor(Member $member): Collection
@@ -68,6 +69,7 @@ class MemberContributeService
             $entry->member_id = $member->id;
             $entry->status = 'draft';
         }
+        $wasPending = $entry->exists && $entry->status === 'pending';
 
         $title = trim((string) ($input['title'] ?? ''));
         if ($title === '') {
@@ -116,6 +118,9 @@ class MemberContributeService
         $entry->save();
         $entry->categories()->sync([$category->id]);
         $this->htmlCache->forgetByEntry($entry);
+        if ($submit && ! $wasPending) {
+            $this->opsNotify->entryPending($entry->loadMissing('member'));
+        }
 
         return Result::ok($entry, $submit ? '已提交审核' : '草稿已保存');
     }

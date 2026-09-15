@@ -5,8 +5,8 @@
     $default = \App\Support\Locale::default();
     $localeMap = \App\Support\Locale::all();
     $otherCodes = array_values(array_filter(\App\Support\Locale::codes(), fn ($c) => $c !== $default));
-    $titleVal = old("locales.$default.title", $tag->t('title', $default, ''));
-    $slugVal = old("locales.$default.slug", $tag->t('slug', $default, ''));
+    $titleVal = old("locales.$default.title", $tag->translation('title', $default));
+    $slugVal = old("locales.$default.slug", $tag->translation('slug', $default));
 @endphp
 @section('header_actions')
     <a class="btn btn-muted btn-sm" href="{{ route('admin.tags.index') }}">返回列表</a>
@@ -32,9 +32,9 @@
             <p class="muted field-hint">改了之后，旧的 /tag/ 地址不会自动跳转。</p>
             @foreach($otherCodes as $code)
                 <label>{{ $localeMap[$code]['label'] ?? $code }} 名称</label>
-                <input type="text" name="locales[{{ $code }}][title]" value="{{ old("locales.$code.title", $tag->t('title', $code, '')) }}" placeholder="可空，默认用上面的名称">
+                <input type="text" name="locales[{{ $code }}][title]" value="{{ old("locales.$code.title", $tag->translation('title', $code)) }}" placeholder="可空，默认用上面的名称">
                 <label>{{ $localeMap[$code]['label'] ?? $code }} 网址标识</label>
-                <input type="text" name="locales[{{ $code }}][slug]" value="{{ old("locales.$code.slug", $tag->t('slug', $code, '')) }}" placeholder="可空">
+                <input type="text" name="locales[{{ $code }}][slug]" value="{{ old("locales.$code.slug", $tag->translation('slug', $code)) }}" placeholder="可空">
             @endforeach
         </details>
 

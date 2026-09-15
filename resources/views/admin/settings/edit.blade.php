@@ -113,9 +113,9 @@
                 会员留言不用审（游客仍要审）
             </label>
 
-            <label for="comments_notify_email">有新留言时通知这个邮箱</label>
+            <label for="comments_notify_email">运营通知邮箱</label>
             <input id="comments_notify_email" type="email" name="comments_notify_email" value="{{ old('comments_notify_email', $s['comments_notify_email'] ?? '') }}" placeholder="ops@example.com">
-            <p class="muted field-hint">留空则不发通知。</p>
+            <p class="muted field-hint">新评论、会员待审稿会发到这里。表单另有各自的通知邮箱。留空则不发。</p>
 
             <label for="comments_rate_seconds">同一来源最短间隔（秒）</label>
             <input id="comments_rate_seconds" type="number" name="comments_rate_seconds" min="10" max="3600" value="{{ old('comments_rate_seconds', $s['comments_rate_seconds'] ?? 60) }}">
@@ -177,7 +177,7 @@
             ])
 
             <h3>发信</h3>
-            <p class="muted field-hint">留言通知、找回密码会用到。密码留空表示不改已保存的值。</p>
+            <p class="muted field-hint">留言通知、找回密码、待审稿会用到。没配服务器时邮件进日志，前台不会露出重置链接（仅本地调试模式会显示）。密码留空表示不改已保存的值。</p>
             <label for="mail_host">邮件服务器</label>
             <input id="mail_host" type="text" name="mail_host" value="{{ old('mail_host', $s['mail_host'] ?? '') }}" placeholder="smtp.example.com">
             <div class="settings-two">

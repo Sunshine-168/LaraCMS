@@ -26,7 +26,7 @@
         <tr><td>{!! $hl('entryTags', '标签') !!}</td><td>给文章打标签，前台 <code>/tag/标识</code> 聚合。和「说明 → 标签」（模板指令）不是一回事。</td></tr>
         <tr><td>{!! $hl('media', '媒体') !!}</td><td>上传图片和文件。正文插图也从这里选。打不开时先执行 <code>php artisan storage:link</code>。水印在设置里配。</td></tr>
         <tr><td>{!! $hl('submissions', '留言') !!}</td><td>前台表单提交的收件箱。可已读、备注、邮件回复。</td></tr>
-        <tr><td>{!! $hl('comments', '评论') !!}</td><td>默认待审核，通过后出现在文章下。开关在{!! $hl('settings', '设置') !!}。</td></tr>
+        <tr><td>{!! $hl('comments', '评论') !!}</td><td>默认待审核，通过后出现在文章下。开关和运营通知邮箱在{!! $hl('settings', '设置') !!}。</td></tr>
         <tr><td>{!! $hl('recycle', '回收站') !!}</td><td>删除的内容先在这里。可还原；彻底删除不能恢复。</td></tr>
         <tr><td>{!! $hl('flags', '推荐') !!}</td><td>写内容时勾的属性（如头条）。模板 <code>@@cmsContent(['flag' =&gt; '属性标识'])</code> 按它筛选。</td></tr>
         <tr><td>{!! $hl('recommends', '推荐位') !!}</td><td>首页 Banner 这类区块。标识码要和模板 <code>@@cmsAdv(['name' =&gt; 'home_banner'])</code> 一致。可手填条目或按规则取文章。</td></tr>
@@ -57,9 +57,9 @@
     </thead>
     <tbody>
         <tr><td>{!! $hl('sites', '站点') !!}</td><td>按域名分站，栏目和文章隔离。顶栏切换正在改哪一个。新建站会复制基础设置，不复制内容。默认站不能删，删站会连内容一起删。</td></tr>
-        <tr><td>{!! $hl('settings', '设置') !!}</td><td>网站名称、关键词。外观：Logo、主色、页脚。评论规则。更多：文章链接格式、手机外观、备份还原、API Token、CDN 域名。</td></tr>
+        <tr><td>{!! $hl('settings', '设置') !!}</td><td>网站名称、关键词。外观：Logo、主色、页脚。评论规则、SMTP 发信。登录页可找回后台密码。更多：文章链接格式、手机外观、备份还原、API Token、CDN 域名。</td></tr>
         <tr><td>{!! $hl('themes', '主题') !!}</td><td>换前台外观。点「用于本站」会补缺的模型，不改已有文章。详见「<a href="{{ $urls['helpThemes'] ?? '#' }}">主题</a>」。</td></tr>
-        <tr><td>{!! $hl('locales', '语言') !!}</td><td>前台多语言。默认语言一般不加前缀（<code>/</code>），其它如 <code>/en</code>。停用后前台不再提供，已写译文还在。</td></tr>
+        <tr><td>{!! $hl('locales', '语言') !!}</td><td>三件事分开：<strong>内容语言</strong>（文章标签、/en 前缀）、<strong>后台界面</strong>（侧栏中/英）、<strong>主题文案</strong>（搜索、登录、评论、会员等短句，用 <code>cms_ui('search')</code>）。导航和推荐位会按已添加的语言出输入框。译文统计只算该语言真正填了标题的篇数；停用不删已有译文。改语言或主题文案会清全页缓存和磁盘静态页。</td></tr>
         <tr><td>{!! $hl('logs', '日志') !!}</td><td>管理员在后台做过什么：改了哪一篇、批量动作、登录和 IP。IP 旁会标本机、Docker 内网或公网省市。点 IP 可只看这个地址。生成静态页的进度请求不记。不能当文章修订用。</td></tr>
         <tr><td>{!! $hl('profile', '账号') !!}</td><td>右上角点自己的名字。改显示名称和登录密码。</td></tr>
         <tr><td>{!! $hl('adminUsers', '管理员') !!}</td><td>后台账号、角色、可管理哪些站点。可限制只能改某些栏目。</td></tr>

@@ -60,4 +60,59 @@ class AuthController extends Controller
 
         return redirect()->route('admin.login');
     }
+
+    public function showForgot(): View|RedirectResponse
+    {
+        if (auth('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return view('admin.auth.forgot');
+    }
+
+    public function sendReset(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+        ]);
+        $result = $this->authService->sendResetLink($data['email']);
+        $redirect = back()->with('status', $result['msg']);
+        if (! empty($result['data']['reset_url'])) {
+            $redirect->with('reset_url', $result['data']['reset_url']);
+        }
+
+        return $redirect;
+    }
+
+    public function showReset(Request $request): View|RedirectResponse
+    {
+        if (auth('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        $token = (string) $request->query('token', '');
+        $email = (string) $request->query('email', '');
+        if ($token === '' || $email === '') {
+            return redirect()->route('admin.password.forgot')->withErrors(['email' => '重置链接无效']);
+        }
+
+        return view('admin.auth.reset', compact('token', 'email'));
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.min' => '新密码至少 8 位',
+            'password.confirmed' => '两次新密码不一致',
+        ]);
+        $result = $this->authService->resetPassword($data['email'], $data['token'], $data['password']);
+        if (! $result['ok']) {
+            return back()->withErrors(['email' => $result['msg']])->withInput();
+        }
+
+        return redirect()->route('admin.login')->with('status', $result['msg']);
+    }
 }

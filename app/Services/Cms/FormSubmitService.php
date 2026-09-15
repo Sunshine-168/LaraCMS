@@ -6,13 +6,12 @@ use App\Models\Cms\CmsForm;
 use App\Models\Cms\FormSubmission;
 use App\Models\Cms\Member;
 use App\Support\Captcha;
-use App\Support\MailConfig;
 use App\Support\Result;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class FormSubmitService
 {
+    public function __construct(private readonly OpsNotifyService $opsNotify) {}
     public function submit(string $slug, Request $request, ?Member $member, bool $skipCaptcha = false): array
     {
         $form = CmsForm::query()->where('slug', $slug)->where('is_active', true)->first();
@@ -70,18 +69,12 @@ class FormSubmitService
         ]);
 
         if ($form->notify_email) {
-            try {
-                MailConfig::applyFromSettings();
-                $body = "表单「{$form->name}」有新提交\nIP: {$request->ip()}\n\n";
-                foreach ($data as $k => $v) {
-                    $body .= $k.': '.(is_array($v) ? implode(', ', $v) : $v)."\n";
-                }
-                Mail::raw($body, function ($message) use ($form) {
-                    $message->to($form->notify_email)->subject('【CMS】新表单留言：'.$form->name);
-                });
-            } catch (\Throwable) {
-                // 邮件失败不影响用户提交
-            }
+            $this->opsNotify->formSubmitted(
+                (string) $form->name,
+                (string) $form->notify_email,
+                $data,
+                (string) $request->ip()
+            );
         }
 
         return Result::ok($submission, '提交成功，我们会尽快联系您。');

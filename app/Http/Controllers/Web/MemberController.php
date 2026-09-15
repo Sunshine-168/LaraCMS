@@ -18,7 +18,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -120,25 +119,18 @@ class MemberController extends Controller
             $member->save();
 
             $url = cms_route('member.reset', ['token' => $token, 'email' => $member->email]);
-
-            $mailed = false;
-            try {
-                MailConfig::applyFromSettings();
-                if (config('mail.mailers.smtp.host')) {
-                    Mail::raw("请在 1 小时内打开以下链接重置密码：\n{$url}", function ($message) use ($member) {
-                        $message->to($member->email)->subject('重置密码');
-                    });
-                    $mailed = true;
-                }
-            } catch (\Throwable) {
-                $mailed = false;
-            }
-
-            if ($mailed) {
+            $sent = MailConfig::send($member->email, '重置密码', 'mail.reset', [
+                'siteName' => (string) \App\Models\Cms\Setting::getValue('site_name', config('app.name')),
+                'heading' => '重置会员密码',
+                'audience' => '会员',
+                'url' => $url,
+            ]);
+            if ($sent) {
                 return back()->with('status', '重置邮件已发送，请查收邮箱');
             }
-
-            return back()->with('status', '重置链接已生成（1 小时内有效，未配置邮件时直接展示）')->with('reset_url', $url);
+            if (MailConfig::showDebugLink()) {
+                return back()->with('status', '未配置发信。本地调试可使用下面的链接（1 小时内有效）')->with('reset_url', $url);
+            }
         }
 
         return back()->with('status', '若该邮箱已注册，将发送重置指引');

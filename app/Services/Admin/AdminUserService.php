@@ -152,6 +152,14 @@ class AdminUserService
         return Result::ok($user, '名称已保存');
     }
 
+    public function updateSelfUiLocale(AdminUser $user, string $code): array
+    {
+        $remembered = \App\Support\AdminUi::remember($code, true);
+        \App\Support\AdminUi::apply();
+
+        return Result::ok($remembered, $code === \App\Support\AdminUi::EN ? 'Admin UI set to English' : '后台界面已设为中文');
+    }
+
     public function changeOwnPassword(AdminUser $user, string $current, string $new): array
     {
         if (! Hash::check($current, $user->getAuthPassword())) {

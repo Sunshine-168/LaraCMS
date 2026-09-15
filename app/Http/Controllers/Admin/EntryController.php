@@ -77,7 +77,7 @@ class EntryController extends Controller
             'model' => $model->load(['fields.categories']),
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
-            'locales' => Locale::codes(),
+            'locales' => Locale::codesDefaultFirst(),
             'canPublish' => $this->entryService->canPublish(),
             'mapDefaults' => [
                 'lng' => (float) Setting::getValue('map_default_lng', '116.397'),
@@ -110,7 +110,7 @@ class EntryController extends Controller
             'model' => $model,
             'categories' => $this->scopedCategories($model->id),
             'tags' => Tag::query()->orderByDesc('id')->get(),
-            'locales' => Locale::codes(),
+            'locales' => Locale::codesDefaultFirst(),
             'revisions' => $entry->revisions,
             'canPublish' => $this->entryService->canPublish(),
             'mapDefaults' => [

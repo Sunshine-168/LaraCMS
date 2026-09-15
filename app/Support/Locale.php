@@ -134,5 +134,52 @@ class Locale
         Cache::forget(self::cacheKey('map'));
         Cache::forget(self::cacheKey('default'));
         Cache::forget(self::cacheKey('hide_default'));
+        Cache::forget(self::cacheKey('configured'));
+    }
+
+    /** 含停用：后台表单/主题文案用，前台切换仍走 all() */
+    public static function configured(): array
+    {
+        try {
+            if (Schema::hasTable('cms_locales')) {
+                return Cache::remember(self::cacheKey('configured'), 60, function () {
+                    $rows = CmsLocale::query()->orderBy('sort')->orderBy('id')->get();
+                    if ($rows->isEmpty()) {
+                        return self::all();
+                    }
+                    $out = [];
+                    foreach ($rows as $row) {
+                        $out[$row->code] = [
+                            'label' => $row->label,
+                            'native' => $row->native ?: $row->label,
+                            'active' => (bool) $row->is_active,
+                        ];
+                    }
+
+                    return $out;
+                });
+            }
+        } catch (\Throwable) {
+        }
+
+        return self::all();
+    }
+
+    /** @return list<string> */
+    public static function configuredCodes(): array
+    {
+        return array_keys(self::configured());
+    }
+
+    /** @return list<string> */
+    public static function codesDefaultFirst(): array
+    {
+        $codes = self::codes();
+        $default = self::default();
+        if ($codes === []) {
+            return $default !== '' ? [$default] : [];
+        }
+
+        return array_values(array_unique(array_merge([$default], $codes)));
     }
 }

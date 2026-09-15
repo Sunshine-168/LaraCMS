@@ -36,8 +36,10 @@
         </label>
 
         <h3>菜单项</h3>
-        <p class="muted field-hint">一条一行。英文可空，保存时按中文补。上级选另一条，就是它的子菜单。</p>
+        <p class="muted field-hint">一条一行。其它语言可空，保存时按默认语言补。上级选另一条，就是它的子菜单。</p>
         @php
+            $localeCols = \App\Support\Locale::configured();
+            $defaultCode = \App\Support\Locale::default();
             $rows = old('items');
             if (! $rows) {
                 $idToIndex = [];
@@ -45,18 +47,24 @@
                 foreach ($items as $idx => $item) {
                     $idToIndex[$item->id] = $idx;
                 }
-                $rows = $items->map(fn ($item) => [
-                    'title_zh_cn' => $item->t('title', 'zh_cn'),
-                    'title_en' => $item->t('title', 'en'),
-                    'type' => $item->type,
-                    'url' => $item->url,
-                    'reference_id' => $item->reference_id,
-                    'parent_index' => ($item->parent_id && isset($idToIndex[$item->parent_id])) ? $idToIndex[$item->parent_id] : '',
-                ])->all() ?: [['title_zh_cn' => '', 'title_en' => '', 'type' => 'url', 'url' => '/', 'reference_id' => '', 'parent_index' => '']];
+                $emptyTitles = collect($localeCols)->mapWithKeys(fn ($meta, $code) => ['title_'.$code => ''])->all();
+                $rows = $items->map(function ($item) use ($localeCols, $idToIndex) {
+                    $row = [
+                        'type' => $item->type,
+                        'url' => $item->url,
+                        'reference_id' => $item->reference_id,
+                        'parent_index' => ($item->parent_id && isset($idToIndex[$item->parent_id])) ? $idToIndex[$item->parent_id] : '',
+                    ];
+                    foreach ($localeCols as $code => $meta) {
+                        $row['title_'.$code] = $item->translation('title', $code);
+                    }
+
+                    return $row;
+                })->all() ?: [array_merge($emptyTitles, ['type' => 'url', 'url' => '/', 'reference_id' => '', 'parent_index' => ''])];
             }
             $rowTitles = [];
             foreach ($rows as $ri => $r) {
-                $rowTitles[$ri] = trim((string) ($r['title_zh_cn'] ?? '')) ?: ('第 '.($ri + 1).' 条');
+                $rowTitles[$ri] = trim((string) ($r['title_'.$defaultCode] ?? $r['title_zh_cn'] ?? '')) ?: ('第 '.($ri + 1).' 条');
             }
             $catOptionsJson = $categories->map(function ($c) {
                 return [
@@ -69,8 +77,9 @@
             <table class="data menu-items-table" id="menu-items">
                 <thead>
                 <tr>
-                    <th>标题</th>
-                    <th>英文</th>
+                    @foreach($localeCols as $code => $meta)
+                        <th>{{ $code === $defaultCode ? '标题' : ($meta['label'] ?? $code) }}</th>
+                    @endforeach
                     <th>指向</th>
                     <th>上级</th>
                     <th class="col-actions"></th>
@@ -80,12 +89,11 @@
                 @foreach($rows as $i => $row)
                     @php $type = $row['type'] ?? 'url'; @endphp
                     <tr class="menu-item" data-row="{{ $i }}">
-                        <td>
-                            <input type="text" name="items[{{ $i }}][title_zh_cn]" value="{{ $row['title_zh_cn'] ?? '' }}" placeholder="标题" aria-label="标题">
-                        </td>
-                        <td>
-                            <input type="text" name="items[{{ $i }}][title_en]" value="{{ $row['title_en'] ?? '' }}" placeholder="可空" aria-label="英文标题">
-                        </td>
+                        @foreach($localeCols as $code => $meta)
+                            <td>
+                                <input type="text" name="items[{{ $i }}][title_{{ $code }}]" value="{{ $row['title_'.$code] ?? '' }}" placeholder="{{ $code === $defaultCode ? '标题' : '可空' }}" aria-label="{{ $code === $defaultCode ? '标题' : ($meta['label'] ?? $code) }}">
+                            </td>
+                        @endforeach
                         <td class="menu-item-point">
                             <select name="items[{{ $i }}][type]" class="menu-item-type" aria-label="类型">
                                 <option value="url" @selected($type === 'url')>链接</option>
@@ -139,6 +147,8 @@
     var body = table && table.querySelector('tbody');
     var idx = {{ count($rows) }};
     var catOptions = @json($catOptionsJson);
+    var localeCols = @json(collect($localeCols)->map(fn ($meta, $code) => ['code' => $code, 'label' => $meta['label'] ?? $code])->values());
+    var defaultCode = @json($defaultCode);
 
     function catSelectHtml(name, selected) {
         var html = '<select name="' + name + '" class="menu-item-category" aria-label="栏目"><option value="">选择栏目</option>';
@@ -186,16 +196,20 @@
     document.getElementById('add-item')?.addEventListener('click', function () {
         var parents = '<option value="">顶级</option>';
         rows().forEach(function (row, p) {
-            var title = row.querySelector('input[name$="[title_zh_cn]"]');
+            var title = row.querySelector('input[name$="[title_' + defaultCode + ']"]');
             var label = (title && title.value.trim()) ? title.value.trim() : ('第 ' + (p + 1) + ' 条');
             parents += '<option value="' + p + '">' + label.replace(/[&<>"]/g, '') + '</option>';
+        });
+        var titleCells = '';
+        localeCols.forEach(function (loc) {
+            var isDefault = loc.code === defaultCode;
+            titleCells += '<td><input type="text" name="items[' + idx + '][title_' + loc.code + ']" placeholder="' + (isDefault ? '标题' : '可空') + '" aria-label="' + (isDefault ? '标题' : loc.label) + '"></td>';
         });
         var tr = document.createElement('tr');
         tr.className = 'menu-item';
         tr.setAttribute('data-row', String(idx));
         tr.innerHTML =
-            '<td><input type="text" name="items[' + idx + '][title_zh_cn]" placeholder="标题" aria-label="标题"></td>' +
-            '<td><input type="text" name="items[' + idx + '][title_en]" placeholder="可空" aria-label="英文标题"></td>' +
+            titleCells +
             '<td class="menu-item-point">' +
             '<select name="items[' + idx + '][type]" class="menu-item-type" aria-label="类型">' +
             '<option value="url">链接</option><option value="category">栏目</option><option value="entry">文档</option></select>' +
@@ -209,7 +223,7 @@
         body.appendChild(tr);
         bindRow(tr);
         idx++;
-        tr.querySelector('input[name$="[title_zh_cn]"]')?.focus();
+        tr.querySelector('input[name$="[title_' + defaultCode + ']"]')?.focus();
     });
 
     body?.addEventListener('click', function (e) {

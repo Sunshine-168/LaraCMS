@@ -22,6 +22,7 @@
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
+        @include('cms.partials.lang-switch')
         <span class="muted">
             @cmsTaglist(['num'=>8])
                 <a class="tag" href="{{ cms_front_url('tag/'.$item->t('slug')) }}">{{ $item->t('title') }}</a>

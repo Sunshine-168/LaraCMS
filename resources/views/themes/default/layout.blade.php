@@ -3,13 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $seo['title'] ?? config('app.name') }}</title>
-    @if(!empty($seo['description']))
-        <meta name="description" content="{{ $seo['description'] }}">
-    @endif
-    @if(!empty($seo['keywords']))
-        <meta name="keywords" content="{{ $seo['keywords'] }}">
-    @endif
+    @cmsSeo
     <style>
         :root { --ink:#14213d; --accent:#1d3557; --bg:#f8fafc; --line:#e2e8f0; }
         * { box-sizing:border-box; }
@@ -43,9 +37,7 @@
         <nav>
             @include('cms.partials.header-nav')
             @include('cms.partials.front-toolbar')
-            <span class="lang">
-                <a href="/">中文</a> · <a href="/en">EN</a>
-            </span>
+            @include('cms.partials.lang-switch')
         </nav>
     </div>
 </header>

@@ -20,6 +20,17 @@
             <input type="email" value="{{ $user->email }}" disabled>
             <p class="muted field-hint">用来登录后台，不能在这里改。</p>
 
+            <label>{{ admin_t('locale.admin_mine') }}</label>
+            <div class="locale-ui-choices">
+                @foreach(\App\Support\AdminUi::options() as $code => $label)
+                    <label class="inline">
+                        <input type="radio" name="ui_locale" value="{{ $code }}" @checked(old('ui_locale', $user->ui_locale ?: \App\Support\AdminUi::current()) === $code)>
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+            <p class="muted field-hint">{{ admin_t('locale.admin_note') }}</p>
+
             <div class="form-actions">
                 <button class="btn" type="submit">保存名称</button>
             </div>

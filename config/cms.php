@@ -42,7 +42,7 @@ return [
         'ttl' => (int) env('CMS_HTML_CACHE_TTL', 3600),
         'store' => env('CMS_HTML_CACHE_STORE'), // null = 默认 CACHE_STORE
         'exclude_prefixes' => [
-            'admin', 'member', 'form', 'comment', 'download', 'go', 'livewire', 'storage', 'api', 'up', 'preview',
+            'admin', 'member', 'form', 'comment', 'download', 'go', 'livewire', 'storage', 'api', 'up', 'preview', 'robots.txt',
         ],
         'exclude_path_prefixes' => [
             'search', // 搜索结果不缓存

@@ -7,6 +7,7 @@ use App\Models\Cms\EntryRevision;
 use App\Models\Cms\Recommend;
 use App\Models\Cms\RecommendItem;
 use App\Services\Cms\HtmlCacheService;
+use App\Services\Cms\OpsNotifyService;
 use App\Support\AdminCategoryScope;
 use App\Support\Result;
 use App\Support\Translatable;
@@ -15,7 +16,10 @@ use Illuminate\Support\Str;
 
 class EntryService
 {
-    public function __construct(private readonly HtmlCacheService $htmlCache) {}
+    public function __construct(
+        private readonly HtmlCacheService $htmlCache,
+        private readonly OpsNotifyService $opsNotify,
+    ) {}
 
     public function paginate(
         ?int $modelId = null,
@@ -127,13 +131,17 @@ class EntryService
 
         $entry ??= new Entry;
         $wasPublished = $entry->exists && $entry->status === 'published';
+        $wasPending = $entry->exists && $entry->status === 'pending';
         if ($entry->exists) {
             $entry->loadMissing(['categories', 'tags']);
             $this->snapshotRevision($entry);
         }
-        $packed = Translatable::packTranslations($input['locales'] ?? [], [
-            'title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description',
-        ]);
+        $localeFields = ['title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description'];
+        $packed = Translatable::packTranslations(
+            $input['locales'] ?? [],
+            $localeFields,
+            Translatable::existingTranslations($entry, $localeFields),
+        );
         $entry->fill($packed);
         $entry->category_id = $categoryId;
         $entry->model_id = (int) $input['model_id'];
@@ -174,6 +182,9 @@ class EntryService
         }
 
         $this->htmlCache->forgetByEntry($entry);
+        if ($status === 'pending' && ! $wasPending) {
+            $this->opsNotify->entryPending($entry->loadMissing('member'));
+        }
 
         return Result::ok($entry, '保存成功');
     }

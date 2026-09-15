@@ -9,7 +9,7 @@
             @if($entry->attr('demo_url'))<a href="{{ $entry->attr('demo_url') }}" target="_blank">在线演示</a> / @endif
             <a class="btn" href="{{ cms_route('download', $entry) }}">下载源码包</a>
         </p>
-        <p>上一篇：@cmsPrev / 下一篇：@cmsNext</p>
+        <p>{{ cms_ui('prev') }}：@cmsPrev / {{ cms_ui('next') }}：@cmsNext</p>
     </div>
 
     @include('cms.comments')

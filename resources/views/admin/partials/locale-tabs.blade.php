@@ -7,7 +7,7 @@
 <div class="tabs">
     @foreach($locales as $code)
         <button type="button" data-locale-tab="{{ $code }}" class="{{ $loop->first ? 'active' : '' }}">
-            {{ config('cms.locales.'.$code.'.label', $code) }}
+            {{ \App\Support\Locale::configured()[$code]['label'] ?? $code }}
         </button>
     @endforeach
 </div>
@@ -20,11 +20,11 @@
                     <p class="muted field-hint">{{ $meta['hint'] }}</p>
                 @endif
                 @if(($meta['type'] ?? 'text') === 'editor')
-                    <textarea class="cms-editor" name="locales[{{ $code }}][{{ $field }}]">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                    <textarea class="cms-editor" name="locales[{{ $code }}][{{ $field }}]">{{ old("locales.$code.$field", $model?->translation($field, $code)) }}</textarea>
                 @elseif(($meta['type'] ?? 'text') === 'textarea')
-                    <textarea name="locales[{{ $code }}][{{ $field }}]" rows="{{ $meta['rows'] ?? 4 }}">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                    <textarea name="locales[{{ $code }}][{{ $field }}]" rows="{{ $meta['rows'] ?? 4 }}">{{ old("locales.$code.$field", $model?->translation($field, $code)) }}</textarea>
                 @else
-                    <input type="text" class="{{ $meta['class'] ?? '' }}" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}" placeholder="{{ $meta['placeholder'] ?? '' }}">
+                    <input type="text" class="{{ $meta['class'] ?? '' }}" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->translation($field, $code)) }}" placeholder="{{ $meta['placeholder'] ?? '' }}">
                 @endif
             </div>
         @endforeach
@@ -34,9 +34,9 @@
                 @foreach($advanced as $field => $meta)
                     <label>{{ $meta['label'] }}</label>
                     @if(($meta['type'] ?? 'text') === 'textarea')
-                        <textarea name="locales[{{ $code }}][{{ $field }}]" rows="3">{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}</textarea>
+                        <textarea name="locales[{{ $code }}][{{ $field }}]" rows="3">{{ old("locales.$code.$field", $model?->translation($field, $code)) }}</textarea>
                     @else
-                        <input type="text" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->t($field, $code, '')) }}">
+                        <input type="text" name="locales[{{ $code }}][{{ $field }}]" value="{{ old("locales.$code.$field", $model?->translation($field, $code)) }}">
                     @endif
                 @endforeach
             </details>

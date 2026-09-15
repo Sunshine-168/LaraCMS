@@ -23,6 +23,7 @@
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
+        @include('cms.partials.lang-switch')
         <a href="{{ cms_route('rss') }}">RSS</a>
     </nav>
 </header>

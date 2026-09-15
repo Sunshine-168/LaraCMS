@@ -61,7 +61,7 @@ class AdminLogService
     /**
      * @param  array{q:string,ip:string,mine:bool,from:string,to:string}  $filters
      */
-    public function paginate(array $filters, int $perPage = 40): LengthAwarePaginator
+    public function paginate(array $filters, int $perPage = 20): LengthAwarePaginator
     {
         $query = AdminLog::query()->orderByDesc('id');
         if ($filters['q'] !== '') {

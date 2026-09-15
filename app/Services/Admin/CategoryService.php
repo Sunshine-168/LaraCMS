@@ -104,9 +104,12 @@ class CategoryService
             return Result::fail('当前账号无权新建栏目，请联系超管');
         }
 
-        $packed = Translatable::packTranslations($input['locales'] ?? [], [
-            'title', 'slug', 'meta_title', 'meta_description',
-        ]);
+        $localeFields = ['title', 'slug', 'meta_title', 'meta_description'];
+        $packed = Translatable::packTranslations(
+            $input['locales'] ?? [],
+            $localeFields,
+            Translatable::existingTranslations($category, $localeFields),
+        );
         $category->fill($packed);
         $category->type = $input['type'] ?? 'list';
         $category->model_id = $input['model_id'] ?: null;
