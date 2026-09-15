@@ -57,4 +57,7 @@ return [
         'enabled' => (bool) env('CMS_DISK_HTML', false),
         'path' => env('CMS_DISK_HTML_PATH', 'html'),
     ],
+
+    /** 操作日志里公网 IP 查省市（内网/Docker 本地判断，不走网络） */
+    'ip_lookup' => filter_var(env('CMS_IP_LOOKUP', true), FILTER_VALIDATE_BOOL),
 ];

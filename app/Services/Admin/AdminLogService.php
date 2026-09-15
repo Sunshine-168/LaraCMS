@@ -22,6 +22,7 @@ use App\Models\Cms\Redirect;
 use App\Models\Cms\Site;
 use App\Models\Cms\Tag;
 use App\Support\AdminLogAction;
+use App\Support\IpLocation;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -29,7 +30,7 @@ use Illuminate\Support\Str;
 class AdminLogService
 {
     /**
-     * @return array{q:string,mine:bool,from:string,to:string}
+     * @return array{q:string,ip:string,mine:bool,from:string,to:string}
      */
     public function filters(Request $request): array
     {
@@ -41,25 +42,39 @@ class AdminLogService
 
         return [
             'q' => trim((string) $request->query('q', '')),
+            'ip' => $this->ip($request->query('ip')),
             'mine' => $request->query('mine') === '1',
             'from' => $from,
             'to' => $to,
         ];
     }
 
+    /** @param  array<string, mixed>  $attrs */
+    public function record(array $attrs): void
+    {
+        try {
+            AdminLog::query()->create($attrs);
+        } catch (\Throwable) {
+        }
+    }
+
     /**
-     * @param  array{q:string,mine:bool,from:string,to:string}  $filters
+     * @param  array{q:string,ip:string,mine:bool,from:string,to:string}  $filters
      */
     public function paginate(array $filters, int $perPage = 40): LengthAwarePaginator
     {
         $query = AdminLog::query()->orderByDesc('id');
         if ($filters['q'] !== '') {
-            $like = '%'.$filters['q'].'%';
+            $like = '%'.addcslashes($filters['q'], '%_\\').'%';
             $query->where(function ($inner) use ($like) {
                 $inner->where('admin_name', 'like', $like)
                     ->orWhere('path', 'like', $like)
-                    ->orWhere('detail', 'like', $like);
+                    ->orWhere('detail', 'like', $like)
+                    ->orWhere('ip', 'like', $like);
             });
+        }
+        if ($filters['ip'] !== '') {
+            $query->where('ip', $filters['ip']);
         }
         if ($filters['mine']) {
             $query->where('admin_id', auth('admin')->id());
@@ -89,7 +104,7 @@ class AdminLogService
             $log->setAttribute('target_resource', $resource);
             $log->setAttribute('target_name', null);
             $log->setAttribute('target_href', null);
-            $log->setAttribute('subject', $this->quotedSubject($log->detail));
+            $log->setAttribute('subject', $this->quotedSubject($log->detail) ?? AdminLogAction::pathSubject((string) $log->path));
             if ($resource !== '' && $id) {
                 $grouped[$resource][$id][] = $log;
             }
@@ -108,6 +123,18 @@ class AdminLogService
                     }
                 }
             }
+        }
+        $ips = [];
+        foreach ($logs as $log) {
+            $ip = trim((string) $log->ip);
+            if ($ip !== '') {
+                $ips[] = $ip;
+            }
+        }
+        $places = IpLocation::many($ips);
+        foreach ($logs as $log) {
+            $ip = trim((string) $log->ip);
+            $log->setAttribute('ip_place', $ip !== '' ? ($places[$ip] ?? '') : '');
         }
     }
 
@@ -146,6 +173,7 @@ class AdminLogService
 
         return match ($resource) {
             'tags' => $pick(Tag::query(), fn ($m) => $m->t('title')),
+            'recycle' => $pick(Entry::query()->withTrashed(), fn ($m) => $m->t('title')),
             'entries' => $pick(Entry::query()->withTrashed(), fn ($m) => $m->t('title')),
             'categories' => $pick(Category::query(), fn ($m) => $m->t('title')),
             'members' => $pick(Member::query(), fn ($m) => $m->name),
@@ -171,6 +199,16 @@ class AdminLogService
     {
         $value = trim((string) $value);
         if ($value === '' || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return '';
+        }
+
+        return $value;
+    }
+
+    private function ip(mixed $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '' || strlen($value) > 45 || ! preg_match('/^[0-9a-fA-F:.]+$/', $value)) {
             return '';
         }
 

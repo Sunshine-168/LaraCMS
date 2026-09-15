@@ -54,7 +54,7 @@ class AuthController extends Controller
     /** 退出登录 */
     public function logout(Request $request): RedirectResponse
     {
-        $this->authService->logout();
+        $this->authService->logout(auth('admin')->user(), $request->ip());
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

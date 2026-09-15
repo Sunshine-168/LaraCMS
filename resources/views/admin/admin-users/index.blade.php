@@ -117,6 +117,20 @@
                                 @elseif($user->sites->isNotEmpty())
                                     · {{ $user->sites->pluck('name')->join('、') }}
                                 @endif
+                                @if($user->last_login_at)
+                                    · 上次登录 {{ $user->last_login_at->isToday() ? '今天 '.$user->last_login_at->format('H:i') : ($user->last_login_at->isYesterday() ? '昨天 '.$user->last_login_at->format('H:i') : $user->last_login_at->format('m-d H:i')) }}
+                                    @if($user->last_login_ip)
+                                        @php $loginPlace = \App\Support\IpLocation::label($user->last_login_ip); @endphp
+                                        @if(auth('admin')->user()?->canPerm('logs'))
+                                            · <a class="log-ip" href="{{ route('admin.logs.index', ['ip' => $user->last_login_ip]) }}">{{ $user->last_login_ip }}</a>
+                                        @else
+                                            · {{ $user->last_login_ip }}
+                                        @endif
+                                        @if($loginPlace)
+                                            <span class="log-ip-place">{{ $loginPlace }}</span>
+                                        @endif
+                                    @endif
+                                @endif
                             </div>
                         </td>
                         <td class="actions">

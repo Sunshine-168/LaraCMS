@@ -16,7 +16,7 @@ class AdminLog extends Model
 
     public function actionLabel(): string
     {
-        return AdminLogAction::label((string) $this->method, (string) $this->path);
+        return AdminLogAction::label((string) $this->method, (string) $this->path, $this->status !== null ? (int) $this->status : null);
     }
 
     public function failed(): bool

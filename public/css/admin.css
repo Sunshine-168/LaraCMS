@@ -314,7 +314,14 @@ a:hover { color: var(--primary-hover); }
     box-shadow: var(--shadow);
     z-index: 80;
 }
-.account-menu-panel p { margin: 0 0 10px; }
+.account-menu-panel p { margin: 0 0 8px; }
+.account-menu-link {
+    display: block;
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: 13px;
+}
+.account-menu-link:hover { color: var(--primary); }
 .account-menu-panel form { margin: 0; }
 .user-chip {
     display: inline-flex;
@@ -1672,6 +1679,7 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 .site-form select { width: 100%; max-width: none; }
 .settings-page { max-width: 640px; }
 .settings-page textarea { min-height: 88px; }
+.profile-page h3 { margin: 28px 0 12px; font-size: 15px; }
 .settings-tabs { flex-wrap: wrap; }
 .settings-pane { display: none; }
 .settings-pane.active { display: block; }
@@ -1799,7 +1807,13 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 .log-index .entry-row-title:hover { color: var(--text); }
 .log-index a.entry-row-title:hover { color: var(--primary); }
 .log-index .log-find { margin: 0; }
-.log-index .log-find input[type=search] { width: 168px; min-width: 140px; }
+.log-index .log-find input[type=search] { width: 220px; min-width: 160px; }
+.log-ip { color: var(--muted2); }
+.log-ip:hover { color: var(--primary); }
+.log-ip-place {
+    margin-left: 4px;
+    color: var(--muted2);
+}
 .log-index tr.is-off .entry-row-title { color: var(--muted); }
 .admin-user-compose {
     margin: 0 0 16px;
@@ -2217,3 +2231,110 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     font-size: 12px;
 }
 .help-page .hint { color: var(--muted); font-size: 13px; }
+
+/* H5 / 窄屏：侧栏抽屉、顶栏收纳、表格横滑、表单铺满 */
+body.side-open { overflow: hidden; }
+@media (max-width: 768px) {
+    .topbar {
+        height: 48px;
+        padding: 0 10px 0 max(10px, env(safe-area-inset-left));
+        gap: 8px;
+    }
+    .topbar-left { gap: 8px; }
+    .topbar-title {
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 42vw;
+    }
+    .topbar-todo { display: none; }
+    .topbar-right { gap: 6px; }
+    .site-switch label { display: none; }
+    .site-switch select { max-width: 108px; }
+    .user-chip { padding: 2px; }
+    .user-chip-name { display: none; }
+    .content {
+        padding: 10px 10px max(20px, env(safe-area-inset-bottom));
+    }
+    .card-header {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    .card-header > span {
+        display: none;
+    }
+    .card-header > div {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+    .card-body { padding: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .card-body table:not(.help-doc):not(.checks):not(.info) {
+        min-width: 620px;
+    }
+    .card-body table.data th,
+    .card-body table.data td {
+        white-space: nowrap;
+    }
+    .entry-row-title-line,
+    .entry-row-meta,
+    .entry-row-tags { white-space: nowrap; }
+    .filter-bar,
+    .toolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .filter-bar input[type=text],
+    .filter-bar input[type=search],
+    .filter-bar input[type=date],
+    .filter-bar select {
+        max-width: none;
+        min-width: 0;
+        flex: 1 1 140px;
+    }
+    .entry-index .filter-bar { flex-wrap: wrap; width: 100%; }
+    .entry-index .filter-bar input[type=search] {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        flex: 1 1 100%;
+    }
+    .entry-find {
+        flex-wrap: wrap;
+        overflow: visible;
+        gap: 8px;
+    }
+    .entry-status-row {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .entry-index-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .help-page .tabs { flex-wrap: wrap; overflow: visible; }
+    input[type=text], input[type=email], input[type=password], input[type=number],
+    input[type=url], input[type=date], input[type=search], select, textarea {
+        max-width: none;
+    }
+    .form-actions { position: sticky; bottom: 0; background: #fff; padding-bottom: 8px; }
+    .html-cache-page,
+    .settings-page,
+    .help-page .help-body { max-width: none; }
+    .html-cache-actions { flex-wrap: wrap; }
+    .theme-add-row,
+    .tag-compose-row { flex-wrap: wrap; }
+    .theme-add-row select,
+    .theme-add-row input[type=text],
+    .theme-add-row input[type=file] { max-width: none; flex: 1 1 100%; }
+    .media-lib-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .menu-item-point { min-width: 0; flex-wrap: wrap; }
+    .pagination { justify-content: center; }
+}
+@media (max-width: 480px) {
+    .topbar-front { padding-left: 8px; padding-right: 8px; font-size: 12px; }
+}

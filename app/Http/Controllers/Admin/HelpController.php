@@ -61,6 +61,7 @@ class HelpController extends Controller
             'logs' => $to('logs', 'admin.logs.index'),
             'adminUsers' => $to('admin_users', 'admin.admin-users.index'),
             'roles' => $to('roles', 'admin.roles.index'),
+            'profile' => route('admin.profile.edit'),
             'front' => url('/'),
             'helpAdmin' => route('admin.help', ['topic' => 'admin']),
             'helpThemes' => route('admin.help', ['topic' => 'themes']),

@@ -8,6 +8,7 @@ use App\Models\Cms\Site;
 use App\Support\CurrentSite;
 use App\Support\Result;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Hash;
 
 class AdminUserService
 {
@@ -137,5 +138,32 @@ class AdminUserService
         $user->delete();
 
         return Result::ok(null, '已删除「'.$name.'」');
+    }
+
+    public function updateSelfName(AdminUser $user, string $name): array
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return Result::fail('请填写名称');
+        }
+        $user->name = $name;
+        $user->save();
+
+        return Result::ok($user, '名称已保存');
+    }
+
+    public function changeOwnPassword(AdminUser $user, string $current, string $new): array
+    {
+        if (! Hash::check($current, $user->getAuthPassword())) {
+            return Result::fail('当前密码不正确');
+        }
+        if (Hash::check($new, $user->getAuthPassword())) {
+            return Result::fail('新密码不能和当前密码一样');
+        }
+
+        $user->password = $new;
+        $user->save();
+
+        return Result::ok($user, '密码已更新');
     }
 }

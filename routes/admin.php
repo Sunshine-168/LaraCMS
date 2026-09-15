@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\MemberGroupController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\ModelController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\QuickPanelController;
 use App\Http\Controllers\Admin\RecommendController;
 use App\Http\Controllers\Admin\RecycleController;
@@ -38,6 +39,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(['admin.auth', 'admin.log'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
         Route::post('site/switch', [SiteController::class, 'switch'])->name('site.switch');
         Route::get('help', [HelpController::class, 'index'])->name('help');
         Route::get('/', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard');

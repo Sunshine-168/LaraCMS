@@ -122,4 +122,22 @@ class AdminUserWorkbenchTest extends TestCase
             ->assertSessionHas('error');
         $this->assertNotNull($admin->fresh());
     }
+
+    public function test_last_login_ip_opens_logs(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->assertNotNull($admin);
+        $admin->forceFill([
+            'last_login_at' => now(),
+            'last_login_ip' => '203.0.113.8',
+        ])->save();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.admin-users.index'))
+            ->assertOk()
+            ->assertSee('上次登录')
+            ->assertSee('203.0.113.8')
+            ->assertSee('保留地址')
+            ->assertSee(route('admin.logs.index', ['ip' => '203.0.113.8']), false);
+    }
 }

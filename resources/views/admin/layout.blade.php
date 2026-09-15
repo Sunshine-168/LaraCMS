@@ -159,7 +159,7 @@
                         </select>
                     </form>
                 @endif
-                <a class="btn btn-sm" href="{{ url('/') }}" target="_blank" rel="noopener">看前台</a>
+                <a class="btn btn-sm topbar-front" href="{{ url('/') }}" target="_blank" rel="noopener">看前台</a>
                 @if($headerInbox['total'] > 0)
                     <a class="topbar-bell" href="{{ route('admin.dashboard') }}#dash-todos" title="{{ $headerInbox['hint'] }}">
                         <i class="fas fa-inbox"></i>
@@ -169,10 +169,11 @@
                 <details class="account-menu">
                     <summary class="user-chip">
                         <span class="avatar">{{ mb_substr($admin?->name ?? 'A', 0, 1) }}</span>
-                        <span>{{ $admin?->name }}</span>
+                        <span class="user-chip-name">{{ $admin?->name }}</span>
                     </summary>
                     <div class="account-menu-panel">
                         <p class="muted">{{ $admin?->adminRole?->name ?? '管理员' }}</p>
+                        <a class="account-menu-link" href="{{ route('admin.profile.edit') }}">修改密码</a>
                         <form method="post" action="{{ route('admin.logout') }}">
                             @csrf
                             <button class="btn btn-muted btn-sm" type="submit">退出登录</button>
@@ -211,12 +212,18 @@
     (function () {
         var side = document.getElementById('adminSide');
         var backdrop = document.getElementById('sideBackdrop');
-        function toggle() {
-            side?.classList.toggle('open');
-            backdrop?.classList.toggle('show');
+        function setOpen(open) {
+            side?.classList.toggle('open', open);
+            backdrop?.classList.toggle('show', open);
+            document.body.classList.toggle('side-open', open);
         }
-        document.getElementById('toggleSide')?.addEventListener('click', toggle);
-        backdrop?.addEventListener('click', toggle);
+        document.getElementById('toggleSide')?.addEventListener('click', function () {
+            setOpen(!side?.classList.contains('open'));
+        });
+        backdrop?.addEventListener('click', function () { setOpen(false); });
+        side?.querySelectorAll('a').forEach(function (a) {
+            a.addEventListener('click', function () { setOpen(false); });
+        });
     })();
 </script>
 @stack('scripts')
