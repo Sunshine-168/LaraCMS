@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin\AdminUser;
 use App\Models\Cms\Setting;
 use App\Models\Cms\Site;
+use App\Services\Cms\DiskHtmlService;
 use App\Support\CurrentSite;
 use Database\Seeders\CmsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,12 +39,12 @@ class HtmlCacheWorkbenchTest extends TestCase
             ->assertSee('开始生成')
             ->assertSee('启用，允许在后台生成静态文件')
             ->assertSee('未开启')
+            ->assertSee('上线怎么配 PHP、MySQL、nginx')
+            ->assertSee('CREATE DATABASE cms')
             ->assertDontSee('TTL（秒')
             ->assertDontSee('失效策略')
             ->assertDontSee('epoch')
             ->assertDontSee('CMS_DISK_HTML')
-            ->assertDontSee('php artisan')
-            ->assertDontSee('try_files')
             ->assertDontSee('需要时让运维打开后再来生成')
             ->assertDontSee('清空缓存</button>', false)
             ->assertDontSee('预热（首页/栏目/最近30篇）');
@@ -135,5 +136,40 @@ class HtmlCacheWorkbenchTest extends TestCase
             ->assertOk();
 
         \Illuminate\Support\Facades\File::deleteDirectory($root);
+    }
+
+    public function test_front_serves_generated_disk_html(): void
+    {
+        $root = storage_path('framework/testing/disk-html-serve');
+        config(['cms.disk_html.root' => $root]);
+        \Illuminate\Support\Facades\File::deleteDirectory($root);
+        \Illuminate\Support\Facades\File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'about');
+        \Illuminate\Support\Facades\File::put(
+            $root.DIRECTORY_SEPARATOR.'about'.DIRECTORY_SEPARATOR.'index.html',
+            '<html><body>DISK_HIT_MARKER</body></html>'
+        );
+        Setting::setValue('disk_html_enabled', '1');
+
+        $this->get('/about')
+            ->assertOk()
+            ->assertSee('DISK_HIT_MARKER')
+            ->assertHeader('X-CMS-Disk-Html', 'HIT')
+            ->assertDontSee('评论');
+
+        $member = \App\Models\Cms\Member::query()->where('email', 'member@example.com')->first();
+        $this->actingAs($member, 'member')
+            ->get('/about')
+            ->assertOk()
+            ->assertDontSee('DISK_HIT_MARKER');
+
+        \Illuminate\Support\Facades\File::deleteDirectory($root);
+    }
+
+    public function test_disk_html_skips_login_required_pages(): void
+    {
+        $urls = app(DiskHtmlService::class)->collectUrls();
+        $joined = implode("\n", $urls);
+        $this->assertStringNotContainsString('client-windows', $joined);
+        $this->assertContains('/', $urls);
     }
 }

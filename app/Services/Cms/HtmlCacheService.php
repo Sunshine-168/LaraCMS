@@ -222,7 +222,7 @@ class HtmlCacheService
 
         return match (true) {
             $reason === 'admin:clear' => '你手动清空了页面缓存',
-            $reason === 'admin:global-clear' => '在系统工具里清空了缓存',
+            $reason === 'admin:global-clear' => '清空了缓存',
             $reason === 'settings' => '改了站点设置',
             $reason === 'backup-restore' => '还原了备份',
             $reason === 'artisan:html-clear' => '用命令行清空了缓存',
@@ -261,8 +261,11 @@ class HtmlCacheService
             }
         });
 
-        Entry::query()->published()->with(['category', 'modelDef'])->orderByDesc('id')->limit($entryLimit)
+        Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])->orderByDesc('id')->limit($entryLimit)
             ->each(function (Entry $entry) use (&$urls) {
+                if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
+                    return;
+                }
                 foreach (Locale::codes() as $code) {
                     Locale::set($code);
                     $url = $entry->url;

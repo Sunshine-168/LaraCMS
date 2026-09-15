@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StatController;
 use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -172,6 +173,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.perm:settings')->group(function () {
             Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::get('themes', [ThemeController::class, 'index'])->name('themes.index');
+            Route::post('themes', [ThemeController::class, 'store'])->name('themes.store');
+            Route::post('themes/{theme}/use', [ThemeController::class, 'apply'])->name('themes.apply')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy')->where('theme', '[a-z][a-z0-9_-]*');
             Route::get('cache', [CacheController::class, 'edit'])->name('cache.edit');
             Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
             Route::post('cache/seed-demo', [CacheController::class, 'seedDemo'])->name('cache.seed-demo');

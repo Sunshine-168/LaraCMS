@@ -35,16 +35,24 @@ class AdminSiteAccess
     /** @return Collection<int, Site> */
     public static function manageableSites(?AdminUser $admin): Collection
     {
+        $memoKey = 'admin.manageable_sites.'.($admin?->id ?? 0);
+        $request = request();
+        if ($request && $request->attributes->has($memoKey)) {
+            return $request->attributes->get($memoKey);
+        }
+
         $q = Site::query()->where('is_active', true)->orderByDesc('is_default')->orderBy('id');
         $ids = self::allowedIds($admin);
         if ($ids === null) {
-            return $q->get();
+            $sites = $q->get();
+        } elseif ($ids === []) {
+            $sites = collect();
+        } else {
+            $sites = $q->whereIn('id', $ids)->get();
         }
-        if ($ids === []) {
-            return collect();
-        }
+        $request?->attributes->set($memoKey, $sites);
 
-        return $q->whereIn('id', $ids)->get();
+        return $sites;
     }
 
     public static function resolveForAdmin(?AdminUser $admin, ?int $preferredId = null): ?Site

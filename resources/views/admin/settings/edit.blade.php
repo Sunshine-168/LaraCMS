@@ -43,11 +43,13 @@
 
             <label for="theme">外观主题</label>
             <select id="theme" name="theme">
-                @foreach(config('cms.themes', []) as $themeKey)
-                    <option value="{{ $themeKey }}" @selected(old('theme', $s['theme'] ?? config('cms.theme')) === $themeKey)>{{ \App\Models\Cms\Site::themeLabel($themeKey) }}</option>
+                @foreach(app(\App\Services\Cms\ThemeCatalog::class)->all() as $themeItem)
+                    @if($themeItem['complete'])
+                    <option value="{{ $themeItem['slug'] }}" @selected(old('theme', $s['theme'] ?? config('cms.theme')) === $themeItem['slug'])>{{ $themeItem['name'] }}</option>
+                    @endif
                 @endforeach
             </select>
-            <p class="muted field-hint">决定首页长什么样。多站点时，各站还可以单独指定。</p>
+            <p class="muted field-hint">决定首页长什么样。<a href="{{ route('admin.themes.index') }}">复制或添加主题</a>。</p>
 
             <label class="inline">
                 <input type="checkbox" name="site_closed" value="1" @checked(old('site_closed', $s['site_closed'] ?? '0') == '1')>
@@ -136,8 +138,10 @@
             <label for="mobile_theme">手机外观</label>
             <select id="mobile_theme" name="mobile_theme">
                 <option value="">跟电脑一样</option>
-                @foreach(config('cms.themes', []) as $themeKey)
-                    <option value="{{ $themeKey }}" @selected(old('mobile_theme', $s['mobile_theme'] ?? '') === $themeKey)>{{ \App\Models\Cms\Site::themeLabel($themeKey) }}</option>
+                @foreach(app(\App\Services\Cms\ThemeCatalog::class)->all() as $themeItem)
+                    @if($themeItem['complete'])
+                        <option value="{{ $themeItem['slug'] }}" @selected(old('mobile_theme', $s['mobile_theme'] ?? '') === $themeItem['slug'])>{{ $themeItem['name'] }}</option>
+                    @endif
                 @endforeach
             </select>
             <label for="mobile_domain">手机专用域名</label>
@@ -245,6 +249,9 @@
             <button class="btn" type="submit">保存设置</button>
         </div>
     </form>
+    <div class="settings-pane settings-maintain{{ $tab === 'more' ? ' active' : '' }}" data-pane="more">
+        @include('admin.settings._maintain')
+    </div>
 @endsection
 @push('scripts')
 <script>
@@ -259,7 +266,7 @@
                 tabs.querySelectorAll('[data-tab]').forEach(function (item) {
                     item.classList.toggle('active', item === btn);
                 });
-                document.querySelectorAll('#settingsForm [data-pane]').forEach(function (pane) {
+                document.querySelectorAll('.settings-pane').forEach(function (pane) {
                     pane.classList.toggle('active', pane.getAttribute('data-pane') === tab);
                 });
                 var url = new URL(window.location.href);

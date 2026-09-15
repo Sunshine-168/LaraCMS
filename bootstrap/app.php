@@ -28,7 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             Route::middleware('web')->group(function () {
                 Route::get('/install', [InstallController::class, 'index'])->name('install');
+                Route::post('/install/probe', [InstallController::class, 'probe'])->name('install.probe');
+                Route::post('/install/task', [InstallController::class, 'task'])->name('install.task');
                 Route::post('/install', [InstallController::class, 'run'])->name('install.run');
+                Route::get('/install/done', [InstallController::class, 'done'])->name('install.done');
             });
             // API / 后台先注册，避免被前台 /{cat}/{slug} 吃掉
             Route::middleware('api')

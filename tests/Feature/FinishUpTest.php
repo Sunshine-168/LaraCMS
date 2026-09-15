@@ -32,11 +32,16 @@ class FinishUpTest extends TestCase
                 'admin_email' => 'owner@example.com',
                 'admin_password' => 'Secret#123',
                 'admin_password_confirmation' => 'Secret#123',
-            ])->assertRedirect('/admin/login');
+            ])->assertRedirect('/install/done');
 
             $this->assertFileExists($lock);
             $this->assertNotNull(AdminUser::query()->where('email', 'owner@example.com')->first());
             $this->assertSame(0, Category::query()->count());
+
+            $this->get('/install/done')
+                ->assertOk()
+                ->assertSee('已经装好')
+                ->assertSee('owner@example.com');
 
             $this->post('/admin/login', [
                 'email' => 'owner@example.com',

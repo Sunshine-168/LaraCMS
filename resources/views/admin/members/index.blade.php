@@ -23,26 +23,31 @@
 @endsection
 @section('content')
     <div class="entry-index member-index">
-        <form method="get" class="filter-bar member-find" action="{{ route('admin.members.index') }}">
-            @if($groupKey !== '')
-                <input type="hidden" name="group" value="{{ $groupKey }}">
-            @endif
-            @if($inactiveOnly)
-                <input type="hidden" name="off" value="1">
-            @endif
-            <input type="search" name="q" value="{{ $q }}" placeholder="搜索姓名、邮箱或手机" aria-label="搜索会员">
-            <button class="btn btn-muted" type="submit">搜索</button>
-        </form>
-        <div class="entry-status-row">
-            <a class="chip {{ $groupKey === '' && ! $inactiveOnly ? 'active' : '' }}" href="{{ route('admin.members.index', array_filter(['q' => $q ?: null])) }}">全部</a>
-            @foreach($groups as $g)
-                <a class="chip {{ $groupKey === (string) $g->id ? 'active' : '' }}" href="{{ $qs(['group' => (string) $g->id, 'off' => null]) }}">{{ $g->name }}</a>
-            @endforeach
-            <a class="chip {{ $groupKey === 'none' ? 'active' : '' }}" href="{{ $qs(['group' => 'none', 'off' => null]) }}">未分组</a>
-            <a class="chip {{ $inactiveOnly ? 'active' : '' }}" href="{{ $qs(['off' => $inactiveOnly ? null : '1']) }}">已停用</a>
-            @if($hasFilters)
-                <a class="chip" href="{{ route('admin.members.index') }}">清除筛选</a>
-            @endif
+        <div class="entry-find">
+            <form method="get" class="filter-bar member-find" action="{{ route('admin.members.index') }}">
+                @if($groupKey !== '')
+                    <input type="hidden" name="group" value="{{ $groupKey }}">
+                @endif
+                @if($inactiveOnly)
+                    <input type="hidden" name="off" value="1">
+                @endif
+                <input type="search" name="q" value="{{ $q }}" placeholder="搜索姓名、邮箱或手机" aria-label="搜索会员">
+                <button class="btn btn-muted" type="submit">搜索</button>
+            </form>
+            <div class="entry-status-row">
+                <a class="chip {{ $groupKey === '' && ! $inactiveOnly ? 'active' : '' }}" href="{{ route('admin.members.index', array_filter(['q' => $q ?: null])) }}">全部</a>
+                @foreach($groups as $g)
+                    <a class="chip {{ $groupKey === (string) $g->id ? 'active' : '' }}" href="{{ $qs(['group' => (string) $g->id, 'off' => null]) }}">{{ $g->name }}</a>
+                @endforeach
+                <a class="chip {{ $groupKey === 'none' ? 'active' : '' }}" href="{{ $qs(['group' => 'none', 'off' => null]) }}">未分组</a>
+                <a class="chip {{ $inactiveOnly ? 'active' : '' }}" href="{{ $qs(['off' => $inactiveOnly ? null : '1']) }}">已停用</a>
+                @if($hasFilters)
+                    <a class="chip" href="{{ route('admin.members.index') }}">清除筛选</a>
+                @endif
+                @if($members->isNotEmpty())
+                    <span class="muted entry-find-hint">点姓名去改资料。停用后不能登录前台，已留下的评论和稿还在。</span>
+                @endif
+            </div>
         </div>
 
         @if($members->isEmpty())
@@ -57,7 +62,6 @@
                 @endif
             </div>
         @else
-            <p class="muted recycle-lead">点姓名去改资料。停用后不能登录前台，已留下的评论和稿还在。</p>
             <table class="data">
                 <thead>
                 <tr>

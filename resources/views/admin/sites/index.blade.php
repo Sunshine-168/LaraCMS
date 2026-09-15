@@ -62,6 +62,7 @@
                             </div>
                         </td>
                         <td class="actions">
+                            <a class="btn btn-sm btn-muted" href="{{ route('admin.sites.edit', $site) }}">编辑</a>
                             @if($currentId !== (int) $site->id && $site->is_active)
                                 <form action="{{ route('admin.site.switch') }}" method="post">
                                     @csrf

@@ -76,19 +76,11 @@ class Site extends Model
 
     public static function themeLabel(?string $theme): string
     {
-        return match ($theme) {
-            'enterprise' => '企业',
-            'mobile' => '移动',
-            'download' => '下载站',
-            'nav' => '导航',
-            'source' => '源码',
-            'blog' => '博客',
-            'manga' => '漫画',
-            'sports' => '体育',
-            'default' => '默认',
-            '', null => '跟站点设置',
-            default => $theme,
-        };
+        if ($theme === '' || $theme === null) {
+            return '跟站点设置';
+        }
+
+        return app(\App\Services\Cms\ThemeCatalog::class)->label($theme);
     }
 
     public static function findByDomain(string $domain): ?self

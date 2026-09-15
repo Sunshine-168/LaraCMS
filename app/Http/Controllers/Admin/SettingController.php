@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Admin\SettingService;
+use App\Services\Admin\SiteBackupService;
 use App\Support\ThemeAppearance;
 use App\Support\UrlMode;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +13,10 @@ use Illuminate\View\View;
 
 class SettingController extends Controller
 {
-    public function __construct(private readonly SettingService $settingService) {}
+    public function __construct(
+        private readonly SettingService $settingService,
+        private readonly SiteBackupService $backups,
+    ) {}
 
     /** 站点设置页 */
     public function edit(Request $request): View
@@ -36,6 +40,7 @@ class SettingController extends Controller
         return view('admin.settings.edit', [
             'settings' => $this->settingService->getMany($keys),
             'tab' => $this->tabFrom($request),
+            'backups' => $this->backups->list(),
         ]);
     }
 

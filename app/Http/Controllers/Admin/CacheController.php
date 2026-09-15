@@ -9,7 +9,6 @@ use Database\Seeders\CmsSeeder;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CacheController extends Controller
@@ -19,11 +18,10 @@ class CacheController extends Controller
         private readonly SiteBackupService $backups,
     ) {}
 
-    public function edit(): View
+    /** 旧「系统工具」入口，改走主题页 */
+    public function edit(): RedirectResponse
     {
-        return view('admin.cache.edit', [
-            'backups' => $this->backups->list(),
-        ]);
+        return redirect()->route('admin.themes.index');
     }
 
     /** 一键清理配置 / 视图 / 应用 / 全页缓存 */
@@ -35,7 +33,7 @@ class CacheController extends Controller
         Artisan::call('route:clear');
         $this->htmlCache->forgetAll('admin:global-clear');
 
-        return redirect()->route('admin.cache.edit')->with('status', '缓存已清空');
+        return redirect()->route('admin.themes.index')->with('status', '缓存已清空');
     }
 
     /** 重新导入演示数据（幂等 updateOrCreate） */
@@ -48,17 +46,17 @@ class CacheController extends Controller
                 file_put_contents(storage_path('app/install.lock'), 'installed_at='.now()->toDateTimeString()."\nseed_demo=1\n");
             }
         } catch (\Throwable $e) {
-            return redirect()->route('admin.cache.edit')->with('error', '导入失败：'.$e->getMessage());
+            return $this->toSettingsMore()->with('error', '导入失败：'.$e->getMessage());
         }
 
-        return redirect()->route('admin.cache.edit')->with('status', '演示数据已更新');
+        return $this->toSettingsMore()->with('status', '演示数据已更新');
     }
 
     public function backup(): RedirectResponse
     {
         $result = $this->backups->create();
 
-        return redirect()->route('admin.cache.edit')
+        return $this->toSettingsMore()
             ->with($result['ok'] ? 'status' : 'error', $result['msg']);
     }
 
@@ -66,7 +64,7 @@ class CacheController extends Controller
     {
         $path = $this->backups->pathFor($file);
         if (! $path) {
-            return redirect()->route('admin.cache.edit')->with('error', '备份不存在');
+            return $this->toSettingsMore()->with('error', '备份不存在');
         }
 
         return response()->download($path, $file);
@@ -76,7 +74,12 @@ class CacheController extends Controller
     {
         $result = $this->backups->restore($file);
 
-        return redirect()->route('admin.cache.edit')
+        return $this->toSettingsMore()
             ->with($result['ok'] ? 'status' : 'error', $result['msg']);
+    }
+
+    protected function toSettingsMore(): RedirectResponse
+    {
+        return redirect()->route('admin.settings.edit', ['tab' => 'more']);
     }
 }

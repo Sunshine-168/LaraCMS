@@ -4,36 +4,50 @@ Laravel 13 建站 CMS：栏目、动态模型、推荐位、多站、会员、�
 
 MIT 许可。二次开发按 Laravel 常规做（Service / Event / 主题目录），**不会**做在线升级、OAuth、支付，也不会引入第二套模板标签。见 [CONTRIBUTING](CONTRIBUTING.md)、[SECURITY](SECURITY.md)。
 
-## 5 分钟试用
+## 安装
 
-**Docker**
+三种方式，装好后打开 http://127.0.0.1:8000/ 与 http://127.0.0.1:8000/admin/login。也可以打开 `/install` 在页面里切换「网页安装 / Laravel 命令行 / Docker」。
+
+### Docker
 
 ```bash
 docker compose up --build
 ```
 
-打开 http://127.0.0.1:8000/ 与 http://127.0.0.1:8000/admin/login  
-演示账号仅供本地：`admin@example.com` / `Admin@12345`（上线前必须改掉，见 SECURITY.md）。
+启动时会复制 `.env`、迁移、导入演示数据。本地演示账号见下文，上线前必须改掉。
 
-**安装向导**
+### Laravel 命令行
 
-1. `composer install && cp .env.example .env && php artisan key:generate`
-2. 打开 `/install`，填写超管邮箱和密码。不勾选演示数据也会创建管理员。
-3. 勾选演示数据时会导入栏目和示例内容。
+需要 PHP 8.2+ 和 Composer。默认 SQLite。
 
-**命令行**
+```bash
+composer install
+cp .env.example .env          # Windows: copy .env.example .env
+php artisan key:generate
+php artisan cms:install --email=you@example.com --password=YourPass#1
+php artisan serve
+```
+
+加 `--demo` 会导入示例栏目和文章。MySQL 先改 `.env` 里的 `DB_*` 再执行 `cms:install`。
+
+### 网页向导
 
 ```bash
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link
 php artisan serve
 ```
 
-- 前台：http://127.0.0.1:8000/ （英文：`/en`）
-- 后台：http://127.0.0.1:8000/admin/login
+打开 http://127.0.0.1:8000/install ，检查环境、选数据库、填写管理员。不勾选演示数据也会创建你自己的超管。上线时的 PHP / MySQL / nginx 在安装页「上线部署」，装好后也可在后台「运营 → 缓存」底部查看。
+
+**命令行一键种子（开发）**
+
+```bash
+php artisan migrate:fresh --seed
+php artisan storage:link
+```
+
 - 本地种子：超管 `admin@example.com` / `Admin@12345`；编辑 `editor@example.com` / `Editor@12345`（无发布权）；运营 `operator@example.com` / `Operator@12345`；会员 `member@example.com` / `Member@12345`；认证会员 `vip@example.com` / `Vip@12345`
 - 安装锁：`storage/app/install.lock`（删掉会再次进入 `/install`）
 
@@ -52,13 +66,21 @@ php artisan serve
 | `manga` | 漫画站 | manga / chapter |
 | `sports` | 体育资讯/信号目录 | signal |
 
-后台「设置 → 主题」切换 PC 主题；「移动主题」+ UA/域名分流可切到 `mobile`。体育主题仅作公开资讯/目录演示，请合法合规使用。
+后台「系统 → 主题」切换当前站外观；「设置 → 移动外观」+ UA/域名分流可切到 `mobile`。体育主题仅作公开资讯/目录演示，请合法合规使用。
+
+自己加主题不必改配置、也不用应用市场：
+
+1. 后台「系统 → 主题」从现有主题复制一套，只改新文件夹
+2. 或把目录放到 `resources/views/themes/{标识}/`，刷新主题页即出现
+3. 命令：`php artisan cms:theme-make brand --from=enterprise --name=品牌站`
+
+可选在主题根放 `theme.json`（`name` / `description`）。至少要有 `index/index.blade.php` 才能点「用于本站」；缺页时前台会回落到企业主题。
 
 ## 本地说明
 
 - 文档 ID 伪静态：`/e/{id}`（站点设置 `url_mode=entry_id`）
 - 后台 ACL：角色权限 + 管理员栏目授权；侧栏按 `canPerm` 过滤
-- 系统工具：清缓存 / 再导入演示数据 / **整站备份**（`admin/cache`，或 `php artisan cms:backup`）
+- 站点设置「更多」：再导入演示数据 / **整站备份**（或 `php artisan cms:backup`）。换主题后前台还是旧样子，在「系统 → 主题」清空缓存。
 
 ## 目录
 
@@ -141,7 +163,7 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 
 - **模型**：后台可复制、导出 JSON、导入 JSON（覆盖字段，不删文档）
 - **多栏目**：主栏目决定 URL；附加栏目勾选后也会出现在对应栏目列表/详情解析中
-- **磁盘 HTML**：默认关闭。设 `CMS_DISK_HTML=true` 后，后台可生成到 `public/html/site_{id}/…/index.html`（目录已 gitignore），需 nginx `try_files`；`php artisan serve` 不会读这些文件。命令 `cms:html-build` / `cms:html-purge-disk`
+- **磁盘 HTML**：默认关闭。后台打开并生成后写入 `public/html/site_{id}/…/index.html`。PHP 会直接吐这些文件；线上 nginx `try_files` 可拦在 PHP 前面更快。命令 `cms:html-build` / `cms:html-purge-disk`
 - **语言前缀**：非默认语言走 `/en/...`。会员/下载/外链/表单/评论/RSS 用 `cms_route()` 指向带前缀的同名路由；隐藏默认语言时中文仍无前缀
 - **会员密码**：最少 `PASSWORD_MIN_LENGTH`（默认 10）且需字母+数字；反向代理设 `TRUST_PROXIES`（默认空，不信任 `X-Forwarded-*`）
 - **预览 / 版本**：编辑页可刷新草稿预览链接；每次保存快照上一稿（最多 20 条）并可还原
@@ -151,7 +173,7 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 - **会员投稿**：模型勾选「允许会员投稿」+ 分组权限 `contribute`；会员保存草稿或提交待审，可填写该模型扩展字段；后台内容列表可筛待审并发布
 - **编辑审核**：角色权限 `publish`（超管默认有，编辑角色无）。无此权限不能发布，也不能把已发布改回草稿/待审
 - **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
-- **整站备份**：系统工具或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
+- **整站备份**：站点设置「更多」或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
 - **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入。`/sitemap.xml` 与 `/rss.xml` 在语言前缀下同样可用（如 `/en/sitemap.xml`）
 
 ## REST API

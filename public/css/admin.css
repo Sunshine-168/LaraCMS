@@ -1538,7 +1538,7 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
 .redirect-form input[type=text],
 .redirect-form select { width: 100%; max-width: none; }
 .member-index tr.is-off .entry-row-title { color: var(--muted); }
-.member-index .member-find { margin: 0 0 10px; }
+.member-index .member-find { margin: 0; }
 .member-form { max-width: 480px; }
 .member-form input[type=text],
 .member-form input[type=email],
@@ -1593,7 +1593,7 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     gap: 8px 16px;
     margin: 0 0 4px;
 }
-.html-cache-page { max-width: 640px; }
+.html-cache-page { max-width: 720px; }
 .html-cache-card {
     margin: 0 0 16px;
     padding: 16px 16px 12px;
@@ -1895,4 +1895,59 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     display: flex;
     flex-wrap: wrap;
     gap: 8px 16px;
+}
+.theme-compose-row select {
+    flex: 0 0 132px;
+    width: 132px;
+    max-width: 160px;
+    background: #fff;
+    border: 1px solid #c9cdd4;
+}
+.card-header form {
+    margin: 0;
+}
+.settings-maintain {
+    margin-top: 8px;
+}
+.settings-maintain .html-cache-card:first-child {
+    margin-top: 0;
+}
+.deploy-box summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+.deploy-box .deploy-guide { margin-top: 12px; }
+.deploy-guide h3 {
+    margin: 16px 0 6px;
+    font-size: 14px;
+}
+.deploy-guide .muted { color: var(--muted); }
+.deploy-guide .hint { color: var(--muted); font-size: 13px; }
+.deploy-guide .code {
+    position: relative;
+    margin: 8px 0 10px;
+    background: #1e2228;
+    color: #e8eaed;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.deploy-guide .code pre {
+    margin: 0;
+    padding: 14px 16px 16px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.55;
+}
+.deploy-guide .code code { font-family: Consolas, "SF Mono", Menlo, monospace; }
+.deploy-guide .code .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: 0;
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
 }

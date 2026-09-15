@@ -35,12 +35,12 @@ class SiteWorkbenchTest extends TestCase
             ->assertSee($site->name)
             ->assertSee($site->domain)
             ->assertSee('默认')
+            ->assertSee('编辑')
             ->assertSee(route('admin.sites.edit', $site), false)
             ->assertDontSee('主题覆盖')
             ->assertDontSee('前台按访问域名匹配')
             ->assertDontSee('>状态</th>', false)
-            ->assertDontSee('>默认</th>', false)
-            ->assertDontSee('>编辑</a>', false);
+            ->assertDontSee('>默认</th>', false);
     }
 
     public function test_quick_add_toggle_and_make_default(): void

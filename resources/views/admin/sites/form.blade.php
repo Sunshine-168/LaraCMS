@@ -25,8 +25,8 @@
         <label for="site-theme">外观主题</label>
         <select id="site-theme" name="theme">
             <option value="">跟站点设置走</option>
-            @foreach($themes as $themeKey)
-                <option value="{{ $themeKey }}" @selected(old('theme', $site->theme) === $themeKey)>{{ \App\Models\Cms\Site::themeLabel($themeKey) }}</option>
+            @foreach($themes as $themeItem)
+                <option value="{{ $themeItem['slug'] }}" @selected(old('theme', $site->theme) === $themeItem['slug'])>{{ $themeItem['name'] }}</option>
             @endforeach
         </select>
         <p class="muted field-hint">留空则用该站「站点设置」里选的主题。这里填了会盖过去。</p>

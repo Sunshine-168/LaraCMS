@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', '后台') - CMS</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.net/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ @filemtime(public_path('css/admin.css')) ?: '1' }}">
     @stack('styles')
 </head>
@@ -112,7 +112,7 @@
                 @endif
                 @if($can('settings'))
                     <x-side-link :href="route('admin.settings.edit')" icon="cog" label="设置" :active="request()->routeIs('admin.settings.*')" />
-                    <x-side-link :href="route('admin.cache.edit')" icon="tools" label="工具" :active="request()->routeIs('admin.cache.*')" />
+                    <x-side-link :href="route('admin.themes.index')" icon="palette" label="主题" :active="request()->routeIs('admin.themes.*')" />
                 @endif
                 @if($can('locales'))
                     <x-side-link :href="route('admin.locales.index')" icon="language" label="语言" :active="request()->routeIs('admin.locales.*')" />

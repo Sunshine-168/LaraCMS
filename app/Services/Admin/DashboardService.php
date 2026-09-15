@@ -11,9 +11,12 @@ use App\Models\Cms\Setting;
 use App\Models\Cms\StatHit;
 use App\Services\Cms\HtmlCacheService;
 use App\Services\Cms\Stats\StatService;
+use App\Services\Cms\ThemeCatalog;
 use App\Support\AdminCategoryScope;
 use App\Support\CmsRuntime;
+use App\Support\CurrentSite;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class DashboardService
@@ -85,16 +88,34 @@ class DashboardService
     /** @return array{entries:int,forms:int,comments:int,total:int} */
     public function todoCounts(AdminUser $admin, array $modules): array
     {
-        $entries = ! empty($modules['content']) ? $this->entries->pendingCount() : 0;
-        $forms = $admin->canPerm('form_submissions') ? $this->forms->unreadCount() : 0;
-        $comments = $admin->canPerm('comments') ? $this->comments->pendingCount() : 0;
+        $siteId = CurrentSite::idOrDefault() ?? 0;
+        $epoch = (int) Cache::get(self::inboxEpochKey($siteId), 1);
+        $key = "admin.inbox.{$siteId}.{$admin->id}.{$epoch}";
 
-        return [
-            'entries' => $entries,
-            'forms' => $forms,
-            'comments' => $comments,
-            'total' => $entries + $forms + $comments,
-        ];
+        return Cache::remember($key, 45, function () use ($admin, $modules) {
+            $entries = ! empty($modules['content']) ? $this->entries->pendingCount() : 0;
+            $forms = $admin->canPerm('form_submissions') ? $this->forms->unreadCount() : 0;
+            $comments = $admin->canPerm('comments') ? $this->comments->pendingCount() : 0;
+
+            return [
+                'entries' => $entries,
+                'forms' => $forms,
+                'comments' => $comments,
+                'total' => $entries + $forms + $comments,
+            ];
+        });
+    }
+
+    public static function bustInbox(?int $siteId = null): void
+    {
+        $siteId ??= CurrentSite::idOrDefault() ?? 0;
+        $key = self::inboxEpochKey($siteId);
+        Cache::put($key, ((int) Cache::get($key, 1)) + 1, 86400);
+    }
+
+    protected static function inboxEpochKey(int $siteId): string
+    {
+        return 'admin.inbox.epoch.'.$siteId;
     }
 
     /**
@@ -369,7 +390,7 @@ class DashboardService
         $schedule = $this->scheduleHint($mode);
 
         return [
-            'theme' => (string) Setting::getValue('theme', config('cms.theme')),
+            'theme' => app(ThemeCatalog::class)->label((string) Setting::getValue('theme', config('cms.theme'))),
             'cache' => $cacheOn,
             'collect_mode' => $mode,
             'last_run' => $latest?->last_run_at?->toDateTimeString(),

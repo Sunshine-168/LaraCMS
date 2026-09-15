@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cms\Site;
 use App\Services\Admin\SiteService;
+use App\Services\Cms\ThemeCatalog;
 use App\Support\AdminSiteAccess;
 use App\Support\CurrentSite;
 use Illuminate\Http\RedirectResponse;
@@ -13,8 +14,10 @@ use Illuminate\View\View;
 
 class SiteController extends Controller
 {
-    public function __construct(private readonly SiteService $sites)
-    {
+    public function __construct(
+        private readonly SiteService $sites,
+        private readonly ThemeCatalog $themes,
+    ) {
     }
 
     public function index(): View
@@ -29,7 +32,7 @@ class SiteController extends Controller
     {
         return view('admin.sites.form', [
             'site' => new Site(['is_active' => true]),
-            'themes' => (array) config('cms.themes', []),
+            'themes' => $this->themeOptions(),
         ]);
     }
 
@@ -55,7 +58,7 @@ class SiteController extends Controller
     {
         return view('admin.sites.form', [
             'site' => $site,
-            'themes' => (array) config('cms.themes', []),
+            'themes' => $this->themeOptions(),
             'isCurrent' => (int) CurrentSite::id() === (int) $site->id,
         ]);
     }
@@ -115,5 +118,19 @@ class SiteController extends Controller
         $request->session()->put('admin_site_id', $site->id);
 
         return back()->with('status', '正在改：'.$site->name);
+    }
+
+    /** @return list<array{slug:string,name:string}> */
+    protected function themeOptions(): array
+    {
+        $out = [];
+        foreach ($this->themes->all() as $item) {
+            if (! $item['complete']) {
+                continue;
+            }
+            $out[] = ['slug' => $item['slug'], 'name' => $item['name']];
+        }
+
+        return $out;
     }
 }

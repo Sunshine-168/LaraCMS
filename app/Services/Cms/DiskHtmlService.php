@@ -27,6 +27,64 @@ class DiskHtmlService
         return (bool) config('cms.disk_html.enabled', false);
     }
 
+    /** 已生成的磁盘 HTML，给本机 / PHP 直接吐文件用 */
+    public function htmlForRequest(Request $request): ?string
+    {
+        if (! $this->canServe($request)) {
+            return null;
+        }
+        $path = '/'.ltrim($request->path(), '/');
+        if ($path === '//') {
+            $path = '/';
+        }
+        $file = $this->pathForUrl($this->rootPath(), $path);
+        if (! is_file($file)) {
+            return null;
+        }
+        $html = File::get($file);
+
+        return is_string($html) && $html !== '' ? $html : null;
+    }
+
+    public function canServe(Request $request): bool
+    {
+        if (! $this->enabled()) {
+            return false;
+        }
+        if (! in_array($request->method(), ['GET', 'HEAD'], true)) {
+            return false;
+        }
+        if ($request->ajax() || $request->expectsJson()) {
+            return false;
+        }
+        if (auth('member')->check()) {
+            return false;
+        }
+
+        $path = trim($request->path(), '/');
+        $first = $path === '' ? '' : explode('/', $path)[0];
+        foreach ((array) config('cms.html_cache.exclude_prefixes', []) as $prefix) {
+            if ($first === $prefix || str_starts_with($path, $prefix.'/')) {
+                return false;
+            }
+        }
+        foreach ((array) config('cms.html_cache.exclude_path_prefixes', []) as $prefix) {
+            if ($first === $prefix || str_starts_with($path, $prefix.'/')) {
+                return false;
+            }
+        }
+        foreach ($request->query() as $key => $value) {
+            $key = strtolower((string) $key);
+            if (in_array($key, ['page', 'p'], true) || str_starts_with($key, 'utm_')) {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
     public function rootPath(): string
     {
         $override = config('cms.disk_html.root');
@@ -46,7 +104,7 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int}
+     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function publicJob(): array
     {
@@ -102,9 +160,9 @@ class DiskHtmlService
         $fail = 0;
         $files = [];
         foreach ($urls as $urlPath) {
-            $file = $this->writeUrl($urlPath);
-            if ($file) {
-                $files[] = $file;
+            $result = $this->capture($urlPath);
+            if ($result['file']) {
+                $files[] = $result['file'];
                 $ok++;
             } else {
                 $fail++;
@@ -115,7 +173,7 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int}
+     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function startJob(int $entryLimit = 0): array
     {
@@ -138,7 +196,7 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int}
+     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function stepJob(int $chunk = 6): array
     {
@@ -155,10 +213,12 @@ class DiskHtmlService
             $url = (string) ($urls[$i] ?? '');
             $job['current'] = $url;
             $job['message'] = $url === '' ? '正在写…' : '正在写 '.$url;
-            if ($url !== '' && $this->writeUrl($url)) {
+            $result = $url === '' ? ['file' => null, 'error' => '空地址'] : $this->capture($url);
+            if ($result['file']) {
                 $job['ok']++;
             } else {
                 $job['fail']++;
+                $job['errors'][] = $result['error'] ?? $url;
             }
             $job['index'] = $i + 1;
         }
@@ -169,7 +229,11 @@ class DiskHtmlService
             $job['finished_at'] = now()->toIso8601String();
             $job['message'] = '写好了 '.$job['ok'].' 个文件';
             if ((int) $job['fail'] > 0) {
+                $shown = array_slice($job['errors'] ?? [], 0, 5);
                 $job['message'] .= '，'.$job['fail'].' 页没写上';
+                if ($shown !== []) {
+                    $job['message'] .= '：'.implode('、', $shown);
+                }
             }
             unset($job['urls']);
         }
@@ -180,7 +244,7 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int}
+     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function cancelJob(): array
     {
@@ -217,11 +281,11 @@ class DiskHtmlService
             }
         });
 
-        $entries = Entry::query()->published()->with(['category', 'modelDef'])
+        $entries = Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])
             ->orderByDesc('published_at');
         $entries->limit($entryLimit > 0 ? $entryLimit : 5000);
         $entries->each(function (Entry $entry) use (&$urls) {
-            if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link') {
+            if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
                 return;
             }
             foreach (Locale::codes() as $code) {
@@ -243,9 +307,15 @@ class DiskHtmlService
 
     protected function writeUrl(string $urlPath): ?string
     {
+        return $this->capture($urlPath)['file'];
+    }
+
+    /** @return array{file:?string,error:?string} */
+    protected function capture(string $urlPath): array
+    {
         $urlPath = $this->normalizeUrl($urlPath);
         if ($urlPath === null) {
-            return null;
+            return ['file' => null, 'error' => '地址无效'];
         }
 
         $site = CurrentSite::model();
@@ -262,15 +332,15 @@ class DiskHtmlService
             $html = $response->getContent();
             $kernel->terminate($request, $response);
             if ($status !== 200 || ! is_string($html) || $html === '') {
-                return null;
+                return ['file' => null, 'error' => $urlPath.'（HTTP '.$status.'）'];
             }
             $file = $this->pathForUrl($this->rootPath(), $urlPath);
             File::ensureDirectoryExists(dirname($file));
             File::put($file, $html);
 
-            return $file;
-        } catch (\Throwable) {
-            return null;
+            return ['file' => $file, 'error' => null];
+        } catch (\Throwable $e) {
+            return ['file' => null, 'error' => $urlPath.'（'.$e->getMessage().'）'];
         } finally {
             if ($site) {
                 CurrentSite::set($site);
@@ -324,6 +394,7 @@ class DiskHtmlService
             'total' => 0,
             'ok' => 0,
             'fail' => 0,
+            'errors' => [],
             'current' => '',
             'message' => '',
             'started_at' => null,
@@ -347,7 +418,7 @@ class DiskHtmlService
 
     /**
      * @param  array<string, mixed>  $job
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int}
+     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     protected function toPublic(array $job): array
     {
@@ -364,6 +435,7 @@ class DiskHtmlService
             'current' => (string) ($job['current'] ?? ''),
             'message' => (string) ($job['message'] ?? ''),
             'file_count' => $this->fileCount(),
+            'errors' => array_values(array_slice($job['errors'] ?? [], 0, 10)),
         ];
     }
 }

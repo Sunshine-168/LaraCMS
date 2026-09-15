@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Cms\Site;
+use App\Services\Cms\ThemeCatalog;
 use App\Support\Result;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,9 @@ class SiteService
             ? ! empty($input['is_default'])
             : ($site->exists ? (bool) $site->is_default : false);
         $theme = trim((string) ($input['theme'] ?? ''));
+        if ($theme !== '' && ! app(ThemeCatalog::class)->exists($theme)) {
+            return Result::fail('没有这套主题');
+        }
         $site->theme = $theme !== '' ? $theme : null;
         $site->remark = trim((string) ($input['remark'] ?? '')) ?: null;
 

@@ -18,7 +18,8 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
-/public/html
+/public/html/*
+!/public/html/.gitignore
 /storage/*.key
 /storage/pail
 /storage/framework/sessions/*

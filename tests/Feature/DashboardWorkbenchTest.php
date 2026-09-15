@@ -167,6 +167,21 @@ class DashboardWorkbenchTest extends TestCase
             ->assertDontSee('fa-database');
     }
 
+    public function test_second_admin_page_reuses_inbox_counts(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk();
+
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        $this->get(route('admin.tags.index'))->assertOk();
+        $sql = strtolower(collect(\Illuminate\Support\Facades\DB::getQueryLog())->pluck('query')->implode("\n"));
+        $this->assertStringNotContainsString('cms_form_submissions', $sql);
+        $this->assertStringNotContainsString('cms_comments', $sql);
+    }
+
     public function test_topbar_hides_cache_and_single_site_switcher(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();

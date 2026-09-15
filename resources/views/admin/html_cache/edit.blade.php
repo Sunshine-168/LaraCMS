@@ -85,7 +85,7 @@
                     <span class="badge badge-off">未打开</span>
                 @endif
             </div>
-            <p class="muted field-hint">把栏目和文章写成文件，访问多的站点会更快。生成时请不要关掉这个页面，进度会显示在下面。</p>
+            <p class="muted field-hint">把栏目和文章写成文件。生成后前台会直接用这些文件，不必再渲染模板。本机开发也会读。</p>
             <form method="post" action="{{ route('admin.html-cache.disk-update') }}">
                 @csrf
                 @method('PUT')
@@ -115,7 +115,7 @@
             </div>
             <p class="muted field-hint">
                 @if($diskEnabled)
-                    会生成首页、栏目和已发布的文章。页面多时会分批写，可以看到进度。
+                    会生成首页、栏目和已发布的文章。页面多时会分批写。生成时请不要关掉这个页面。
                 @else
                     打开并保存后，才能生成。
                 @endif
@@ -129,6 +129,11 @@
                 <p class="muted" id="diskHtmlMsg" style="margin:8px 0 0">{{ $diskJob['message'] ?? '' }}</p>
             </div>
         </div>
+
+        <details class="html-cache-card deploy-box">
+            <summary>上线怎么配 PHP、MySQL、nginx</summary>
+            @include('install._deploy', ['siteId' => \App\Support\CurrentSite::idOrDefault() ?? 1, 'compact' => true])
+        </details>
     </div>
 @endsection
 @push('scripts')
@@ -236,5 +241,15 @@
         stopBtn && (stopBtn.hidden = true);
     }
 })();
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var code = btn.parentElement && btn.parentElement.querySelector('code');
+        if (!code || !navigator.clipboard) return;
+        navigator.clipboard.writeText(code.innerText).then(function () {
+            btn.textContent = '已复制';
+            setTimeout(function () { btn.textContent = '复制'; }, 1500);
+        });
+    });
+});
 </script>
 @endpush

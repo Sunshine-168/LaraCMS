@@ -8,6 +8,10 @@ return [
         'zh_cn' => ['label' => '简体中文', 'native' => '简体中文'],
         'en' => ['label' => 'English', 'native' => 'English'],
     ],
+    /*
+    | 自带主题标识。实际可用主题以 resources/views/themes 目录为准，
+    | 后台「系统 → 主题」可复制或丢文件夹添加。
+    */
     'themes' => [
         'enterprise', 'mobile', 'download', 'nav', 'source',
         'blog', 'manga', 'sports', 'default',
