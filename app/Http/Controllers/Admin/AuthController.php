@@ -38,7 +38,8 @@ class AuthController extends Controller
         $result = $this->authService->login(
             $data['email'],
             $data['password'],
-            $request->boolean('remember')
+            $request->boolean('remember'),
+            $request->ip()
         );
 
         if (! $result['ok']) {

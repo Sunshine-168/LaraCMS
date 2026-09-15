@@ -1,6 +1,41 @@
-# 综合 Laravel CMS（JYS 分层 + Blade 模板标签）
+# LaraCMS
 
-Controller → Service → Model。能力对标「栏目 + 动态模型 + 推荐位 + 主题」，前台只用 **Blade `@cms*` 标签**（不用 `{hkcms:}`），不依赖 Filament，不迁旧库数据。
+Laravel 13 建站 CMS：栏目、动态模型、推荐位、多站、会员、采集、静态化。前台只用 Blade **`@cms*`** 标签，不依赖 Filament，没有应用市场。
+
+MIT 许可。二次开发按 Laravel 常规做（Service / Event / 主题目录），**不会**做在线升级、OAuth、支付，也不会引入第二套模板标签。见 [CONTRIBUTING](CONTRIBUTING.md)、[SECURITY](SECURITY.md)。
+
+## 5 分钟试用
+
+**Docker**
+
+```bash
+docker compose up --build
+```
+
+打开 http://127.0.0.1:8000/ 与 http://127.0.0.1:8000/admin/login  
+演示账号仅供本地：`admin@example.com` / `Admin@12345`（上线前必须改掉，见 SECURITY.md）。
+
+**安装向导**
+
+1. `composer install && cp .env.example .env && php artisan key:generate`
+2. 打开 `/install`，填写超管邮箱和密码。不勾选演示数据也会创建管理员。
+3. 勾选演示数据时会导入栏目和示例内容。
+
+**命令行**
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan storage:link
+php artisan serve
+```
+
+- 前台：http://127.0.0.1:8000/ （英文：`/en`）
+- 后台：http://127.0.0.1:8000/admin/login
+- 本地种子：超管 `admin@example.com` / `Admin@12345`；编辑 `editor@example.com` / `Editor@12345`（无发布权）；运营 `operator@example.com` / `Operator@12345`；会员 `member@example.com` / `Member@12345`；认证会员 `vip@example.com` / `Vip@12345`
+- 安装锁：`storage/app/install.lock`（删掉会再次进入 `/install`）
 
 ## 站点形态（主题包）
 
@@ -19,33 +54,11 @@ Controller → Service → Model。能力对标「栏目 + 动态模型 + 推荐
 
 后台「设置 → 主题」切换 PC 主题；「移动主题」+ UA/域名分流可切到 `mobile`。体育主题仅作公开资讯/目录演示，请合法合规使用。
 
-## 快速开始
+## 本地说明
 
-**方式 A：安装向导**
-1. 配好 `.env` 后 `composer install && php artisan key:generate`
-2. 浏览器打开 `/install`，填写超管邮箱/密码。不勾选演示数据也会创建管理员，可随后登录后台。
-3. 勾选演示数据时会导入栏目/示例内容；演示超管为 `admin@example.com` / `Admin@12345`。
-
-**方式 B：命令行**
-```bash
-composer install
-cp .env.example .env   # 按需
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link
-php artisan serve
-```
-
-- 前台：http://127.0.0.1:8000/
-- 英文：http://127.0.0.1:8000/en
 - 文档 ID 伪静态：`/e/{id}`（站点设置 `url_mode=entry_id`）
-- 后台：http://127.0.0.1:8000/admin/login  
-- 超管：`admin@example.com` / `Admin@12345`（`is_super`，全部权限）
-- 编辑：`editor@example.com` / `Editor@12345`（内容模块权限，**无发布权限**，保存为待审由超管发布）
-- 前台会员：`member@example.com` / `Member@12345`（会员门槛下载）
 - 后台 ACL：角色权限 + 管理员栏目授权；侧栏按 `canPerm` 过滤
 - 系统工具：清缓存 / 再导入演示数据 / **整站备份**（`admin/cache`，或 `php artisan cms:backup`）
-- 安装锁：`storage/app/install.lock`（删除后会再次进入 `/install`）
 
 ## 目录
 
@@ -261,7 +274,7 @@ php artisan cms:collect --sync
 
 ## 明确不做
 
-前台模板标签只有 `@cms*`，**不会**解析 `{hkcms:}`。下列能力也**不会**做：
+前台模板标签只有 `@cms*`。下列能力也**不会**做：
 
 - 应用中心 / 在线升级、运行时按模型建物理表、Filament、旧库数据导入、遗留 `cms_pages` / `cms_posts` 表
 - 自由伪静态规则矩阵、短信、微信/OAuth 登录、支付

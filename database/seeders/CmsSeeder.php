@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Admin\AdminRole;
 use App\Models\Admin\AdminUser;
 use App\Models\Cms\Category;
+use App\Models\Cms\CmsFlag;
 use App\Models\Cms\CmsForm;
 use App\Models\Cms\Collector;
 use App\Models\Cms\ContentModel;
@@ -60,6 +61,29 @@ class CmsSeeder extends Seeder
                 'password' => 'Member@12345',
                 'is_active' => true,
                 'group_id' => $defaultGroup?->id,
+                'phone' => '13800000000',
+                'bio' => '本地演示账号，前台登录用。',
+            ]
+        );
+
+        $vipGroup = MemberGroup::query()->updateOrCreate(
+            ['site_id' => $site->id, 'slug' => 'vip'],
+            [
+                'name' => '认证会员',
+                'sort' => 10,
+                'is_active' => true,
+                'permissions' => MemberGroup::permissionKeys(),
+            ]
+        );
+        Member::query()->updateOrCreate(
+            ['site_id' => $site->id, 'email' => 'vip@example.com'],
+            [
+                'name' => '认证会员',
+                'password' => 'Vip@12345',
+                'is_active' => true,
+                'group_id' => $vipGroup->id,
+                'phone' => '13900000000',
+                'bio' => '带投稿和下载权限的演示会员。',
             ]
         );
 
@@ -75,6 +99,7 @@ class CmsSeeder extends Seeder
         Setting::setValue('comments_auto_approve', '0');
         Setting::setValue('comments_rate_seconds', '60');
 
+        $this->seedFlags();
         $models = $this->seedModels();
         $cats = $this->seedCategories($models);
         $this->seedEntries($models, $cats);
@@ -83,6 +108,7 @@ class CmsSeeder extends Seeder
         $this->seedForms();
         $this->seedTags($models);
         $this->seedMenus($cats);
+        $this->refreshSearchText();
 
         if (! is_file(storage_path('app/install.lock'))) {
             file_put_contents(storage_path('app/install.lock'), 'installed_at='.now()->toDateTimeString()."\nseed_demo=1\n");
@@ -255,6 +281,21 @@ class CmsSeeder extends Seeder
             $i++;
         }
 
+        $cats['industry'] = Category::query()->updateOrCreate(
+            ['id' => 13],
+            [
+                'title' => ['zh_cn' => '行业资讯', 'en' => 'Industry'],
+                'slug' => ['zh_cn' => 'industry', 'en' => 'industry'],
+                'type' => 'list',
+                'model_id' => $models['article']->id,
+                'parent_id' => $cats['news']->id,
+                'is_menu' => false,
+                'page_size' => 10,
+                'sort_order' => 5,
+                'status' => 'published',
+            ]
+        );
+
         return $cats;
     }
 
@@ -373,6 +414,7 @@ class CmsSeeder extends Seeder
             'content' => ['zh_cn' => "这是博客示例正文。\n切换主题为 blog 即可。", 'en' => "Sample blog body.\nSwitch theme to blog."],
             'status' => 'published',
             'published_at' => now(),
+            'views' => 128,
             'flags' => 'recommend',
         ]);
 
@@ -418,6 +460,18 @@ class CmsSeeder extends Seeder
             'status' => 'published',
             'published_at' => now(),
             'flags' => 'live',
+        ]);
+
+        Entry::query()->updateOrCreate(['id' => 13], [
+            'category_id' => $cats['industry']->id,
+            'model_id' => $models['article']->id,
+            'title' => ['zh_cn' => '行业周报', 'en' => 'Industry weekly'],
+            'slug' => ['zh_cn' => 'industry-weekly', 'en' => 'industry-weekly'],
+            'excerpt' => ['zh_cn' => '挂在新闻中心下面的子栏目示例。', 'en' => 'Child category sample.'],
+            'content' => ['zh_cn' => '这是子栏目里的一篇稿，用来演示栏目树。', 'en' => 'Nested category article.'],
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+            'views' => 36,
         ]);
     }
 
@@ -497,6 +551,19 @@ class CmsSeeder extends Seeder
                 ],
             ]
         );
+
+        $notice = Recommend::query()->updateOrCreate(
+            ['site_id' => CurrentSite::id(), 'name' => 'home_notice'],
+            ['title' => '首页公告', 'type' => 'html', 'is_active' => true]
+        );
+        RecommendItem::query()->where('recommend_id', $notice->id)->delete();
+        RecommendItem::query()->create([
+            'recommend_id' => $notice->id,
+            'title' => ['zh_cn' => '公告', 'en' => 'Notice'],
+            'html' => '<p>演示站公告：后台改内容后前台会跟着变。</p>',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
     }
 
     private function seedForms(): void
@@ -511,6 +578,7 @@ class CmsSeeder extends Seeder
                     ['name' => 'message', 'label' => '留言', 'type' => 'textarea'],
                 ],
                 'is_active' => true,
+                'notify_email' => 'hello@example.com',
             ]
         );
     }
@@ -524,8 +592,28 @@ class CmsSeeder extends Seeder
                 'slug' => ['zh_cn' => 'laravel', 'en' => 'laravel'],
             ]
         );
-        if ($entry = Entry::query()->find(7)) {
-            $entry->tags()->sync([$tag->id]);
+        $php = Tag::query()->updateOrCreate(
+            ['id' => 2],
+            [
+                'title' => ['zh_cn' => '开源', 'en' => 'Open source'],
+                'slug' => ['zh_cn' => 'opensource', 'en' => 'opensource'],
+            ]
+        );
+        $cms = Tag::query()->updateOrCreate(
+            ['id' => 3],
+            [
+                'title' => ['zh_cn' => '建站', 'en' => 'CMS'],
+                'slug' => ['zh_cn' => 'jianzhan', 'en' => 'cms'],
+            ]
+        );
+        if ($launch = Entry::query()->find(2)) {
+            $launch->tags()->sync([$tag->id, $php->id, $cms->id]);
+        }
+        if ($blog = Entry::query()->find(9)) {
+            $blog->tags()->syncWithoutDetaching([$cms->id]);
+        }
+        if ($source = Entry::query()->find(7)) {
+            $source->tags()->syncWithoutDetaching([$tag->id]);
         }
     }
 
@@ -551,6 +639,56 @@ class CmsSeeder extends Seeder
                 'sort_order' => $sort++,
                 'is_active' => true,
             ]);
+        }
+
+        $footer = Menu::query()->updateOrCreate(
+            ['site_id' => CurrentSite::id(), 'location' => 'footer'],
+            ['name' => '页脚', 'is_active' => true]
+        );
+        MenuItem::query()->where('menu_id', $footer->id)->delete();
+        MenuItem::query()->create([
+            'menu_id' => $footer->id,
+            'title' => ['zh_cn' => '关于我们', 'en' => 'About'],
+            'type' => 'category',
+            'reference_id' => $cats['about']->id,
+            'url' => $cats['about']->frontUrl(),
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+        MenuItem::query()->create([
+            'menu_id' => $footer->id,
+            'title' => ['zh_cn' => '联系', 'en' => 'Contact'],
+            'type' => 'url',
+            'url' => '/form/contact',
+            'sort_order' => 10,
+            'is_active' => true,
+        ]);
+    }
+
+    private function seedFlags(): void
+    {
+        foreach ([
+            ['name' => 'about', 'title' => '关于', 'sort' => 50],
+            ['name' => 'live', 'title' => '直播', 'sort' => 60],
+        ] as $row) {
+            CmsFlag::query()->updateOrCreate(
+                ['site_id' => CurrentSite::id(), 'name' => $row['name']],
+                ['title' => $row['title'], 'sort' => $row['sort'], 'is_active' => true]
+            );
+        }
+    }
+
+    private function refreshSearchText(): void
+    {
+        Entry::query()->orderBy('id')->each(function (Entry $entry) {
+            $entry->rebuildSearchText();
+            $entry->saveQuietly();
+        });
+        if ($launch = Entry::query()->find(2)) {
+            $blog = Category::query()->get()->first(fn (Category $c) => $c->t('slug') === 'blog');
+            if ($blog) {
+                $launch->categories()->syncWithoutDetaching(array_filter([$launch->category_id, $blog->id]));
+            }
         }
     }
 }

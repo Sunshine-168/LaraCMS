@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Database\Seeders\AdminBootstrapSeeder;
 use Database\Seeders\CmsSeeder;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -65,6 +66,7 @@ class InstallController extends Controller
             Artisan::call('db:seed', ['--class' => AdminBootstrapSeeder::class, '--force' => true]);
             if ($request->boolean('seed_demo')) {
                 Artisan::call('db:seed', ['--class' => CmsSeeder::class, '--force' => true]);
+                Artisan::call('db:seed', ['--class' => DemoDataSeeder::class, '--force' => true]);
             }
             file_put_contents(
                 storage_path('app/install.lock'),

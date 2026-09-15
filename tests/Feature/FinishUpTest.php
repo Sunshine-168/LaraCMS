@@ -42,6 +42,9 @@ class FinishUpTest extends TestCase
                 'email' => 'owner@example.com',
                 'password' => 'Secret#123',
             ])->assertRedirect();
+            $owner = AdminUser::query()->where('email', 'owner@example.com')->first();
+            $this->assertNotNull($owner?->last_login_at);
+            $this->assertNotNull($owner->last_login_ip);
         } finally {
             if ($backup !== null) {
                 file_put_contents($lock, $backup);

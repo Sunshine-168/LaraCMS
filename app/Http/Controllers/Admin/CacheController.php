@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Admin\SiteBackupService;
 use App\Services\Cms\HtmlCacheService;
 use Database\Seeders\CmsSeeder;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -42,6 +43,7 @@ class CacheController extends Controller
     {
         try {
             Artisan::call('db:seed', ['--class' => CmsSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => DemoDataSeeder::class, '--force' => true]);
             if (! is_file(storage_path('app/install.lock'))) {
                 file_put_contents(storage_path('app/install.lock'), 'installed_at='.now()->toDateTimeString()."\nseed_demo=1\n");
             }

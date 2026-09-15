@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 class AuthService
 {
     /** 后台登录 */
-    public function login(string $email, string $password, bool $remember = false): array
+    public function login(string $email, string $password, bool $remember = false, ?string $ip = null): array
     {
         $user = AdminUser::query()->where('email', $email)->first();
 
@@ -19,6 +19,11 @@ class AuthService
         }
 
         Auth::guard('admin')->login($user, $remember);
+
+        $user->forceFill([
+            'last_login_at' => now(),
+            'last_login_ip' => $ip ?: request()->ip(),
+        ])->save();
 
         return Result::ok($user, '登录成功');
     }
