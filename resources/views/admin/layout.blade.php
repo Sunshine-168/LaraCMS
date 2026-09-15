@@ -18,8 +18,12 @@
     $headerInbox = $admin
         ? app(\App\Services\Admin\DashboardService::class)->headerInbox($admin)
         : ['total' => 0, 'hint' => '', 'entries' => 0, 'forms' => 0, 'comments' => 0];
-    $contentMoreOpen = request()->routeIs('admin.flags.*', 'admin.friend-links.*', 'admin.recommends.*', 'admin.models.*', 'admin.menus.*', 'admin.forms.*');
-    $showContentMore = $can('flags') || $can('friend_links') || $can('recommends') || $can('models') || $can('menus') || $can('forms');
+    $contentMoreOpen = request()->routeIs('admin.flags.*', 'admin.recommends.*', 'admin.models.*', 'admin.menus.*', 'admin.forms.*', 'admin.recycle.*');
+    $showContentMore = $can('flags') || $can('recommends') || $can('models') || $can('menus') || $can('forms') || $can('recycle');
+    $opsMoreOpen = request()->routeIs('admin.friend-links.*', 'admin.sitemap.*', 'admin.redirects.*', 'admin.member-groups.*');
+    $showOpsPrimary = $can('members') || $can('collectors') || $can('html_cache');
+    $showOpsMore = $can('friend_links') || $can('sitemap') || $can('redirects') || $can('member_groups');
+    $foldOpsMore = $showOpsPrimary && $showOpsMore;
 @endphp
 <div class="shell">
     <div class="side-backdrop" id="sideBackdrop"></div>
@@ -39,7 +43,7 @@
                 @endif
             @endif
 
-            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('flags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments') || $can('friend_links'))
+            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('flags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments'))
                 <div class="nav-header">{{ admin_t('nav.content') }}</div>
                 @if($can('entries'))
                     <x-side-link :href="route('admin.entries.index')" icon="file-alt" :label="admin_t('nav.entries')" :active="request()->routeIs('admin.entries.*')" :count="$headerInbox['entries'] ?? 0" />
@@ -59,18 +63,12 @@
                 @if($can('comments'))
                     <x-side-link :href="route('admin.comments.index')" icon="comments" :label="admin_t('nav.comments')" :active="request()->routeIs('admin.comments.*')" :count="$headerInbox['comments'] ?? 0" />
                 @endif
-                @if($can('recycle'))
-                    <x-side-link :href="route('admin.recycle.index')" icon="trash-alt" :label="admin_t('nav.recycle')" :active="request()->routeIs('admin.recycle.*')" />
-                @endif
                 @if($showContentMore)
                     <details class="nav-fold{{ $contentMoreOpen ? ' is-open' : '' }}" @if($contentMoreOpen) open @endif>
                         <summary>{{ admin_t('nav.more') }}</summary>
                         <div class="side-sub">
                             @if($can('flags'))
                                 <x-side-link :href="route('admin.flags.index')" icon="flag" :label="admin_t('nav.flags')" :active="request()->routeIs('admin.flags.*')" />
-                            @endif
-                            @if($can('friend_links'))
-                                <x-side-link :href="route('admin.friend-links.index')" icon="link" :label="admin_t('nav.friend_links')" :active="request()->routeIs('admin.friend-links.*')" />
                             @endif
                             @if($can('recommends'))
                                 <x-side-link :href="route('admin.recommends.index')" icon="th-large" :label="admin_t('nav.recommends')" :active="request()->routeIs('admin.recommends.*')" />
@@ -84,27 +82,45 @@
                             @if($can('forms'))
                                 <x-side-link :href="route('admin.forms.index')" icon="clipboard-list" :label="admin_t('nav.forms')" :active="request()->routeIs('admin.forms.*')" />
                             @endif
+                            @if($can('recycle'))
+                                <x-side-link :href="route('admin.recycle.index')" icon="trash-alt" :label="admin_t('nav.recycle')" :active="request()->routeIs('admin.recycle.*')" />
+                            @endif
                         </div>
                     </details>
                 @endif
             @endif
 
-            @if($can('collectors') || $can('members') || $can('member_groups') || $can('html_cache') || $can('redirects'))
+            @if($showOpsPrimary || $showOpsMore)
                 <div class="nav-header">{{ admin_t('nav.ops') }}</div>
-                @if($can('redirects'))
-                    <x-side-link :href="route('admin.redirects.index')" icon="exchange-alt" :label="admin_t('nav.redirects')" :active="request()->routeIs('admin.redirects.*')" />
+                @if($can('members'))
+                    <x-side-link :href="route('admin.members.index')" icon="users" :label="admin_t('nav.members')" :active="request()->routeIs('admin.members.*')" />
                 @endif
                 @if($can('collectors'))
                     <x-side-link :href="route('admin.collectors.index')" icon="cloud-download-alt" :label="admin_t('nav.collectors')" :active="request()->routeIs('admin.collectors.*')" />
                 @endif
-                @if($can('members'))
-                    <x-side-link :href="route('admin.members.index')" icon="users" :label="admin_t('nav.members')" :active="request()->routeIs('admin.members.*')" />
-                @endif
-                @if($can('member_groups'))
-                    <x-side-link :href="route('admin.member-groups.index')" icon="user-tag" :label="admin_t('nav.groups')" :active="request()->routeIs('admin.member-groups.*')" />
-                @endif
                 @if($can('html_cache'))
                     <x-side-link :href="route('admin.html-cache.edit')" icon="bolt" :label="admin_t('nav.cache')" :active="request()->routeIs('admin.html-cache.*')" />
+                @endif
+                @if($foldOpsMore)
+                    <details class="nav-fold{{ $opsMoreOpen ? ' is-open' : '' }}" @if($opsMoreOpen) open @endif>
+                        <summary>{{ admin_t('nav.more') }}</summary>
+                        <div class="side-sub">
+                @endif
+                            @if($can('friend_links'))
+                                <x-side-link :href="route('admin.friend-links.index')" icon="link" :label="admin_t('nav.friend_links')" :active="request()->routeIs('admin.friend-links.*')" />
+                            @endif
+                            @if($can('sitemap'))
+                                <x-side-link :href="route('admin.sitemap.edit')" icon="map" :label="admin_t('nav.sitemap')" :active="request()->routeIs('admin.sitemap.*')" />
+                            @endif
+                            @if($can('redirects'))
+                                <x-side-link :href="route('admin.redirects.index')" icon="exchange-alt" :label="admin_t('nav.redirects')" :active="request()->routeIs('admin.redirects.*')" />
+                            @endif
+                            @if($can('member_groups'))
+                                <x-side-link :href="route('admin.member-groups.index')" icon="user-tag" :label="admin_t('nav.groups')" :active="request()->routeIs('admin.member-groups.*')" />
+                            @endif
+                @if($foldOpsMore)
+                        </div>
+                    </details>
                 @endif
             @endif
 

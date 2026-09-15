@@ -30,7 +30,8 @@ class AdminRbacSeeder extends Seeder
             ['key' => 'forms', 'name' => '表单定义', 'group' => '内容', 'sort' => 110],
             ['key' => 'form_submissions', 'name' => '留言收件箱', 'group' => '内容', 'sort' => 120],
             ['key' => 'comments', 'name' => '评论审核', 'group' => '内容', 'sort' => 125],
-            ['key' => 'friend_links', 'name' => '友链', 'group' => '内容', 'sort' => 126],
+            ['key' => 'friend_links', 'name' => '友链', 'group' => '运营', 'sort' => 122],
+            ['key' => 'sitemap', 'name' => '站点地图', 'group' => '运营', 'sort' => 123],
             ['key' => 'redirects', 'name' => '重定向', 'group' => '运营', 'sort' => 128],
             ['key' => 'collectors', 'name' => '采集任务', 'group' => '运营', 'sort' => 130],
             ['key' => 'members', 'name' => '会员管理', 'group' => '运营', 'sort' => 140],
@@ -65,7 +66,7 @@ class AdminRbacSeeder extends Seeder
 
         $editorKeys = [
             'dashboard', 'stats', 'entries', 'recycle', 'categories', 'tags', 'flags',
-            'media', 'menus', 'forms', 'form_submissions', 'comments', 'friend_links', 'redirects',
+            'media', 'menus', 'forms', 'form_submissions', 'comments', 'friend_links', 'sitemap', 'redirects',
         ];
         $operatorKeys = ['dashboard', 'stats', 'form_submissions', 'comments', 'redirects', 'media'];
 

@@ -114,6 +114,7 @@ class AdminLogAction
             'profile/password' => '修改了自己的密码',
             'themes' => '复制了一套主题',
             'themes/upload' => '上传了主题包',
+            'sitemap' => '保存了站点地图',
         ];
         if (isset($exact[$joined]) && $exact[$joined] !== null) {
             return $exact[$joined];
@@ -388,6 +389,7 @@ class AdminLogAction
             'models' => '内容模型',
             'recommends' => '推荐位',
             'friend-links' => '友链',
+            'sitemap' => '站点地图',
             'members' => '会员',
             'member-groups' => '会员分组',
             'collectors' => '采集源',

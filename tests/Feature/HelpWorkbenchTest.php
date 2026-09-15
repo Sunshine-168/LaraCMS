@@ -38,6 +38,11 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('常见问题')
             ->assertSee('换了主题，前台还是旧样子')
             ->assertSee('不想让搜索引擎抓某几页')
+            ->assertSee('站点地图在哪')
+            ->assertSee('运营 → 更多')
+            ->assertSee('页脚')
+            ->assertSee('/en/sitemap.xml')
+            ->assertSee('没有公开文章的标签')
             ->assertSee('robots.txt 补充规则')
             ->assertSee(route('admin.settings.edit'), false)
             ->assertSee(route('admin.help', ['topic' => 'admin']), false)
@@ -99,6 +104,8 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee(route('admin.locales.index'), false)
             ->assertSee(route('admin.friend-links.index'), false)
             ->assertSee('友链')
+            ->assertSee(route('admin.sitemap.edit'), false)
+            ->assertSee('站点地图')
             ->assertSee('robots.txt 补充规则')
             ->assertSee('从媒体库挑图')
             ->assertSee('CMS_MEDIA_DISK');
@@ -165,8 +172,13 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('Getting started')
             ->assertSee('Suggested first steps')
             ->assertSee('What the sidebar is for')
+            ->assertSee('Where is the sitemap')
+            ->assertSee('footer link')
+            ->assertSee('/en/sitemap.xml')
+            ->assertSee('unused tags')
             ->assertDontSee('第一次建议按这个顺序')
-            ->assertDontSee('侧栏对应什么');
+            ->assertDontSee('侧栏对应什么')
+            ->assertDontSee('站点地图在哪');
 
         $this->get(route('admin.help', ['topic' => 'admin']))
             ->assertOk()

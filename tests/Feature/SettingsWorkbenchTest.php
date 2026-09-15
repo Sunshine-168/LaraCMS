@@ -86,6 +86,8 @@ class SettingsWorkbenchTest extends TestCase
             ->assertSee('立即备份')
             ->assertSee('导入演示数据')
             ->assertSee('缓存')
+            ->assertSee('地图')
+            ->assertSee(route('admin.sitemap.edit'), false)
             ->assertSee('class="settings-pane active" data-pane="more"', false);
 
         $this->actingAs($admin, 'admin')

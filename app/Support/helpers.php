@@ -6,10 +6,10 @@ use App\Support\UrlMode;
 use Illuminate\Support\Facades\Route;
 
 if (! function_exists('cms_front_url')) {
-    function cms_front_url(string $path = ''): string
+    function cms_front_url(string $path = '', ?string $locale = null): string
     {
         $path = trim($path, '/');
-        $prefix = UrlMode::localePrefix();
+        $prefix = UrlMode::localePrefix($locale);
 
         return url($prefix.($path === '' ? '' : '/'.$path));
     }

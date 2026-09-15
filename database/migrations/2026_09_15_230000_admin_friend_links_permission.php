@@ -18,8 +18,8 @@ return new class extends Migration
             DB::table('admin_permissions')->insert([
                 'key' => 'friend_links',
                 'name' => '友链',
-                'group' => '内容',
-                'sort' => 126,
+                'group' => '运营',
+                'sort' => 122,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);

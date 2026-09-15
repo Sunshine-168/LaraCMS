@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
+use App\Http\Controllers\Admin\SitemapController;
 use App\Http\Controllers\Admin\StatController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\ThemeController;
@@ -120,6 +121,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.perm:friend_links')->group(function () {
             Route::post('friend-links/{friend_link}/toggle', [FriendLinkController::class, 'toggle'])->name('friend-links.toggle');
             Route::resource('friend-links', FriendLinkController::class)->except(['show'])->parameters(['friend-links' => 'friend_link']);
+        });
+        Route::middleware('admin.perm:sitemap')->group(function () {
+            Route::get('sitemap', [SitemapController::class, 'edit'])->name('sitemap.edit');
+            Route::put('sitemap', [SitemapController::class, 'update'])->name('sitemap.update');
         });
         Route::middleware('admin.perm:redirects')->group(function () {
             Route::post('redirects/{redirect}/toggle', [RedirectController::class, 'toggle'])->name('redirects.toggle');

@@ -15,6 +15,7 @@ return [
         'comments' => '评论',
         'recycle' => '回收站',
         'friend_links' => '友链',
+        'sitemap' => '地图',
         'more' => '更多',
         'flags' => '推荐',
         'recommends' => '推荐位',

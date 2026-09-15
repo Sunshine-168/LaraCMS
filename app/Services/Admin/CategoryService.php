@@ -5,6 +5,7 @@ namespace App\Services\Admin;
 use App\Models\Cms\Category;
 use App\Services\Cms\HtmlCacheService;
 use App\Support\AdminCategoryScope;
+use App\Support\Locale;
 use App\Support\Result;
 use App\Support\Translatable;
 use Illuminate\Support\Collection;
@@ -110,6 +111,12 @@ class CategoryService
             $localeFields,
             Translatable::existingTranslations($category, $localeFields),
         );
+        foreach (Locale::codes() as $code) {
+            $slug = strtolower(trim((string) ($packed['slug'][$code] ?? '')));
+            if ($slug !== '' && in_array($slug, $this->reservedSlugs(), true)) {
+                return Result::fail('网址标识「'.$slug.'」已被系统占用');
+            }
+        }
         $category->fill($packed);
         $category->type = $input['type'] ?? 'list';
         $category->model_id = $input['model_id'] ?: null;
@@ -155,5 +162,20 @@ class CategoryService
         $category->delete();
 
         return Result::ok(null, '已删除');
+    }
+
+    /** 与前台路由占用的第一段一致，避免栏目盖住搜索、会员、站点地图等 */
+    protected function reservedSlugs(): array
+    {
+        $fixed = [
+            'admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment',
+            'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'rss.xml',
+            'robots.txt', 'install', 'e', 'c', 'preview', 'sitemap', 'sitemap.xml',
+        ];
+        foreach (Locale::codes() as $code) {
+            $fixed[] = strtolower(Locale::toPublic($code));
+        }
+
+        return array_values(array_unique($fixed));
     }
 }

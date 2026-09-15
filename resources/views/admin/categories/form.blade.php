@@ -15,7 +15,7 @@
             'hideCode' => true,
             'fields' => [
                 'title' => ['label' => '名称', 'placeholder' => '如 公司新闻'],
-                'slug' => ['label' => '网址标识', 'placeholder' => '出现在栏目网址里，可空'],
+                'slug' => ['label' => '网址标识', 'placeholder' => '出现在栏目网址里，可空', 'hint' => '不要用 search、sitemap、member 这些系统路径'],
             ],
             'advanced' => [
                 'meta_title' => ['label' => 'SEO 标题'],

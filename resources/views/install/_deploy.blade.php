@@ -76,14 +76,14 @@ DB_PASSWORD=请换成强密码</code></pre>
     <p class="muted">还要在 <code>.env</code> 写上 <code>APP_URL=https://www.example.com</code>，<code>APP_ENV=production</code>，<code>APP_DEBUG=false</code>。若站点在反向代理后面，再设 <code>TRUST_PROXIES=*</code>。</p>
 
     <h3>搜索引擎 robots.txt</h3>
-    <p class="muted">前台地址是 <code>/robots.txt</code>。默认允许抓首页，禁止 <code>/admin</code>、<code>/install</code>、<code>/member</code>、<code>/preview</code>，并带上 sitemap。关站时整站是 <code>Disallow: /</code>。</p>
+    <p class="muted">前台地址是 <code>/robots.txt</code>。默认允许抓首页，禁止 <code>/admin</code>、<code>/install</code>、<code>/member</code>、<code>/preview</code>，并带上各语言的 sitemap。关站时整站是 <code>Disallow: /</code>。</p>
     <p class="muted">还要挡住某几段路径时，到{!! $hl('settingsMore', '设置 → 更多') !!}写「robots.txt 补充规则」，例如：</p>
     <div class="code">
         <button type="button" class="copy" data-copy>复制</button>
         <pre><code>Disallow: /private
 Disallow: /drafts</code></pre>
     </div>
-    <p class="hint">不要写 HTML 标签。大约最多 40 行、每行 200 字。改完打开前台 <code>/robots.txt</code> 核对。这和页面里的 <code>&lt;meta name="robots"&gt;</code> 不是一回事。</p>
+    <p class="hint">不要写 HTML 标签。大约最多 40 行、每行 200 字。改完打开前台 <code>/robots.txt</code> 核对。这和页面里的 <code>&lt;meta name="robots"&gt;</code> 不是一回事。收录哪些栏目和文章，装好后在后台「运营 → 更多 → 地图」。</p>
 
     <h3>图片放到对象存储</h3>
     <p class="muted">默认传到本机 <code>storage/app/public</code>，前台用 <code>php artisan storage:link</code>。只换访问域名时，在{!! $hl('settingsMore', '设置 → 更多') !!}填「图片走这个域名」，不必改盘。</p>

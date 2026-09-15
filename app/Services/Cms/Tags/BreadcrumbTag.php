@@ -20,7 +20,7 @@ class BreadcrumbTag
         $parts = [];
 
         $home = e((string) ($this->context->site()['title'] ?? config('app.name')));
-        $parts[] = '<a href="/">'.$home.'</a>';
+        $parts[] = '<a href="'.e(cms_front_url('')).'">'.$home.'</a>';
 
         $category = $this->context->category();
         foreach ($this->ancestors($category) as $cat) {
@@ -29,6 +29,8 @@ class BreadcrumbTag
 
         if ($article = $this->context->article()) {
             $parts[] = '<span>'.e($article->t('title')).'</span>';
+        } elseif (! empty($options['last'])) {
+            $parts[] = '<span>'.e((string) $options['last']).'</span>';
         }
 
         return new HtmlString('<nav class="'.$class.'">'.implode($symbol, $parts).'</nav>');

@@ -6,7 +6,6 @@ use App\Cms\CmsViewContext;
 use App\Models\Cms\Category;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Setting;
-use App\Models\Cms\Tag;
 use App\Support\CurrentSite;
 use App\Support\Locale;
 use App\Support\MobileDetect;
@@ -200,38 +199,6 @@ class SiteFrontService
 
     public function sitemapUrls(): Collection
     {
-        $urls = collect([
-            ['loc' => url('/'), 'lastmod' => now()->toAtomString()],
-        ]);
-        foreach (Category::query()->active()->get() as $cat) {
-            if ($cat->type === 'link') {
-                continue;
-            }
-            $urls->push([
-                'loc' => url($cat->frontUrl()),
-                'lastmod' => optional($cat->updated_at)?->toAtomString(),
-            ]);
-        }
-        foreach (Entry::query()->published()->with(['category', 'modelDef'])->get() as $entry) {
-            if ($entry->isMemberGated() || $entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link') {
-                continue;
-            }
-            $urls->push([
-                'loc' => url($entry->url),
-                'lastmod' => optional($entry->updated_at ?: $entry->published_at)?->toAtomString(),
-            ]);
-        }
-        foreach (Tag::query()->get() as $tag) {
-            $slug = (string) $tag->t('slug');
-            if ($slug === '') {
-                continue;
-            }
-            $urls->push([
-                'loc' => url(UrlMode::localePrefix().'/tag/'.$slug),
-                'lastmod' => optional($tag->updated_at)?->toAtomString(),
-            ]);
-        }
-
-        return $urls->unique('loc')->values();
+        return app(SitemapService::class)->xmlItems();
     }
 }

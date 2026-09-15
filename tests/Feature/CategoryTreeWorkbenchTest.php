@@ -38,6 +38,22 @@ class CategoryTreeWorkbenchTest extends TestCase
             ->assertSee(route('admin.categories.create', ['parent_id' => $news->id]), false);
     }
 
+    public function test_reserved_slug_sitemap_is_rejected(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $news = Category::query()->get()->first(fn (Category $c) => $c->t('slug') === 'news');
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.categories.create'))
+            ->assertOk()
+            ->assertSee('系统路径');
+
+        $this->post(route('admin.categories.store'), $this->categoryPayload($news->model_id, '地图栏', 'sitemap'))
+            ->assertRedirect(route('admin.categories.index'))
+            ->assertSessionHas('error');
+        $this->assertNull(Category::query()->get()->first(fn (Category $c) => $c->t('slug') === 'sitemap'));
+    }
+
     public function test_child_is_indented_under_parent(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();

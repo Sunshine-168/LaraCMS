@@ -20,6 +20,7 @@
   search.blade.php
   tag.blade.php
   sitemap.blade.php
+  sitemap-page.blade.php   HTML sitemap for visitors (/sitemap)
   partials/layout.blade.php  chrome
   partials/paginate.blade.php
   member/login.blade.php     plus register, profile, …</code></pre>

@@ -8,6 +8,10 @@
     .brand img{max-height:36px;width:auto;display:block}
     footer{margin-top:36px;padding:24px 0;font-size:13px}
     .lang a[aria-current="page"]{font-weight:700;text-decoration:none;pointer-events:none;opacity:.88}
+    .sitemap-page-block{margin:20px 0}
+    .sitemap-page-block h2{margin:0 0 8px;font-size:18px}
+    .sitemap-page-block ul{margin:0;padding-left:1.2em;line-height:1.9}
+    .sitemap-page-block a{word-break:break-all}
     @media (max-width:768px){
         .wrap{padding-left:14px;padding-right:14px}
         header nav{flex-wrap:wrap;gap:10px}

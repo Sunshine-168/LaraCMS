@@ -357,17 +357,33 @@ class SiteController extends Controller
     public function sitemap(): Response
     {
         $this->site->bootSite();
-        $urls = $this->site->sitemapUrls();
+        $urls = app(\App\Services\Cms\SitemapService::class)->xmlItems();
         $xml = view($this->site->themeView('sitemap'), compact('urls'))->render();
 
-        return response($xml, 200)->header('Content-Type', 'application/xml');
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+
+    public function sitemapPage(): View
+    {
+        $site = $this->site->bootSite();
+        $svc = app(\App\Services\Cms\SitemapService::class);
+        abort_unless($svc->htmlEnabled(), 404);
+        $groups = $svc->htmlGroups();
+        $this->context->setSeo(cms_ui('sitemap').' - '.$site['title'], '', '');
+
+        return view($this->site->themeView('sitemap-page'), [
+            'site' => $site,
+            'groups' => $groups,
+            'layout' => $this->site->themeLayout(),
+        ]);
     }
 
     public function robots(): Response
     {
         $this->site->bootSite();
         $closed = (bool) (int) \App\Models\Cms\Setting::getValue('site_closed', '0');
-        $sitemap = rtrim((string) config('app.url'), '/').'/sitemap.xml';
         $lines = ['User-agent: *'];
         if ($closed) {
             $lines[] = 'Disallow: /';
@@ -378,19 +394,32 @@ class SiteController extends Controller
             $lines[] = 'Disallow: /member';
             $lines[] = 'Disallow: /preview';
         }
-        $lines[] = 'Sitemap: '.$sitemap;
+        foreach (app(\App\Services\Cms\SitemapService::class)->robotsSitemapLines() as $line) {
+            $lines[] = $line;
+        }
         $extra = trim((string) \App\Models\Cms\Setting::getValue('robots_extra', ''));
         if ($extra !== '' && ! $closed) {
+            $known = array_map('strtolower', $lines);
             foreach (preg_split('/\R/', $extra) ?: [] as $line) {
                 $line = trim((string) $line);
-                if ($line !== '') {
-                    $lines[] = $line;
+                if ($line === '') {
+                    continue;
                 }
+                if (preg_match('#^sitemap:\s*(.+)$#i', $line, $m)) {
+                    $line = 'Sitemap: '.trim((string) $m[1]);
+                }
+                if (in_array(strtolower($line), $known, true)) {
+                    continue;
+                }
+                $lines[] = $line;
+                $known[] = strtolower($line);
             }
         }
         $lines[] = '';
 
-        return response(implode("\n", $lines), 200)->header('Content-Type', 'text/plain; charset=UTF-8');
+        return response(implode("\n", $lines), 200)
+            ->header('Content-Type', 'text/plain; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=0, must-revalidate');
     }
 
     protected function memberAccessOrRedirect(Request $request, string $permission, string $loginMsg, string $permMsg): ?RedirectResponse

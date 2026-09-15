@@ -34,10 +34,27 @@ class SideNavWorkbenchTest extends TestCase
             ->assertSee('>留言</span>', false)
             ->assertSee('>更多</summary>', false)
             ->assertSee('>友链</span>', false)
+            ->assertSee('>地图</span>', false)
             ->assertSee('>推荐</span>', false)
             ->assertSee('>统计</span>', false)
             ->assertSee('side-foot-avatar', false)
             ->assertSee($admin->name)
+            ->assertSeeInOrder([
+                '>评论</span>',
+                '>更多</summary>',
+                '>回收站</span>',
+                '>运营</div>',
+                '>会员</span>',
+                '>采集</span>',
+                '>缓存</span>',
+                '>更多</summary>',
+                '>友链</span>',
+                '>地图</span>',
+                '>跳转</span>',
+                '>分组</span>',
+                '>系统</div>',
+                '>说明</span>',
+            ], false)
             ->assertDontSee('角色：')
             ->assertDontSee('栏目管理')
             ->assertDontSee('流量统计')
@@ -64,5 +81,29 @@ class SideNavWorkbenchTest extends TestCase
             ->assertSee('nav-fold is-open', false)
             ->assertSee('nav-count', false)
             ->assertSee('>模型</span>', false);
+    }
+
+    public function test_recycle_opens_content_more_and_editor_flattens_ops(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.recycle.index'))
+            ->assertOk()
+            ->assertSee('nav-fold is-open', false)
+            ->assertSee('>回收站</span>', false);
+
+        $editor = AdminUser::query()->where('email', 'editor@example.com')->first();
+        $html = $this->actingAs($editor, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('>友链</span>', false)
+            ->assertSee('>地图</span>', false)
+            ->assertSee('>跳转</span>', false)
+            ->assertSee('>回收站</span>', false)
+            ->assertSee('>更多</summary>', false)
+            ->getContent();
+        $this->assertSame(1, substr_count($html, '>更多</summary>'));
+        $this->assertStringNotContainsString('>会员</span>', $html);
+        $this->assertStringNotContainsString('>缓存</span>', $html);
     }
 }

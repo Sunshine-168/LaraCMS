@@ -43,6 +43,14 @@ class HtmlCacheService
         return $name ? Cache::store($name) : Cache::store();
     }
 
+    /** sitemap / robots 随设置立刻变，不要进全页缓存或磁盘静态页 */
+    public static function isVolatileFrontPath(string $path): bool
+    {
+        $path = trim($path, '/');
+
+        return (bool) preg_match('#(?:^|/)(sitemap\.xml|robots\.txt|sitemap)$#i', $path);
+    }
+
     /** 是否允许缓存该请求 */
     public function isCacheable(Request $request): bool
     {
@@ -61,6 +69,9 @@ class HtmlCacheService
 
         $path = trim($request->path(), '/');
         $first = $path === '' ? '' : explode('/', $path)[0];
+        if (self::isVolatileFrontPath($path)) {
+            return false;
+        }
 
         foreach ((array) config('cms.html_cache.exclude_prefixes', []) as $prefix) {
             if ($first === $prefix || str_starts_with($path, $prefix.'/')) {

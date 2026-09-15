@@ -77,14 +77,14 @@ DB_PASSWORD=use-a-strong-password</code></pre>
     <p class="muted">Set <code>APP_URL=https://www.example.com</code>, <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>. Behind a reverse proxy, also set <code>TRUST_PROXIES=*</code>.</p>
 
     <h3>Search engines and robots.txt</h3>
-    <p class="muted">The front URL is <code>/robots.txt</code>. By default the home page is allowed; <code>/admin</code>, <code>/install</code>, <code>/member</code>, and <code>/preview</code> are not, and a sitemap line is included. While the site is closed the whole file is <code>Disallow: /</code>.</p>
+    <p class="muted">The front URL is <code>/robots.txt</code>. By default the home page is allowed; <code>/admin</code>, <code>/install</code>, <code>/member</code>, and <code>/preview</code> are not, and a sitemap line is included for each language. While the site is closed the whole file is <code>Disallow: /</code>.</p>
     <p class="muted">To block extra paths, add “robots.txt extra rules” under {!! $hl('settingsMore', 'Settings → More') !!}, for example:</p>
     <div class="code">
         <button type="button" class="copy" data-copy>{{ $copy }}</button>
         <pre><code>Disallow: /private
 Disallow: /drafts</code></pre>
     </div>
-    <p class="hint">No HTML tags. About 40 lines, 200 characters each. Check the live <code>/robots.txt</code> after saving. This is not the same as the page <code>&lt;meta name="robots"&gt;</code>.</p>
+    <p class="hint">No HTML tags. About 40 lines, 200 characters each. Check the live <code>/robots.txt</code> after saving. This is not the same as the page <code>&lt;meta name="robots"&gt;</code>. After install, pick which sections and entries to list under Operations → More → Sitemap.</p>
 
     <h3>Object storage for uploads</h3>
     <p class="muted">Files go to <code>storage/app/public</code> by default (<code>php artisan storage:link</code>). To only change the public host, set the CDN field under {!! $hl('settingsMore', 'Settings → More') !!}.</p>

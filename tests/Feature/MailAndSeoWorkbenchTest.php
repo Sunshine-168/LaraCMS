@@ -34,7 +34,10 @@ class MailAndSeoWorkbenchTest extends TestCase
             ->assertSee('User-agent: *')
             ->assertSee('Disallow: /admin')
             ->assertSee('Sitemap:')
+            ->assertSee('sitemap.xml')
+            ->assertSee('/en/sitemap.xml', false)
             ->assertDontSee('Disallow: /private-area');
+        $this->assertStringContainsString('must-revalidate', (string) $this->get('/robots.txt')->headers->get('Cache-Control'));
 
         Setting::setValue('robots_extra', "Disallow: /private-area\n# note");
         $this->get('/robots.txt')

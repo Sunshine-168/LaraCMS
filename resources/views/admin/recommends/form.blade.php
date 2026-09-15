@@ -180,11 +180,16 @@
         localeCols.forEach(function (loc) {
             html += '<label>' + (loc.code === defaultCode ? '标题' : loc.label) + '</label><input name="items[' + idx + '][title_' + loc.code + ']">';
         });
+        localeCols.forEach(function (loc) {
+            html += '<label>' + (loc.code === defaultCode ? '备注' : loc.label + ' · 备注') + '</label><input name="items[' + idx + '][notes_' + loc.code + ']">';
+        });
         html += '<label>图片</label><div class="media-field" data-media-preview="#' + id + '">';
         html += '<div class="media-preview" hidden><img alt="预览"><button type="button" class="media-preview-clear" title="移除图片">&times;</button></div>';
         html += '<div class="cover-row"><input type="text" id="' + id + '" name="items[' + idx + '][image]" placeholder="可空，图片地址">';
         html += '<button type="button" class="btn btn-muted" data-media-pick="#' + id + '">选择</button></div></div>';
         html += '<label>链接</label><input name="items[' + idx + '][url]">';
+        html += '<label>HTML</label><textarea name="items[' + idx + '][html]"></textarea>';
+        html += '<label>关联文档 ID</label><input type="number" name="items[' + idx + '][entry_id]">';
         d.innerHTML = html;
         document.getElementById('items').appendChild(d);
         var field = d.querySelector('[data-media-preview]');

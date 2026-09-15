@@ -16,7 +16,7 @@ $reserved = array_map(
 );
 
 $reservedSegments = array_merge(
-    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'rss\\.xml', 'robots\\.txt', 'install', 'e', 'c', 'preview', 'sitemap\\.xml'],
+    ['admin', 'storage', 'livewire', 'api', 'download', 'go', 'form', 'comment', 'search', 'member', 'login', 'logout', 'register', 'tag', 'rss', 'rss\\.xml', 'robots\\.txt', 'install', 'e', 'c', 'preview', 'sitemap', 'sitemap\\.xml'],
     $reserved
 );
 $slugExclude = '^(?!'.implode('$|', $reservedSegments).'$)[A-Za-z0-9\-_]+$';
@@ -27,6 +27,7 @@ $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExc
     Route::get('/search', [SiteController::class, 'search'])->name('search'.$nameSuffix);
     Route::get('/tag/{slug}', [SiteController::class, 'tag'])->name('tag'.$nameSuffix);
     Route::get('/sitemap.xml', [SiteController::class, 'sitemap'])->name('sitemap'.$nameSuffix);
+    Route::get('/sitemap', [SiteController::class, 'sitemapPage'])->name('sitemap.page'.$nameSuffix);
     Route::get('/robots.txt', [SiteController::class, 'robots'])->name('robots'.$nameSuffix);
     Route::get('/rss.xml', [SiteController::class, 'rss'])->name('rss'.$nameSuffix);
     Route::get('/preview/{token}', [SiteController::class, 'preview'])->name('entry.preview'.$nameSuffix)->where('token', '[A-Za-z0-9]{16,64}');

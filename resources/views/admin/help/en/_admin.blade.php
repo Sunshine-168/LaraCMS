@@ -27,10 +27,9 @@
         <tr><td>{!! $hl('media', 'Media') !!}</td><td>Upload images and files. Body images and block covers are picked here too. If files 404, run <code>php artisan storage:link</code>. To change only the public host, set CDN under {!! $hl('settingsMore', 'Settings → More') !!}. To store files on OSS / S3, set <code>CMS_MEDIA_DISK</code> — see <a href="{{ $urls['env'] ?? '#' }}">Environment</a>. Watermarks run on the local disk only.</td></tr>
         <tr><td>{!! $hl('submissions', 'Inbox') !!}</td><td>Form submissions. Mark read, add notes, reply by email.</td></tr>
         <tr><td>{!! $hl('comments', 'Comments') !!}</td><td>Pending by default; approved comments show under the entry. Switches and notify email are in {!! $hl('settings', 'Settings') !!}.</td></tr>
-        <tr><td>{!! $hl('recycle', 'Trash') !!}</td><td>Deleted entries land here. Restore, or delete forever.</td></tr>
-        <tr><td>{!! $hl('friendLinks', 'Friend links') !!}</td><td>Homepage friend links / partners — not the nav theme’s URL directory. Stored as the <code>partners</code> block (or <code>friend_links</code>). Themes output them with <code>@@cmsAdv(['name' =&gt; 'partners'])</code>.</td></tr>
+        <tr><td>{!! $hl('recycle', 'Trash') !!}</td><td>Deleted entries land here. Restore, or delete forever. In the sidebar it sits under Content → More; the entries list also has a button.</td></tr>
         <tr><td>{!! $hl('flags', 'Flags') !!}</td><td>Checkboxes on entries (e.g. headline). Filter with <code>@@cmsContent(['flag' =&gt; 'flag-slug'])</code>.</td></tr>
-        <tr><td>{!! $hl('recommends', 'Blocks') !!}</td><td>Home banners and similar. The identifier must match <code>@@cmsAdv(['name' =&gt; 'home_banner'])</code>. Fill items by hand or pull entries by rule. Hand-filled items can pick an image from the media library and preview it before save. Friend links are under More.</td></tr>
+        <tr><td>{!! $hl('recommends', 'Blocks') !!}</td><td>Home banners and similar. The identifier must match <code>@@cmsAdv(['name' =&gt; 'home_banner'])</code>. Fill items by hand or pull entries by rule. Hand-filled items can pick an image from the media library and preview it before save. Friend links are under Operations → More.</td></tr>
         <tr><td>{!! $hl('models', 'Models') !!}</td><td>Fields for a content type (price, files, …). Copy or export/import JSON without deleting entries. “Allow member posts” lets members write this type.</td></tr>
         <tr><td>{!! $hl('menus', 'Menus') !!}</td><td>Header menus. Location such as <code>header</code> must match <code>@@cmsMenu</code>. If none exist, sections marked “menu” are used.</td></tr>
         <tr><td>{!! $hl('forms', 'Forms') !!}</td><td>Contact form fields. Slug goes to <code>@@cmsForm(['slug' =&gt; 'contact'])</code>. Submissions go to Inbox.</td></tr>
@@ -43,11 +42,13 @@
         <tr><th>Screen</th><th>What it does</th></tr>
     </thead>
     <tbody>
-        <tr><td>{!! $hl('redirects', 'Redirects') !!}</td><td>301/302 from old paths. Per site, with hit counts. Disabling keeps the rule but stops jumping.</td></tr>
-        <tr><td>{!! $hl('collectors', 'Collectors') !!}</td><td>Pull public RSS, JSON, or HTML lists into a section. Test first, then enable. Only sources you may use; no intranet crawling. Cron is required for auto runs — see <a href="{{ $urls['schedule'] ?? '#' }}">Schedule</a>.</td></tr>
         <tr><td>{!! $hl('members', 'Members') !!}</td><td>Front registrants. Can be disabled. Posts and favorites live in the member area.</td></tr>
-        <tr><td>{!! $hl('groups', 'Groups') !!}</td><td>Member capabilities (e.g. contribute). Disabling a group turns off those front rights; people stay in the list.</td></tr>
+        <tr><td>{!! $hl('collectors', 'Collectors') !!}</td><td>Pull public RSS, JSON, or HTML lists into a section. Test first, then enable. Only sources you may use; no intranet crawling. Cron is required for auto runs — see <a href="{{ $urls['schedule'] ?? '#' }}">Schedule</a>.</td></tr>
         <tr><td>{!! $hl('cache', 'Cache') !!}</td><td>Full-page cache and disk HTML under <code>public/html/</code>. Top-right “Clear cache” clears views/config and stored pages. nginx is under <a href="{{ $urls['env'] ?? '#' }}">Environment</a>.</td></tr>
+        <tr><td>{!! $hl('friendLinks', 'Friend links') !!}</td><td>Homepage friend links / partners — under Operations → More. Not the nav theme’s URL directory. Stored as the <code>partners</code> block (or <code>friend_links</code>). Themes output them with <code>@@cmsAdv(['name' =&gt; 'partners'])</code>.</td></tr>
+        <tr><td>{!! $hl('sitemap', 'Sitemap') !!}</td><td>URL list for search engines — under Operations → More. XML at <code>/sitemap.xml</code>, HTML at <code>/sitemap</code>. Toggle sections / entries / tags, and add extra URLs. Member-gated entries and unused tags are skipped. <code>robots.txt</code> lists every language’s XML.</td></tr>
+        <tr><td>{!! $hl('redirects', 'Redirects') !!}</td><td>301/302 from old paths. Per site, with hit counts. Disabling keeps the rule but stops jumping.</td></tr>
+        <tr><td>{!! $hl('groups', 'Groups') !!}</td><td>Member capabilities (e.g. contribute). Disabling a group turns off those front rights; people stay in the list.</td></tr>
     </tbody>
 </table>
 
@@ -65,6 +66,7 @@
         <tr><td>{!! $hl('profile', 'Account') !!}</td><td>Click your name in the top right. Change display name and password.</td></tr>
         <tr><td>{!! $hl('adminUsers', 'Admins') !!}</td><td>Admin accounts, roles, which sites they may edit. Can limit to certain sections.</td></tr>
         <tr><td>{!! $hl('roles', 'Roles') !!}</td><td>Module permissions. Super admin can do everything and cannot be deleted. “Publish entries” is separate — without it, publish is blocked.</td></tr>
+        <tr><td>Help</td><td>This page. Every account can open it, so it stays at the bottom of System instead of Operations → More.</td></tr>
     </tbody>
 </table>
 <p class="hint">A missing sidebar item is a permission gap, not a missing feature. Template tags are under <a href="{{ $urls['tags'] ?? '#' }}">Tags</a>.</p>

@@ -14,7 +14,7 @@
             {!! $item->html !!}
         @else
             <a href="{{ $item->url ?: '#' }}" class="card-soft" style="min-width:120px;text-align:center" rel="noopener nofollow" target="_blank">
-                @if($item->image)<img src="{{ $item->image }}" alt="" style="max-height:40px">@endif
+                @if($item->image)<img src="{{ cms_media($item->image) }}" alt="" style="max-height:40px">@endif
                 <div>{{ $item->t('title') }}</div>
             </a>
         @endif

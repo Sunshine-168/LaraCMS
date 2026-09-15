@@ -60,6 +60,7 @@ class PageTitleResolver
             '/member/entries' => '会员投稿',
             '/rss.xml' => 'RSS',
             '/sitemap.xml' => '站点地图',
+            '/sitemap' => '站点地图',
         ];
 
         foreach (Category::query()->with('modelDef')->get() as $category) {

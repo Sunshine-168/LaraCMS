@@ -15,6 +15,7 @@ return [
         'comments' => 'Comments',
         'recycle' => 'Trash',
         'friend_links' => 'Friend links',
+        'sitemap' => 'Sitemap',
         'more' => 'More',
         'flags' => 'Flags',
         'recommends' => 'Blocks',

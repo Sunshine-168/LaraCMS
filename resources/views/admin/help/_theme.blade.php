@@ -19,6 +19,7 @@
   search.blade.php
   tag.blade.php
   sitemap.blade.php
+  sitemap-page.blade.php   访客可读的站点地图（/sitemap）
   partials/layout.blade.php  公共头尾
   partials/paginate.blade.php
   member/login.blade.php     以及 register、profile 等</code></pre>

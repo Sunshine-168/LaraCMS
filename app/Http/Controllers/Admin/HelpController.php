@@ -47,6 +47,7 @@ class HelpController extends Controller
             'comments' => $to('comments', 'admin.comments.index'),
             'recycle' => $to('recycle', 'admin.recycle.index'),
             'friendLinks' => $to('friend_links', 'admin.friend-links.index'),
+            'sitemap' => $to('sitemap', 'admin.sitemap.edit'),
             'flags' => $to('flags', 'admin.flags.index'),
             'models' => $to('models', 'admin.models.index'),
             'menus' => $to('menus', 'admin.menus.index'),

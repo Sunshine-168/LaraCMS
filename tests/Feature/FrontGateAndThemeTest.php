@@ -45,6 +45,7 @@ class FrontGateAndThemeTest extends TestCase
         $this->get('/rss.xml')->assertOk()->assertDontSee($entry->t('title'), false);
         $this->get('/en/rss.xml')->assertOk();
         $this->get('/en/sitemap.xml')->assertOk()->assertSee('/en/', false);
+        $this->get('/en/sitemap')->assertOk()->assertSee('Sitemap')->assertSee('>Sitemap</span>', false);
     }
 
     public function test_default_theme_keeps_own_skin(): void

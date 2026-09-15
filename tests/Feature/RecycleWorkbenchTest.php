@@ -30,6 +30,7 @@ class RecycleWorkbenchTest extends TestCase
             ->assertSee('回收站是空的')
             ->assertSee('不会自动清空')
             ->assertSee('去内容列表')
+            ->assertSee('nav-fold is-open', false)
             ->assertDontSee('>ID</th>', false)
             ->assertDontSee('清空回收站');
     }

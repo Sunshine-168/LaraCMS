@@ -159,7 +159,8 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 | `/member/entries` | 我的投稿 / 写新稿 |
 | `/tag/{slug}` | 标签聚合 |
 | `/rss.xml` | RSS（不含会员门槛文档） |
-| `/sitemap.xml` | 站点地图 |
+| `/sitemap.xml` | 站点地图（XML，给搜索引擎） |
+| `/sitemap` | 站点地图网页版（可在后台关掉） |
 
 ### 模型搬运 / 多栏目 / 磁盘静态
 
@@ -177,7 +178,7 @@ resources/views/themes/{enterprise,mobile,download,nav,source,blog,manga,sports}
 - **CDN**：站点设置 `cdn_url`（如 `https://cdn.example.com`）后，正文 HTML、`cms_media()`、API 附件里的 `/storage` 与本站 APP_URL 前缀会改写到该域名；后台 `asset()` 静态资源（如 `css/admin.css`）不走 CDN
 - **对象存储**：上传默认 `public` 盘。阿里云 OSS / 腾讯云 COS / S3 设 `CMS_MEDIA_DISK=s3` 并 `composer require league/flysystem-aws-s3-v3`，环境变量见后台「说明 → 环境」
 - **整站备份**：站点设置「更多」或 `php artisan cms:backup`；后台可还原，或 `php artisan cms:backup --restore=cms-backup-YYYYMMDD-HHMMSS.zip`。zip 含 `database.sql`（CREATE TABLE + INSERT，sqlite 另附库文件）+ `uploads/`，不含 `.env`，保留最近 5 份。还原按当前表结构写入数据，不能用来升级/降级数据库结构
-- **站点地图**：含栏目/公开文档/标签与 lastmod；会员门槛文档不列入。`/sitemap.xml` 与 `/rss.xml` 在语言前缀下同样可用（如 `/en/sitemap.xml`）
+- **站点地图**：后台「运营 → 更多 → 地图」可勾栏目 / 文章 / 标签、限制文章条数、加补充地址。会员门槛文档不列入。XML `/sitemap.xml`（含 lastmod / changefreq / priority），网页版 `/sitemap`。`robots.txt` 列出各语言 Sitemap（如 `/en/sitemap.xml`）
 
 ## REST API
 

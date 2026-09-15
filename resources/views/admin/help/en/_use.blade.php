@@ -39,9 +39,9 @@
         <tr><th>Area</th><th>What you do</th></tr>
     </thead>
     <tbody>
-        <tr><td>Content</td><td>{!! $hl('categories', 'Sections') !!}, {!! $hl('entries', 'entries') !!}, tags, media, inbox, comments, trash. More has flags, {!! $hl('friendLinks', 'friend links') !!}, {!! $hl('recommends', 'blocks') !!}, {!! $hl('models', 'models') !!}, {!! $hl('menus', 'menus') !!}, and {!! $hl('forms', 'forms') !!}.</td></tr>
-        <tr><td>Operations</td><td>{!! $hl('members', 'Members') !!}, collectors, redirects, analytics, {!! $hl('cache', 'cache') !!} (page cache and disk HTML).</td></tr>
-        <tr><td>System</td><td>{!! $hl('sites', 'Sites') !!}, {!! $hl('settings', 'Settings') !!}, {!! $hl('themes', 'themes') !!}, languages, logs, admins, roles, and this help.</td></tr>
+        <tr><td>Content</td><td>{!! $hl('categories', 'Sections') !!}, {!! $hl('entries', 'entries') !!}, tags, media, inbox, comments. More has flags, {!! $hl('recommends', 'blocks') !!}, {!! $hl('models', 'models') !!}, {!! $hl('menus', 'menus') !!}, {!! $hl('forms', 'forms') !!}, and trash.</td></tr>
+        <tr><td>Operations</td><td>{!! $hl('members', 'Members') !!}, collectors, {!! $hl('cache', 'cache') !!} (page cache and disk HTML). More has {!! $hl('friendLinks', 'friend links') !!}, {!! $hl('sitemap', 'sitemap') !!}, redirects, and groups.</td></tr>
+        <tr><td>System</td><td>{!! $hl('sites', 'Sites') !!}, {!! $hl('settings', 'Settings') !!}, {!! $hl('themes', 'themes') !!}, languages, logs, admins, roles, and this help. Help stays here so accounts without operations rights can still open it.</td></tr>
     </tbody>
 </table>
 
@@ -53,8 +53,8 @@
 <h3>Menus, blocks, forms</h3>
 <p class="muted">If a section is marked “menu”, and the theme’s <code>@@cmsMenu</code> has no menu yet, those sections become the header. For exact order, build a header menu in {!! $hl('menus', 'Menus') !!}.</p>
 <p class="muted">Home banners and “latest news” blocks use {!! $hl('recommends', 'Blocks') !!}. The identifier must match the template <code>name</code>, for example <code>home_banner</code>. Hand-filled items can pick an image from the media library and preview it; output it with <code>cms_media($item-&gt;image)</code>.</p>
-<p class="muted">Homepage friend links / partners are under More → {!! $hl('friendLinks', 'Friend links') !!}, stored as the <code>partners</code> block (or <code>friend_links</code>). That is not the nav theme’s “link” content model, which is a URL directory.</p>
-<p class="muted">Build contact forms in {!! $hl('forms', 'Forms') !!} and output them with <code>@@cmsForm</code>. Submissions land in Inbox. Comments wait for approval by default; switches are in {!! $hl('settings', 'Settings') !!}.</p>
+<p class="muted">Homepage friend links / partners are under Operations → More → {!! $hl('friendLinks', 'Friend links') !!}, stored as the <code>partners</code> block (or <code>friend_links</code>). That is not the nav theme’s “link” content model, which is a URL directory.</p>
+<p class="muted">Build contact forms in {!! $hl('forms', 'Forms') !!} and output them with <code>@@cmsForm</code>. Submissions land in Inbox. Comments wait for approval by default; switches are in {!! $hl('settings', 'Settings') !!}. The search-engine URL list is under Operations → More → {!! $hl('sitemap', 'Sitemap') !!}.</p>
 
 <h3>Members</h3>
 <p class="muted">The front <code>/member</code> area handles register and login. If a model allows member posts and the group has that permission, members can submit drafts for review. Settings can turn comments and guest comments on.</p>
@@ -82,7 +82,11 @@
     </details>
     <details>
         <summary>Search engines should skip some paths</summary>
-        <p>Open <code>/robots.txt</code> first (admin, members, install, and preview are already disallowed). Add lines under {!! $hl('settingsMore', 'Settings → More') !!} as “robots.txt extra rules”, e.g. <code>Disallow: /private</code>. While the site is closed the whole file is still <code>Disallow: /</code>. Do not write HTML tags.</p>
+        <p>Open <code>/robots.txt</code> first (admin, members, install, and preview are already disallowed). Add lines under {!! $hl('settingsMore', 'Settings → More') !!} as “robots.txt extra rules”, e.g. <code>Disallow: /private</code>. While the site is closed the whole file is still <code>Disallow: /</code>. Do not write HTML tags. What to list is under Operations → More → {!! $hl('sitemap', 'Sitemap') !!}.</p>
+    </details>
+    <details>
+        <summary>Where is the sitemap</summary>
+        <p>Search engines use <code>/sitemap.xml</code> (and <code>/en/sitemap.xml</code> for English). Visitors can open <code>/sitemap</code>; turning that page off also hides the footer link. Toggle sections / entries / tags and extra URLs under Operations → More → {!! $hl('sitemap', 'Sitemap') !!}. Member-gated entries and unused tags are skipped. Do not use sitemap as a section slug.</p>
     </details>
     <details>
         <summary>I want the installer again</summary>

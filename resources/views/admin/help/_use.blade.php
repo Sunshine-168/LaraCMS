@@ -39,9 +39,9 @@
         <tr><th>位置</th><th>做什么</th></tr>
     </thead>
     <tbody>
-        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、标签、媒体、留言、评论、回收站。更多里有推荐属性、{!! $hl('friendLinks', '友链') !!}、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}。</td></tr>
-        <tr><td>运营</td><td>{!! $hl('members', '会员') !!}、采集、跳转、统计、{!! $hl('cache', '缓存') !!}（页面缓存和磁盘静态页）。</td></tr>
-        <tr><td>系统</td><td>{!! $hl('sites', '站点') !!}、{!! $hl('settings', '设置') !!}、{!! $hl('themes', '主题') !!}、语言、日志、管理员、权限，以及本页说明。</td></tr>
+        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、标签、媒体、留言、评论。更多里有推荐属性、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}、回收站。</td></tr>
+        <tr><td>运营</td><td>{!! $hl('members', '会员') !!}、采集、{!! $hl('cache', '缓存') !!}（页面缓存和磁盘静态页）。更多里有{!! $hl('friendLinks', '友链') !!}、{!! $hl('sitemap', '地图') !!}、跳转、分组。</td></tr>
+        <tr><td>系统</td><td>{!! $hl('sites', '站点') !!}、{!! $hl('settings', '设置') !!}、{!! $hl('themes', '主题') !!}、语言、日志、管理员、权限，以及本页说明。说明不跟权限走，所以留在系统最底下。</td></tr>
     </tbody>
 </table>
 
@@ -53,8 +53,8 @@
 <h3>导航、推荐位、表单</h3>
 <p class="muted">栏目勾「菜单」后，主题里 <code>@@cmsMenu</code> 没配导航时会拿这些栏目当顶栏。要精确控制顺序，用{!! $hl('menus', '导航') !!}建 header 菜单。</p>
 <p class="muted">首页 Banner、最新新闻这类区块用{!! $hl('recommends', '推荐位') !!}，标识要和模板里的 <code>name</code> 对上，例如 <code>home_banner</code>。手填条目点「选择」从媒体库挑图，保存前能看到预览；模板里用 <code>cms_media($item-&gt;image)</code> 输出。</p>
-<p class="muted">首页友情链接 / 合作伙伴走侧栏「更多 → {!! $hl('friendLinks', '友链') !!}」，数据存在推荐位 <code>partners</code>（没有则用 <code>friend_links</code>）。这和导航站主题里的「链接」模型不是一回事：那个是网址目录。</p>
-<p class="muted">联系表单在{!! $hl('forms', '表单') !!}里建，前台用 <code>@@cmsForm</code> 按标识输出。提交进「留言」。评论默认待审核，可在{!! $hl('settings', '设置') !!}里开关。</p>
+<p class="muted">首页友情链接 / 合作伙伴走侧栏「运营 → 更多 → {!! $hl('friendLinks', '友链') !!}」，数据存在推荐位 <code>partners</code>（没有则用 <code>friend_links</code>）。这和导航站主题里的「链接」模型不是一回事：那个是网址目录。</p>
+<p class="muted">联系表单在{!! $hl('forms', '表单') !!}里建，前台用 <code>@@cmsForm</code> 按标识输出。提交进「留言」。评论默认待审核，可在{!! $hl('settings', '设置') !!}里开关。搜索引擎用的地址清单在「运营 → 更多 → {!! $hl('sitemap', '地图') !!}」。</p>
 
 <h3>会员</h3>
 <p class="muted">前台 <code>/member</code> 可注册登录。模型勾「允许会员投稿」且分组有投稿权限后，会员能写稿，后台审过再发布。设置里可开评论、游客评论。</p>
@@ -82,7 +82,11 @@
     </details>
     <details>
         <summary>不想让搜索引擎抓某几页</summary>
-        <p>打开前台 <code>/robots.txt</code> 先看默认规则（后台、会员、安装、预览已经禁止）。再在{!! $hl('settingsMore', '设置 → 更多') !!}写「robots.txt 补充规则」，例如 <code>Disallow: /private</code>。关站时整站仍是 <code>Disallow: /</code>。不要写 HTML 标签。</p>
+        <p>打开前台 <code>/robots.txt</code> 先看默认规则（后台、会员、安装、预览已经禁止）。再在{!! $hl('settingsMore', '设置 → 更多') !!}写「robots.txt 补充规则」，例如 <code>Disallow: /private</code>。关站时整站仍是 <code>Disallow: /</code>。不要写 HTML 标签。收录范围在「运营 → 更多 → {!! $hl('sitemap', '地图') !!}」。</p>
+    </details>
+    <details>
+        <summary>站点地图在哪</summary>
+        <p>搜索引擎看 <code>/sitemap.xml</code>（英文站是 <code>/en/sitemap.xml</code>）。给人看的目录是 <code>/sitemap</code>，可在后台关掉，页脚链接会一起消失。勾选栏目 / 文章 / 标签、加补充地址，都在侧栏「运营 → 更多 → {!! $hl('sitemap', '地图') !!}」。会员才能看的文章、没有公开文章的标签不会列入。栏目标识不要写成 sitemap。</p>
     </details>
     <details>
         <summary>想重新跑安装向导</summary>

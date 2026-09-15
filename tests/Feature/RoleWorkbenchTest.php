@@ -104,6 +104,7 @@ class RoleWorkbenchTest extends TestCase
             ->assertSee('标识码')
             ->assertSee('能进哪些菜单')
             ->assertSee('内容管理')
+            ->assertSee('站点地图')
             ->assertSee('添加角色')
             ->assertDontSee('标识（slug')
             ->assertDontSee('模块权限')

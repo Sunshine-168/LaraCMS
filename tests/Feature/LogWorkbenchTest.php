@@ -32,6 +32,7 @@ class LogWorkbenchTest extends TestCase
         $this->assertSame('预览了内容', AdminLogAction::label('POST', '/admin/entries/12/preview'));
         $this->assertSame('清空了缓存', AdminLogAction::label('POST', '/admin/cache/clear'));
         $this->assertSame('保存了站点设置', AdminLogAction::label('PUT', '/admin/settings'));
+        $this->assertSame('保存了站点地图', AdminLogAction::label('PUT', '/admin/sitemap'));
         $this->assertSame('修改了自己的密码', AdminLogAction::label('PUT', '/admin/profile/password'));
         $this->assertSame('登录了后台', AdminLogAction::label('POST', '/admin/login'));
         $this->assertSame('登录失败', AdminLogAction::label('POST', '/admin/login', 401));

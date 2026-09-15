@@ -63,6 +63,9 @@ class DiskHtmlService
 
         $path = trim($request->path(), '/');
         $first = $path === '' ? '' : explode('/', $path)[0];
+        if (HtmlCacheService::isVolatileFrontPath($path)) {
+            return false;
+        }
         foreach ((array) config('cms.html_cache.exclude_prefixes', []) as $prefix) {
             if ($first === $prefix || str_starts_with($path, $prefix.'/')) {
                 return false;
