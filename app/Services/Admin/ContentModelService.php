@@ -133,6 +133,25 @@ class ContentModelService
         ];
     }
 
+    /** 模型已存在则跳过，避免覆盖站点自己改过的字段 */
+    public function importIfMissing(array $payload): array
+    {
+        $meta = $payload['model'] ?? null;
+        if (! is_array($meta) || empty($meta['slug'])) {
+            return Result::fail('无效的模型导出文件');
+        }
+        $slug = preg_replace('/[^a-z0-9_]/', '', strtolower((string) $meta['slug'])) ?: '';
+        if ($slug === '') {
+            return Result::fail('模型标识无效');
+        }
+        $model = ContentModel::query()->where('slug', $slug)->first();
+        if ($model) {
+            return Result::ok($model, '模型已有，未改字段');
+        }
+
+        return $this->importPayload($payload, false);
+    }
+
     /** 从导出 JSON 导入（同 slug 则覆盖字段定义，不删内容） */
     public function importPayload(array $payload, bool $overwrite = true): array
     {

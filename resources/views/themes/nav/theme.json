@@ -1,0 +1,9 @@
+{
+    "name": "导航",
+    "description": "网址导航",
+    "models": ["link"],
+    "categories": [
+        {"slug": "nav-tools", "title": "常用工具", "model": "link", "type": "list", "menu": true},
+        {"slug": "nav-dev", "title": "开发资源", "model": "link", "type": "list", "menu": true}
+    ]
+}

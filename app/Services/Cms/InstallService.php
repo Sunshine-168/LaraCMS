@@ -2,6 +2,7 @@
 
 namespace App\Services\Cms;
 
+use App\Models\Cms\Setting;
 use Database\Seeders\AdminBootstrapSeeder;
 use Database\Seeders\CmsSeeder;
 use Database\Seeders\DemoDataSeeder;
@@ -183,6 +184,10 @@ class InstallService
     public function finish(bool $demo): void
     {
         Artisan::call('storage:link', ['--force' => true]);
+        if (! $demo) {
+            $theme = (string) (Setting::getValue('theme', 'enterprise') ?: 'enterprise');
+            app(ThemePackInstaller::class)->ensure($theme);
+        }
         file_put_contents(
             $this->lockPath(),
             'installed_at='.now()->toDateTimeString()."\nseed_demo=".($demo ? '1' : '0')."\n"

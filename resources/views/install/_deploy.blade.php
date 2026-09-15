@@ -72,4 +72,7 @@ DB_PASSWORD=请换成强密码</code></pre>
     </div>
     <p class="hint">第一行 <code>try_files</code> 会优先读后台生成的磁盘静态页。没有文件时再交给 PHP。多站点把 <code>site_{{ $siteId }}</code> 改成对应站的编号。HTTPS 请在前面加证书或由面板处理。</p>
     <p class="muted">还要在 <code>.env</code> 写上 <code>APP_URL=https://www.example.com</code>，<code>APP_ENV=production</code>，<code>APP_DEBUG=false</code>。若站点在反向代理后面，再设 <code>TRUST_PROXIES=*</code>。</p>
+    @if(!empty($scheduleUrl))
+        <p class="hint">采集和统计清理要每分钟叫醒 Laravel，见「<a href="{{ $scheduleUrl }}">定时</a>」。</p>
+    @endif
 </div>

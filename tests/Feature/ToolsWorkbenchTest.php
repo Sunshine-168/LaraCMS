@@ -20,31 +20,36 @@ class ToolsWorkbenchTest extends TestCase
         CurrentSite::set(Site::default());
     }
 
-    public function test_old_tools_page_goes_to_themes(): void
+    public function test_old_tools_page_goes_to_html_cache(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
 
         $this->actingAs($admin, 'admin')
             ->get(route('admin.cache.edit'))
-            ->assertRedirect(route('admin.themes.index'));
+            ->assertRedirect(route('admin.html-cache.edit'));
 
-        $this->get(route('admin.themes.index'))
+        $this->get(route('admin.html-cache.edit'))
             ->assertOk()
             ->assertSee('清空缓存')
-            ->assertSee('外观主题')
+            ->assertSee('全页缓存')
             ->assertDontSee('立即备份')
             ->assertDontSee('导入演示数据')
             ->assertDontSee('系统工具')
             ->assertDontSee('>工具</span>', false);
+
+        $this->get(route('admin.themes.index'))
+            ->assertOk()
+            ->assertDontSee('>清空缓存</button>', false)
+            ->assertSee('缓存');
     }
 
-    public function test_clear_cache_returns_to_themes(): void
+    public function test_clear_cache_returns_to_html_cache(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
 
         $this->actingAs($admin, 'admin')
             ->post(route('admin.cache.clear'))
-            ->assertRedirect(route('admin.themes.index'))
+            ->assertRedirect(route('admin.html-cache.edit'))
             ->assertSessionHas('status', '缓存已清空');
     }
 

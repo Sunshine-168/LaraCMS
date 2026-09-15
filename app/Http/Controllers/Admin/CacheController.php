@@ -18,10 +18,10 @@ class CacheController extends Controller
         private readonly SiteBackupService $backups,
     ) {}
 
-    /** 旧「系统工具」入口，改走主题页 */
+    /** 旧「系统工具」入口，改走缓存页 */
     public function edit(): RedirectResponse
     {
-        return redirect()->route('admin.themes.index');
+        return redirect()->route('admin.html-cache.edit');
     }
 
     /** 一键清理配置 / 视图 / 应用 / 全页缓存 */
@@ -33,7 +33,7 @@ class CacheController extends Controller
         Artisan::call('route:clear');
         $this->htmlCache->forgetAll('admin:global-clear');
 
-        return redirect()->route('admin.themes.index')->with('status', '缓存已清空');
+        return redirect()->route('admin.html-cache.edit')->with('status', '缓存已清空');
     }
 
     /** 重新导入演示数据（幂等 updateOrCreate） */

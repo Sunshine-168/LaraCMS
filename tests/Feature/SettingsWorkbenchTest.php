@@ -83,6 +83,8 @@ class SettingsWorkbenchTest extends TestCase
             ->assertSee('文章链接怎么写')
             ->assertSee('邮件服务器')
             ->assertSee('立即备份')
+            ->assertSee('导入演示数据')
+            ->assertSee('缓存')
             ->assertSee('class="settings-pane active" data-pane="more"', false);
 
         $this->actingAs($admin, 'admin')

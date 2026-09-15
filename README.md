@@ -66,21 +66,23 @@ php artisan storage:link
 | `manga` | 漫画站 | manga / chapter |
 | `sports` | 体育资讯/信号目录 | signal |
 
-后台「系统 → 主题」切换当前站外观；「设置 → 移动外观」+ UA/域名分流可切到 `mobile`。体育主题仅作公开资讯/目录演示，请合法合规使用。
+后台「系统 → 主题」切换当前站外观；点「用于本站」时会按主题包 **补上缺少的内容模型**（已有模型不改字段）并补空栏目，不会清掉原来的文章。也可在「设置」里换主题。「设置 → 移动外观」+ UA/域名分流可切到 `mobile`。体育主题仅作公开资讯/目录演示，请合法合规使用。
 
 自己加主题不必改配置、也不用应用市场：
 
 1. 后台「系统 → 主题」从现有主题复制一套，只改新文件夹
-2. 或把目录放到 `resources/views/themes/{标识}/`，刷新主题页即出现
-3. 命令：`php artisan cms:theme-make brand --from=enterprise --name=品牌站`
+2. 或上传 zip（包内要有 `index/index.blade.php`，可带一层目录名当标识）
+3. 或把目录放到 `resources/views/themes/{标识}/`，刷新主题页即出现
+4. 命令：`php artisan cms:theme-make brand --from=enterprise --name=品牌站`
 
-可选在主题根放 `theme.json`（`name` / `description`）。至少要有 `index/index.blade.php` 才能点「用于本站」；缺页时前台会回落到企业主题。
+可选在主题根放 `theme.json`（`name` / `description` / `models` / `categories`）。预览图用 `preview.png`（或 `.jpg` / `.svg`），后台主题卡片会显示。至少要有 `index/index.blade.php` 才能点「用于本站」；缺页时前台会回落到企业主题。自带主题的模型定义在程序里，自己做的主题可在 `models/{标识}.json` 放一份后台「导出模型」同格式的 JSON。
 
 ## 本地说明
 
 - 文档 ID 伪静态：`/e/{id}`（站点设置 `url_mode=entry_id`）
 - 后台 ACL：角色权限 + 管理员栏目授权；侧栏按 `canPerm` 过滤
-- 站点设置「更多」：再导入演示数据 / **整站备份**（或 `php artisan cms:backup`）。换主题后前台还是旧样子，在「系统 → 主题」清空缓存。
+- 后台「系统 → 说明」：怎么用、后台各页、主题、模板、`@cms*` 标签；安装里有 PHP / MySQL / nginx、**定时任务和队列**、命令行、Docker
+- 站点设置「更多」：再导入演示数据 / **整站备份**（或 `php artisan cms:backup`）。换主题后前台还是旧样子，在「运营 → 缓存」清空缓存。
 
 ## 目录
 

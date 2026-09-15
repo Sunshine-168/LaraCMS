@@ -1,0 +1,8 @@
+{
+    "name": "下载站",
+    "description": "资料下载",
+    "models": ["download"],
+    "categories": [
+        {"slug": "downloads", "title": "下载中心", "model": "download", "type": "list", "menu": true}
+    ]
+}

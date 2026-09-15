@@ -234,6 +234,7 @@ class AdminLogAction
             'admin-users' => '管理员',
             'roles' => '角色',
             'recycle' => '回收站内容',
+            'help' => '说明',
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin\AdminUser;
 use App\Models\Cms\Category;
+use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Menu;
 use App\Models\Cms\Setting;
@@ -36,7 +37,10 @@ class FinishUpTest extends TestCase
 
             $this->assertFileExists($lock);
             $this->assertNotNull(AdminUser::query()->where('email', 'owner@example.com')->first());
-            $this->assertSame(0, Category::query()->count());
+            $this->assertSame(0, Entry::query()->count());
+            $this->assertTrue(ContentModel::query()->where('slug', 'article')->exists());
+            $this->assertFalse(ContentModel::query()->where('slug', 'signal')->exists());
+            $this->assertNotNull(Category::query()->get()->first(fn ($c) => ($c->slug['zh_cn'] ?? '') === 'news'));
 
             $this->get('/install/done')
                 ->assertOk()

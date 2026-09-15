@@ -1,0 +1,8 @@
+{
+    "name": "体育",
+    "description": "赛事资讯",
+    "models": ["signal"],
+    "categories": [
+        {"slug": "matches", "title": "赛事信号", "model": "signal", "type": "list", "menu": true}
+    ]
+}

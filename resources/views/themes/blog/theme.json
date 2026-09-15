@@ -1,0 +1,8 @@
+{
+    "name": "博客",
+    "description": "文章博客",
+    "models": ["article"],
+    "categories": [
+        {"slug": "blog", "title": "博客", "model": "article", "type": "list", "menu": true}
+    ]
+}

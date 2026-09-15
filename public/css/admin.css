@@ -1903,6 +1903,130 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     background: #fff;
     border: 1px solid #c9cdd4;
 }
+.theme-compose-row input[type=file] {
+    flex: 1;
+    min-width: 180px;
+    max-width: 280px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid #c9cdd4;
+    border-radius: 6px;
+}
+.card-header .btn-muted.is-on {
+    background: #eef3fb;
+    color: var(--primary);
+    border-color: #c5d4ea;
+}
+.theme-add {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    background: #f7f8fa;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.theme-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+.theme-add-k {
+    flex: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+}
+.theme-add-row select,
+.theme-add-row input[type=text],
+.theme-add-row input[type=file] {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    max-width: 220px;
+    background: #fff;
+    border: 1px solid #c9cdd4;
+}
+.theme-add-row select {
+    flex: 0 0 120px;
+    max-width: 140px;
+}
+.theme-add-row input[type=file] {
+    max-width: 220px;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+.theme-add-row .btn,
+.theme-add-row .btn-quiet { flex: none; }
+@media (max-width: 860px) {
+    .theme-add-row { flex-wrap: wrap; }
+}
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+.theme-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.theme-card.is-current {
+    border-color: #9db7e0;
+    background: #f7faff;
+}
+.theme-card.is-off { opacity: .72; }
+.theme-card-shot {
+    display: block;
+    aspect-ratio: 16 / 10;
+    background: #e8eef5;
+}
+.theme-card-shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.theme-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px 0;
+}
+.theme-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.theme-card-title {
+    font-weight: 650;
+    font-size: 15px;
+    line-height: 1.3;
+}
+.theme-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+}
+.theme-card-meta,
+.theme-card-models {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+.theme-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+.theme-card-actions form { margin: 0; }
 .card-header form {
     margin: 0;
 }
@@ -1951,3 +2075,145 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     cursor: pointer;
     font-size: 12px;
 }
+.help-page .tabs { flex-wrap: wrap; }
+.help-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 32px;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+}
+.help-nav-group > span {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+.help-nav-group .tabs {
+    margin: 0;
+    border-bottom: 0;
+}
+.help-jumps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+.help-jumps a {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: inherit;
+    text-decoration: none;
+    font-size: 13px;
+}
+.help-jumps a:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.help-faq details {
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+}
+.help-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+.help-faq details p {
+    margin: 8px 0 4px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+.help-page .help-body a { color: var(--primary); }
+.help-page .help-body {
+    max-width: 860px;
+}
+.help-page .help-steps {
+    margin: 8px 0 12px;
+    padding-left: 20px;
+    line-height: 1.7;
+}
+.help-page .help-doc {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+    font-size: 13px;
+}
+.help-page .help-doc th,
+.help-page .help-doc td {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    line-height: 1.55;
+}
+.help-page .help-doc th:first-child,
+.help-page .help-doc td:first-child {
+    white-space: nowrap;
+    width: 1%;
+    padding-left: 12px;
+    padding-right: 16px;
+}
+.help-page .help-doc th { color: var(--muted); font-weight: 600; }
+.help-page ol.help-steps li { margin: 4px 0; }
+.help-page .card.guide {
+    display: block;
+    min-height: 0;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: visible;
+}
+.help-page .card.guide .pane { padding: 0; }
+.help-page h2 { margin: 0 0 8px; font-size: 18px; }
+.help-page h3 { margin: 18px 0 6px; font-size: 14px; }
+.help-page .checks {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 12px;
+}
+.help-page .checks td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+}
+.help-page .checks td:first-child {
+    white-space: nowrap;
+    width: 1%;
+    padding-right: 16px;
+}
+.help-page .code {
+    position: relative;
+    margin: 8px 0 10px;
+    background: #1e2228;
+    color: #e8eaed;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.help-page .code pre {
+    margin: 0;
+    padding: 14px 72px 16px 16px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.55;
+}
+.help-page .code code { font-family: Consolas, "SF Mono", Menlo, monospace; }
+.help-page .code .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: 0;
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.help-page .hint { color: var(--muted); font-size: 13px; }

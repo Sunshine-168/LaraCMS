@@ -11,9 +11,15 @@
     $diskCount = (int) ($diskCount ?? 0);
     $diskJob = $diskJob ?? ['status' => 'idle', 'percent' => 0, 'message' => ''];
 @endphp
+@section('header_actions')
+    <form method="post" action="{{ route('admin.cache.clear') }}" onsubmit="return confirm('会清掉模板、配置和已存页面。第一次打开会稍慢，随后再生成。确定？')">
+        @csrf
+        <button class="btn btn-muted btn-sm" type="submit">清空缓存</button>
+    </form>
+@endsection
 @section('content')
     <div class="html-cache-page">
-        <p class="muted recycle-lead">把首页、栏目和文章先做好存起来，访客打开更快。后台、会员中心、搜索和下载不会存。改内容后会自动换新的。</p>
+        <p class="muted recycle-lead">把首页、栏目和文章先做好存起来，访客打开更快。后台、会员中心、搜索和下载不会存。改内容后会自动换新的。模板和配置缓存用右上角「清空缓存」。</p>
 
         <div class="html-cache-card">
             <div class="html-cache-status">
@@ -85,7 +91,7 @@
                     <span class="badge badge-off">未打开</span>
                 @endif
             </div>
-            <p class="muted field-hint">把栏目和文章写成文件。生成后前台会直接用这些文件，不必再渲染模板。本机开发也会读。</p>
+            <p class="muted field-hint">把栏目和文章写成文件。生成后前台会直接用这些文件，不必再渲染模板。本机开发也会读。nginx 怎么配见系统「<a href="{{ route('admin.help') }}">说明</a>」。</p>
             <form method="post" action="{{ route('admin.html-cache.disk-update') }}">
                 @csrf
                 @method('PUT')
@@ -129,11 +135,6 @@
                 <p class="muted" id="diskHtmlMsg" style="margin:8px 0 0">{{ $diskJob['message'] ?? '' }}</p>
             </div>
         </div>
-
-        <details class="html-cache-card deploy-box">
-            <summary>上线怎么配 PHP、MySQL、nginx</summary>
-            @include('install._deploy', ['siteId' => \App\Support\CurrentSite::idOrDefault() ?? 1, 'compact' => true])
-        </details>
     </div>
 @endsection
 @push('scripts')
@@ -241,15 +242,5 @@
         stopBtn && (stopBtn.hidden = true);
     }
 })();
-document.querySelectorAll('[data-copy]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        var code = btn.parentElement && btn.parentElement.querySelector('code');
-        if (!code || !navigator.clipboard) return;
-        navigator.clipboard.writeText(code.innerText).then(function () {
-            btn.textContent = '已复制';
-            setTimeout(function () { btn.textContent = '复制'; }, 1500);
-        });
-    });
-});
 </script>
 @endpush

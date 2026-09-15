@@ -105,28 +105,27 @@
                 @endif
             @endif
 
-            @if($can('sites') || $can('settings') || $can('logs') || $can('admin_users') || $can('roles') || $can('locales'))
-                <div class="nav-header">系统</div>
-                @if($can('sites'))
-                    <x-side-link :href="route('admin.sites.index')" icon="globe" label="站点" :active="request()->routeIs('admin.sites.*')" />
-                @endif
-                @if($can('settings'))
-                    <x-side-link :href="route('admin.settings.edit')" icon="cog" label="设置" :active="request()->routeIs('admin.settings.*')" />
-                    <x-side-link :href="route('admin.themes.index')" icon="palette" label="主题" :active="request()->routeIs('admin.themes.*')" />
-                @endif
-                @if($can('locales'))
-                    <x-side-link :href="route('admin.locales.index')" icon="language" label="语言" :active="request()->routeIs('admin.locales.*')" />
-                @endif
-                @if($can('logs'))
-                    <x-side-link :href="route('admin.logs.index')" icon="history" label="日志" :active="request()->routeIs('admin.logs.*')" />
-                @endif
-                @if($can('admin_users'))
-                    <x-side-link :href="route('admin.admin-users.index')" icon="user-cog" label="管理员" :active="request()->routeIs('admin.admin-users.*')" />
-                @endif
-                @if($can('roles'))
-                    <x-side-link :href="route('admin.roles.index')" icon="user-shield" label="权限" :active="request()->routeIs('admin.roles.*')" />
-                @endif
+            <div class="nav-header">系统</div>
+            @if($can('sites'))
+                <x-side-link :href="route('admin.sites.index')" icon="globe" label="站点" :active="request()->routeIs('admin.sites.*')" />
             @endif
+            @if($can('settings'))
+                <x-side-link :href="route('admin.settings.edit')" icon="cog" label="设置" :active="request()->routeIs('admin.settings.*')" />
+                <x-side-link :href="route('admin.themes.index')" icon="palette" label="主题" :active="request()->routeIs('admin.themes.*')" />
+            @endif
+            @if($can('locales'))
+                <x-side-link :href="route('admin.locales.index')" icon="language" label="语言" :active="request()->routeIs('admin.locales.*')" />
+            @endif
+            @if($can('logs'))
+                <x-side-link :href="route('admin.logs.index')" icon="history" label="日志" :active="request()->routeIs('admin.logs.*')" />
+            @endif
+            @if($can('admin_users'))
+                <x-side-link :href="route('admin.admin-users.index')" icon="user-cog" label="管理员" :active="request()->routeIs('admin.admin-users.*')" />
+            @endif
+            @if($can('roles'))
+                <x-side-link :href="route('admin.roles.index')" icon="user-shield" label="权限" :active="request()->routeIs('admin.roles.*')" />
+            @endif
+            <x-side-link :href="route('admin.help')" icon="book" label="说明" :active="request()->routeIs('admin.help')" />
         </nav>
         <div class="side-foot">
             <span class="side-foot-avatar">{{ mb_substr($admin?->name ?? 'A', 0, 1) }}</span>

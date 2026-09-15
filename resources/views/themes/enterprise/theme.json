@@ -1,0 +1,11 @@
+{
+    "name": "企业",
+    "description": "公司官网",
+    "models": ["article", "page", "product", "job"],
+    "categories": [
+        {"slug": "news", "title": "新闻中心", "model": "article", "type": "list", "menu": true},
+        {"slug": "about", "title": "关于我们", "model": "page", "type": "single", "menu": true},
+        {"slug": "products", "title": "产品中心", "model": "product", "type": "list", "menu": true, "list_tpl": "list.list_product", "show_tpl": "show.show_product"},
+        {"slug": "jobs", "title": "加入我们", "model": "job", "type": "list", "menu": true}
+    ]
+}

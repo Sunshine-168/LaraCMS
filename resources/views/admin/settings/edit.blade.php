@@ -250,6 +250,7 @@
         </div>
     </form>
     <div class="settings-pane settings-maintain{{ $tab === 'more' ? ' active' : '' }}" data-pane="more">
+        <p class="muted field-hint">页面和模板缓存请到「<a href="{{ route('admin.html-cache.edit') }}">缓存</a>」里清。这里只做备份和演示数据。</p>
         @include('admin.settings._maintain')
     </div>
 @endsection

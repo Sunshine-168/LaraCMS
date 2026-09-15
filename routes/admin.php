@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\EntryController;
 use App\Http\Controllers\Admin\FlagController;
 use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\Admin\FormSubmissionController;
+use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\HtmlCacheController;
 use App\Http\Controllers\Admin\LocaleController;
 use App\Http\Controllers\Admin\MediaController;
@@ -38,6 +39,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['admin.auth', 'admin.log'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::post('site/switch', [SiteController::class, 'switch'])->name('site.switch');
+        Route::get('help', [HelpController::class, 'index'])->name('help');
         Route::get('/', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard');
         Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('admin.perm:dashboard')->name('dashboard.alt');
         Route::middleware('admin.perm:dashboard')->group(function () {
@@ -175,10 +177,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
             Route::get('themes', [ThemeController::class, 'index'])->name('themes.index');
             Route::post('themes', [ThemeController::class, 'store'])->name('themes.store');
+            Route::post('themes/upload', [ThemeController::class, 'upload'])->name('themes.upload');
+            Route::get('themes/{theme}/preview', [ThemeController::class, 'preview'])->name('themes.preview')->where('theme', '[a-z][a-z0-9_-]*');
             Route::post('themes/{theme}/use', [ThemeController::class, 'apply'])->name('themes.apply')->where('theme', '[a-z][a-z0-9_-]*');
             Route::delete('themes/{theme}', [ThemeController::class, 'destroy'])->name('themes.destroy')->where('theme', '[a-z][a-z0-9_-]*');
             Route::get('cache', [CacheController::class, 'edit'])->name('cache.edit');
-            Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
             Route::post('cache/seed-demo', [CacheController::class, 'seedDemo'])->name('cache.seed-demo');
             Route::post('cache/backup', [CacheController::class, 'backup'])->name('cache.backup');
             Route::post('cache/backups/{file}/restore', [CacheController::class, 'restoreBackup'])->name('cache.backup.restore')
@@ -188,6 +191,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
         Route::middleware('admin.perm:html_cache')->group(function () {
             Route::get('html-cache', [HtmlCacheController::class, 'edit'])->name('html-cache.edit');
+            Route::post('cache/clear', [CacheController::class, 'clear'])->name('cache.clear');
             Route::put('html-cache', [HtmlCacheController::class, 'update'])->name('html-cache.update');
             Route::post('html-cache/clear', [HtmlCacheController::class, 'clear'])->name('html-cache.clear');
             Route::post('html-cache/warm', [HtmlCacheController::class, 'warm'])->name('html-cache.warm');

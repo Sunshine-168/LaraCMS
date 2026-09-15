@@ -39,14 +39,14 @@ class HtmlCacheWorkbenchTest extends TestCase
             ->assertSee('开始生成')
             ->assertSee('启用，允许在后台生成静态文件')
             ->assertSee('未开启')
-            ->assertSee('上线怎么配 PHP、MySQL、nginx')
-            ->assertSee('CREATE DATABASE cms')
+            ->assertSee('清空缓存')
+            ->assertSee('说明')
+            ->assertDontSee('上线怎么配 PHP、MySQL、nginx')
             ->assertDontSee('TTL（秒')
             ->assertDontSee('失效策略')
             ->assertDontSee('epoch')
             ->assertDontSee('CMS_DISK_HTML')
             ->assertDontSee('需要时让运维打开后再来生成')
-            ->assertDontSee('清空缓存</button>', false)
             ->assertDontSee('预热（首页/栏目/最近30篇）');
     }
 

@@ -1,0 +1,9 @@
+{
+    "name": "漫画",
+    "description": "漫画连载",
+    "models": ["manga", "chapter"],
+    "categories": [
+        {"slug": "comics", "title": "漫画库", "model": "manga", "type": "list", "menu": true},
+        {"slug": "chapters", "title": "章节", "model": "chapter", "type": "list", "menu": false, "show_tpl": "show.chapter"}
+    ]
+}
