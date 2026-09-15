@@ -17,7 +17,7 @@
 @endcmsContent
 
 @cmsAdv(['name' => 'home_banner'])
-    &lt;img src="{{ $item->image }}" alt="{{ $item->t('title') }}"&gt;
+    &lt;img src="{{ cms_media($item->image) }}" alt="{{ $item->t('title') }}"&gt;
 @endcmsAdv</code></pre>
 @endverbatim
 </div>
@@ -73,7 +73,7 @@
         <tr><td><code>@@cmsContent</code></td><td>Entry list</td><td><code>catid</code>, <code>model</code>, <code>flag</code>, <code>num</code>, <code>page</code>, <code>order</code>, <code>insub</code>, <code>related</code> + <code>related_field</code></td></tr>
         <tr><td><code>@@cmsPaginate</code></td><td>Pager (with <code>page=&gt;true</code>)</td><td>Optional view name</td></tr>
         <tr><td><code>@@cmsArcone</code></td><td>One entry</td><td><code>aid</code> or <code>id</code></td></tr>
-        <tr><td><code>@@cmsAdv</code></td><td>Block</td><td><code>name</code> required; <code>num</code>; HTML items in <code>$item-&gt;html</code>. Friend links use <code>partners</code> or <code>friend_links</code></td></tr>
+        <tr><td><code>@@cmsAdv</code></td><td>Block</td><td><code>name</code> required; <code>num</code>; images via <code>cms_media($item-&gt;image)</code>; HTML items in <code>$item-&gt;html</code>. Friend links use <code>partners</code> or <code>friend_links</code></td></tr>
         <tr><td><code>@@cmsBreadcrumb</code></td><td>Breadcrumb</td><td><code>symbol</code>, <code>class</code></td></tr>
         <tr><td><code>@@cmsPrev</code> / <code>@@cmsNext</code></td><td>Prev/next in the same section</td><td><code>field</code>, <code>msg</code></td></tr>
         <tr><td><code>@@cmsDate</code></td><td>Format a date</td><td><code>name</code> or <code>value</code>, <code>format=Y-m-d</code></td></tr>
@@ -97,7 +97,7 @@
         <tr><th>Function</th><th>Role</th></tr>
     </thead>
     <tbody>
-        <tr><td><code>cms_media($path)</code></td><td>Asset URL, with CDN</td></tr>
+        <tr><td><code>cms_media($path)</code></td><td>Asset URL. Honors the CDN in Settings; with <code>CMS_MEDIA_DISK=s3</code> it points at object storage</td></tr>
         <tr><td><code>cms_route('download', $entry)</code></td><td>Named route with locale prefix</td></tr>
         <tr><td><code>cms_front_url('news')</code></td><td>Front path</td></tr>
         <tr><td><code>cms_ui('search')</code></td><td>Theme phrase from Languages → Theme phrases. Search, login, comments, pager, prev/next, 404. <code>cms_ui('hello', ['name' => $name])</code> replaces <code>:name</code>.</td></tr>

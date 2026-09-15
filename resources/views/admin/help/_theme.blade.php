@@ -84,3 +84,31 @@
 }</code></pre>
 </div>
 <p class="hint">zip 里不要带可执行 PHP。自己主题的模型 JSON 也可放在 <code>models/标识.json</code>，格式和后台「导出模型」一样。栏目标题写成对象后，「用于本站」会按语言写入；公共头请留 <code>viewport</code>、语言切换和 <code>cms_ui()</code>。</p>
+
+<h3>二次开发用事件，不要改核心</h3>
+<p class="muted">内容保存、评论、表单、换主题、改设置会发出 Laravel 事件。在 <code>app/Providers/AppServiceProvider.php</code> 里 <code>Event::listen</code> 即可，不必改控制器。仓库 <code>CONTRIBUTING.md</code> 有同样一份表。</p>
+<table class="help-doc">
+    <thead>
+        <tr><th>事件</th><th>什么时候</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>App\Events\EntrySaved</code></td><td>保存一篇内容。<code>$created</code> 是否新建；<code>$publishedNow</code> 是否这次变成已发布（会员投稿不会标成刚发布）</td></tr>
+        <tr><td><code>App\Events\CommentSubmitted</code></td><td>前台提交评论（含待审）</td></tr>
+        <tr><td><code>App\Events\CommentModerated</code></td><td>后台通过 / 拒绝 / 标垃圾</td></tr>
+        <tr><td><code>App\Events\FormSubmitted</code></td><td>前台表单提交成功</td></tr>
+        <tr><td><code>App\Events\ThemeActivated</code></td><td>当前站换了主题（<code>$slug</code> / <code>$previous</code>）</td></tr>
+        <tr><td><code>App\Events\SettingSaved</code></td><td>设置写入（<code>$keys</code> 是改过的键）</td></tr>
+    </tbody>
+</table>
+<div class="code">
+    <button type="button" class="copy" data-copy>复制</button>
+<pre><code>use App\Events\EntrySaved;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(EntrySaved::class, function (EntrySaved $e) {
+    if ($e->publishedNow) {
+        // 通知搜索引擎、写日志等
+    }
+});</code></pre>
+</div>
+<p class="hint">列表里批量改文章状态不发 <code>EntrySaved</code>，避免一次几百封邮件。不要为「发布时做什么」去改核心文件。</p>

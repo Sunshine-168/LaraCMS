@@ -219,6 +219,11 @@
                 <p class="muted field-hint">读：站点配置、栏目、文章、搜索、标签、推荐位。写：表单提交、评论（带密钥可免验证码）。地址在网站根路径下的 /api。</p>
             </details>
 
+            <h3>搜索引擎</h3>
+            <label for="robots_extra">robots.txt 补充规则</label>
+            <textarea id="robots_extra" name="robots_extra" rows="5" placeholder="Disallow: /private">{{ old('robots_extra', $s['robots_extra'] ?? '') }}</textarea>
+            <p class="muted field-hint">写在默认规则后面。关站时整站仍是 Disallow: /。后台、会员、安装、预览已经禁止抓取。前台地址 /robots.txt。</p>
+
             <h3>统计与内链</h3>
             <label for="analytics_code">统计代码</label>
             <textarea id="analytics_code" name="analytics_code" rows="5" placeholder="把统计平台给的代码贴在这里">{{ old('analytics_code', $s['analytics_code'] ?? '') }}</textarea>

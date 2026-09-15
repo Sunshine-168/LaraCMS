@@ -108,8 +108,18 @@
                             <label>{{ $code === $defaultCode ? '备注' : $meta['label'].' · 备注' }}</label>
                             <input type="text" name="items[{{ $i }}][notes_{{ $code }}]" value="{{ $row['notes_'.$code] ?? '' }}">
                         @endforeach
-                        <label>图片 URL</label>
-                        <input type="text" name="items[{{ $i }}][image]" value="{{ $row['image'] ?? '' }}">
+                        <label>图片</label>
+                        @php $imgId = 'recImg'.$i; $imgVal = $row['image'] ?? ''; @endphp
+                        <div class="media-field" data-media-preview="#{{ $imgId }}">
+                            <div class="media-preview" @if(! $imgVal) hidden @endif>
+                                <img src="{{ $imgVal }}" alt="预览">
+                                <button type="button" class="media-preview-clear" title="移除图片">&times;</button>
+                            </div>
+                            <div class="cover-row">
+                                <input type="text" id="{{ $imgId }}" name="items[{{ $i }}][image]" value="{{ $imgVal }}" placeholder="可空，图片地址">
+                                <button type="button" class="btn btn-muted" data-media-pick="#{{ $imgId }}">选择</button>
+                            </div>
+                        </div>
                         <label>链接</label>
                         <input type="text" name="items[{{ $i }}][url]" value="{{ $row['url'] ?? '' }}">
                         <label>HTML</label>
@@ -127,6 +137,7 @@
             <a class="btn btn-muted" href="{{ route('admin.recommends.index') }}">取消</a>
         </div>
     </form>
+    @include('admin.partials.editor-assets')
 @endsection
 @push('scripts')
 <script>
@@ -134,16 +145,50 @@
     var idx = {{ count($rows ?? []) }};
     var localeCols = @json(collect($localeCols ?? \App\Support\Locale::configured())->map(fn ($meta, $code) => ['code' => $code, 'label' => $meta['label'] ?? $code])->values());
     var defaultCode = @json($defaultCode ?? \App\Support\Locale::default());
+    function bindPreview(root) {
+        var sel = root.getAttribute('data-media-preview');
+        var input = sel ? document.querySelector(sel) : null;
+        var box = root.querySelector('.media-preview');
+        var img = box ? box.querySelector('img') : null;
+        var clearBtn = root.querySelector('.media-preview-clear');
+        if (!input || !box || !img) return;
+        var sync = function () {
+            var url = (input.value || '').trim();
+            if (!url) {
+                box.hidden = true;
+                img.removeAttribute('src');
+                return;
+            }
+            img.onload = function () { box.hidden = false; };
+            img.onerror = function () { box.hidden = true; };
+            if (img.getAttribute('src') !== url) img.src = url;
+            else box.hidden = false;
+        };
+        input.addEventListener('input', sync);
+        input.addEventListener('change', sync);
+        clearBtn?.addEventListener('click', function () {
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+        });
+        sync();
+    }
     document.getElementById('add')?.addEventListener('click', function () {
+        var id = 'recImg' + idx;
         var d = document.createElement('div');
         d.className = 'rec-item';
         var html = '';
         localeCols.forEach(function (loc) {
             html += '<label>' + (loc.code === defaultCode ? '标题' : loc.label) + '</label><input name="items[' + idx + '][title_' + loc.code + ']">';
         });
-        html += '<label>图片 URL</label><input name="items[' + idx + '][image]"><label>链接</label><input name="items[' + idx + '][url]">';
+        html += '<label>图片</label><div class="media-field" data-media-preview="#' + id + '">';
+        html += '<div class="media-preview" hidden><img alt="预览"><button type="button" class="media-preview-clear" title="移除图片">&times;</button></div>';
+        html += '<div class="cover-row"><input type="text" id="' + id + '" name="items[' + idx + '][image]" placeholder="可空，图片地址">';
+        html += '<button type="button" class="btn btn-muted" data-media-pick="#' + id + '">选择</button></div></div>';
+        html += '<label>链接</label><input name="items[' + idx + '][url]">';
         d.innerHTML = html;
         document.getElementById('items').appendChild(d);
+        var field = d.querySelector('[data-media-preview]');
+        if (field) bindPreview(field);
         idx++;
     });
     var typeSel = document.getElementById('recType');

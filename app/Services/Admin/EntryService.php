@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Events\EntrySaved;
 use App\Models\Cms\Entry;
 use App\Models\Cms\EntryRevision;
 use App\Models\Cms\Recommend;
@@ -130,6 +131,7 @@ class EntryService
         }
 
         $entry ??= new Entry;
+        $creating = ! $entry->exists;
         $wasPublished = $entry->exists && $entry->status === 'published';
         $wasPending = $entry->exists && $entry->status === 'pending';
         if ($entry->exists) {
@@ -185,6 +187,7 @@ class EntryService
         if ($status === 'pending' && ! $wasPending) {
             $this->opsNotify->entryPending($entry->loadMissing('member'));
         }
+        event(new EntrySaved($entry, $creating, $status === 'published' && ! $wasPublished));
 
         return Result::ok($entry, '保存成功');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Cms;
 
+use App\Events\EntrySaved;
 use App\Models\Cms\Category;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Entry;
@@ -70,6 +71,7 @@ class MemberContributeService
             $entry->status = 'draft';
         }
         $wasPending = $entry->exists && $entry->status === 'pending';
+        $creating = ! $entry->exists;
 
         $title = trim((string) ($input['title'] ?? ''));
         if ($title === '') {
@@ -121,6 +123,7 @@ class MemberContributeService
         if ($submit && ! $wasPending) {
             $this->opsNotify->entryPending($entry->loadMissing('member'));
         }
+        event(new EntrySaved($entry, $creating, false));
 
         return Result::ok($entry, $submit ? '已提交审核' : '草稿已保存');
     }

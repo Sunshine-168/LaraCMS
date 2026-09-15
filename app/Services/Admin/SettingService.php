@@ -2,6 +2,8 @@
 
 namespace App\Services\Admin;
 
+use App\Events\SettingSaved;
+use App\Events\ThemeActivated;
 use App\Models\Cms\Setting;
 use App\Services\Cms\HtmlCacheService;
 use App\Support\Cdn;
@@ -33,7 +35,9 @@ class SettingService
         $theme = $pairs['theme'] ?? null;
         if (is_string($theme) && $theme !== '' && $theme !== $oldTheme) {
             app(\App\Services\Cms\ThemePackInstaller::class)->ensure($theme);
+            event(new ThemeActivated($theme, (string) $oldTheme));
         }
+        event(new SettingSaved(array_values(array_map('strval', array_keys($pairs)))));
 
         // 站点信息/主题变更影响几乎所有页面
         $this->htmlCache->forgetAll('settings');

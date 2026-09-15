@@ -34,6 +34,7 @@ class SettingController extends Controller
             'comments_notify_email', 'comments_rate_seconds',
             'map_default_lng', 'map_default_lat',
             'cdn_url',
+            'robots_extra',
             'logo', 'favicon', 'primary_color', 'footer_text', 'icp', 'hero_title', 'hero_subtitle',
         ];
 
@@ -53,7 +54,7 @@ class SettingController extends Controller
             'mail_host', 'mail_encryption', 'mail_username', 'mail_from_address', 'mail_from_name',
             'mobile_theme', 'mobile_domain', 'mobile_detect', 'api_token',
             'comments_notify_email', 'map_default_lng', 'map_default_lat',
-            'cdn_url',
+            'cdn_url', 'robots_extra',
             'footer_text', 'icp', 'hero_title', 'hero_subtitle', 'primary_color',
         ]);
         $data['upload_thumb_width'] = (string) max(0, (int) $request->input('upload_thumb_width', 0));
@@ -88,6 +89,7 @@ class SettingController extends Controller
             $cdn = '';
         }
         $data['cdn_url'] = rtrim($cdn, '/');
+        $data['robots_extra'] = $this->sanitizeRobotsExtra((string) ($data['robots_extra'] ?? ''));
         $data['primary_color'] = ThemeAppearance::sanitizeColor((string) ($data['primary_color'] ?? ''));
         $data['icp'] = mb_substr(trim((string) ($data['icp'] ?? '')), 0, 80);
         $data['footer_text'] = mb_substr(trim((string) ($data['footer_text'] ?? '')), 0, 500);
@@ -120,5 +122,26 @@ class SettingController extends Controller
         $tab = (string) $request->input('tab', $request->query('tab', 'site'));
 
         return in_array($tab, ['site', 'look', 'interact', 'more'], true) ? $tab : 'site';
+    }
+
+    protected function sanitizeRobotsExtra(string $raw): string
+    {
+        $raw = str_replace(["\r\n", "\r"], "\n", $raw);
+        $lines = [];
+        foreach (explode("\n", $raw) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            if (str_contains($line, '<') || str_contains($line, '>')) {
+                continue;
+            }
+            $lines[] = mb_substr($line, 0, 200);
+            if (count($lines) >= 40) {
+                break;
+            }
+        }
+
+        return implode("\n", $lines);
     }
 }

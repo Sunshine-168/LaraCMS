@@ -44,5 +44,6 @@ DB_PASSWORD=use-a-strong-password</code></pre>
         </div>
         <p class="muted">Open <a href="{{ url('/') }}">{{ url('/') }}</a>. Admin: <a href="{{ url('/admin/login') }}">{{ url('/admin/login') }}</a>, with the email you set.</p>
         <p class="hint">You can skip <code>cms:install</code>: after the first two steps, finish in the browser at <a href="{{ $webInstallUrl }}">web install</a>.</p>
+        <p class="hint">Do not edit core files for “when an article is published”. Listen to <code>App\Events\*</code> — see Help → Templates.</p>
     </div>
 </div>

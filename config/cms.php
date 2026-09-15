@@ -60,4 +60,7 @@ return [
 
     /** 操作日志里公网 IP 查省市（内网/Docker 本地判断，不走网络） */
     'ip_lookup' => filter_var(env('CMS_IP_LOOKUP', true), FILTER_VALIDATE_BOOL),
+
+    /** 媒体上传盘，默认 public。对象存储填 s3，并 composer require league/flysystem-aws-s3-v3 */
+    'media_disk' => env('CMS_MEDIA_DISK', 'public'),
 ];

@@ -57,21 +57,26 @@ class MediaService
         ];
     }
 
-    /** 上传文件（图片可缩略 / 水印） */
+    /** 上传文件（图片可缩略 / 水印；远程盘跳过 GD） */
     public function upload(UploadedFile $file, ?string $alt = null): array
     {
-        $path = $file->store('cms/'.date('Y/m'), 'public');
-        $full = Storage::disk('public')->path($path);
-        if (str_starts_with((string) $file->getMimeType(), 'image/')) {
-            $this->processImage($full);
+        $disk = (string) config('cms.media_disk', 'public') ?: 'public';
+        $path = $file->store('cms/'.date('Y/m'), $disk);
+        $size = (int) ($file->getSize() ?: 0);
+        if ($this->diskIsLocal($disk)) {
+            $full = Storage::disk($disk)->path($path);
+            if (str_starts_with((string) $file->getMimeType(), 'image/')) {
+                $this->processImage($full);
+            }
+            $size = is_file($full) ? (int) (filesize($full) ?: $size) : $size;
         }
 
         $media = Media::query()->create([
-            'disk' => 'public',
+            'disk' => $disk,
             'path' => $path,
             'filename' => $file->getClientOriginalName(),
             'mime' => $file->getClientMimeType(),
-            'size' => filesize($full) ?: ($file->getSize() ?: 0),
+            'size' => $size,
             'alt' => $alt ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
         ]);
 
@@ -244,6 +249,11 @@ class MediaService
         }
 
         return [$x, $y];
+    }
+
+    protected function diskIsLocal(string $disk): bool
+    {
+        return in_array($disk, ['public', 'local'], true);
     }
 
     protected function resolveWatermarkImagePath(string $stored): ?string

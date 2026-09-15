@@ -52,7 +52,7 @@
 
 <h3>导航、推荐位、表单</h3>
 <p class="muted">栏目勾「菜单」后，主题里 <code>@@cmsMenu</code> 没配导航时会拿这些栏目当顶栏。要精确控制顺序，用{!! $hl('menus', '导航') !!}建 header 菜单。</p>
-<p class="muted">首页 Banner、最新新闻这类区块用{!! $hl('recommends', '推荐位') !!}，标识要和模板里的 <code>name</code> 对上，例如 <code>home_banner</code>。</p>
+<p class="muted">首页 Banner、最新新闻这类区块用{!! $hl('recommends', '推荐位') !!}，标识要和模板里的 <code>name</code> 对上，例如 <code>home_banner</code>。手填条目点「选择」从媒体库挑图，保存前能看到预览；模板里用 <code>cms_media($item-&gt;image)</code> 输出。</p>
 <p class="muted">首页友情链接 / 合作伙伴走侧栏「更多 → {!! $hl('friendLinks', '友链') !!}」，数据存在推荐位 <code>partners</code>（没有则用 <code>friend_links</code>）。这和导航站主题里的「链接」模型不是一回事：那个是网址目录。</p>
 <p class="muted">联系表单在{!! $hl('forms', '表单') !!}里建，前台用 <code>@@cmsForm</code> 按标识输出。提交进「留言」。评论默认待审核，可在{!! $hl('settings', '设置') !!}里开关。</p>
 
@@ -60,7 +60,7 @@
 <p class="muted">前台 <code>/member</code> 可注册登录。模型勾「允许会员投稿」且分组有投稿权限后，会员能写稿，后台审过再发布。设置里可开评论、游客评论。</p>
 
 <h3>多站、备份、缓存</h3>
-<p class="muted">{!! $hl('sites', '站点') !!}按域名分站，栏目和文章带站点隔离。顶栏可切换当前编辑站。备份在{!! $hl('settingsMore', '设置 → 更多') !!}，或命令 <code>php artisan cms:backup</code>。缓存、静态页生成都在{!! $hl('cache', '缓存') !!}，nginx 写法见「<a href="{{ $urls['env'] ?? '#' }}">环境</a>」。</p>
+<p class="muted">{!! $hl('sites', '站点') !!}按域名分站，栏目和文章带站点隔离。顶栏可切换当前编辑站。备份、robots.txt 补充规则都在{!! $hl('settingsMore', '设置 → 更多') !!}；备份也可用命令 <code>php artisan cms:backup</code>。缓存、静态页生成都在{!! $hl('cache', '缓存') !!}，nginx 和对象存储见「<a href="{{ $urls['env'] ?? '#' }}">环境</a>」。</p>
 
 <h3>常见问题</h3>
 <div class="help-faq">
@@ -74,11 +74,15 @@
     </details>
     <details>
         <summary>图片或上传文件 404</summary>
-        <p>项目根执行过 <code>php artisan storage:link</code>，且 <code>storage</code>、<code>bootstrap/cache</code> 可写。配了 CDN 时检查「设置」里的资源域名。</p>
+        <p>项目根执行过 <code>php artisan storage:link</code>，且 <code>storage</code>、<code>bootstrap/cache</code> 可写。配了 CDN 时检查「设置」里的资源域名。若 <code>.env</code> 写了 <code>CMS_MEDIA_DISK=s3</code>，文件不在本机 <code>public/storage</code>，要核对桶名和 <code>AWS_URL</code>。</p>
     </details>
     <details>
         <summary>推荐位、表单是空的</summary>
-        <p>后台标识要和模板参数一致：推荐位 <code>name</code>（如 <code>home_banner</code>），表单 <code>slug</code>（如 <code>contact</code>）。没启用或没条目也不会显示。</p>
+        <p>后台标识要和模板参数一致：推荐位 <code>name</code>（如 <code>home_banner</code>），表单 <code>slug</code>（如 <code>contact</code>）。没启用或没条目也不会显示。手填推荐位有图却前台空白时，模板请用 <code>cms_media($item-&gt;image)</code>，不要写死本机路径。</p>
+    </details>
+    <details>
+        <summary>不想让搜索引擎抓某几页</summary>
+        <p>打开前台 <code>/robots.txt</code> 先看默认规则（后台、会员、安装、预览已经禁止）。再在{!! $hl('settingsMore', '设置 → 更多') !!}写「robots.txt 补充规则」，例如 <code>Disallow: /private</code>。关站时整站仍是 <code>Disallow: /</code>。不要写 HTML 标签。</p>
     </details>
     <details>
         <summary>想重新跑安装向导</summary>

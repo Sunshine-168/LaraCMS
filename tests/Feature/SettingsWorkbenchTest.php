@@ -81,6 +81,7 @@ class SettingsWorkbenchTest extends TestCase
             ->get(route('admin.settings.edit', ['tab' => 'more']))
             ->assertOk()
             ->assertSee('文章链接怎么写')
+            ->assertSee('robots.txt 补充规则')
             ->assertSee('邮件服务器')
             ->assertSee('立即备份')
             ->assertSee('导入演示数据')

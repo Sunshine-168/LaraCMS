@@ -79,7 +79,9 @@ class InstallWizardTest extends TestCase
             ->assertSee('DB_CONNECTION=mysql')
             ->assertSee('try_files')
             ->assertSee('php8.3-fpm.sock')
-            ->assertSee('APP_DEBUG=false');
+            ->assertSee('APP_DEBUG=false')
+            ->assertSee('对象存储')
+            ->assertSee('robots.txt 补充规则');
     }
 
     public function test_artisan_install_command(): void

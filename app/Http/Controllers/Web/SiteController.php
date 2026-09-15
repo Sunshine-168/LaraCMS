@@ -379,6 +379,15 @@ class SiteController extends Controller
             $lines[] = 'Disallow: /preview';
         }
         $lines[] = 'Sitemap: '.$sitemap;
+        $extra = trim((string) \App\Models\Cms\Setting::getValue('robots_extra', ''));
+        if ($extra !== '' && ! $closed) {
+            foreach (preg_split('/\R/', $extra) ?: [] as $line) {
+                $line = trim((string) $line);
+                if ($line !== '') {
+                    $lines[] = $line;
+                }
+            }
+        }
         $lines[] = '';
 
         return response(implode("\n", $lines), 200)->header('Content-Type', 'text/plain; charset=UTF-8');

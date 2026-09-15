@@ -16,7 +16,7 @@
 @endcmsContent
 
 @cmsAdv(['name' => 'home_banner'])
-    &lt;img src="{{ $item->image }}" alt="{{ $item->t('title') }}"&gt;
+    &lt;img src="{{ cms_media($item->image) }}" alt="{{ $item->t('title') }}"&gt;
 @endcmsAdv</code></pre>
 @endverbatim
 </div>
@@ -72,7 +72,7 @@
         <tr><td><code>@@cmsContent</code></td><td>文档列表</td><td><code>catid</code>，<code>model</code>，<code>flag</code>，<code>num</code>，<code>page</code>，<code>order</code>，<code>insub</code>，<code>related</code> + <code>related_field</code></td></tr>
         <tr><td><code>@@cmsPaginate</code></td><td>分页（配合 <code>page=&gt;true</code>）</td><td>可传入分页视图名</td></tr>
         <tr><td><code>@@cmsArcone</code></td><td>指定一篇</td><td><code>aid</code> 或 <code>id</code></td></tr>
-        <tr><td><code>@@cmsAdv</code></td><td>推荐位</td><td><code>name</code> 必填；<code>num</code>；HTML 条目输出 <code>$item-&gt;html</code>。首页友链用 <code>partners</code> 或 <code>friend_links</code></td></tr>
+        <tr><td><code>@@cmsAdv</code></td><td>推荐位</td><td><code>name</code> 必填；<code>num</code>；图片用 <code>cms_media($item-&gt;image)</code>；HTML 条目输出 <code>$item-&gt;html</code>。首页友链用 <code>partners</code> 或 <code>friend_links</code></td></tr>
         <tr><td><code>@@cmsBreadcrumb</code></td><td>面包屑</td><td><code>symbol</code>，<code>class</code></td></tr>
         <tr><td><code>@@cmsPrev</code> / <code>@@cmsNext</code></td><td>同栏目上下篇</td><td><code>field</code>，<code>msg</code>（没有时的文字）</td></tr>
         <tr><td><code>@@cmsDate</code></td><td>格式化日期</td><td><code>name</code> 或 <code>value</code>，<code>format=Y-m-d</code></td></tr>
@@ -96,7 +96,7 @@
         <tr><th>函数</th><th>作用</th></tr>
     </thead>
     <tbody>
-        <tr><td><code>cms_media($path)</code></td><td>附件地址，走 CDN 设置</td></tr>
+        <tr><td><code>cms_media($path)</code></td><td>附件地址。走「设置」里的 CDN；<code>.env</code> 配了 <code>CMS_MEDIA_DISK=s3</code> 时指向对象存储</td></tr>
         <tr><td><code>cms_route('download', $entry)</code></td><td>带语言前缀的命名路由</td></tr>
         <tr><td><code>cms_front_url('news')</code></td><td>前台路径</td></tr>
         <tr><td><code>cms_ui('search')</code></td><td>主题短句，在「语言 → 主题文案」里改。搜索、登录、评论、翻页、上一篇、404 都走这里。可写 <code>cms_ui('hello', ['name' => $name])</code> 替换 <code>:name</code>。</td></tr>

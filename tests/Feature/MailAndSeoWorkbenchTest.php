@@ -33,7 +33,14 @@ class MailAndSeoWorkbenchTest extends TestCase
             ->assertOk()
             ->assertSee('User-agent: *')
             ->assertSee('Disallow: /admin')
-            ->assertSee('Sitemap:');
+            ->assertSee('Sitemap:')
+            ->assertDontSee('Disallow: /private-area');
+
+        Setting::setValue('robots_extra', "Disallow: /private-area\n# note");
+        $this->get('/robots.txt')
+            ->assertOk()
+            ->assertSee('Disallow: /private-area')
+            ->assertSee('# note');
 
         $this->get('/')
             ->assertOk()

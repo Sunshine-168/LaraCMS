@@ -55,6 +55,7 @@ class RecommendWorkbenchTest extends TestCase
             ->assertSee('标识码')
             ->assertSee('@cmsAdv', false)
             ->assertSee('添加推荐位')
+            ->assertSee('data-media-pick', false)
             ->assertDontSee('标识 name');
     }
 

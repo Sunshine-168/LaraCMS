@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Events\CommentModerated;
 use App\Models\Cms\Comment;
 use App\Models\Cms\Entry;
 use App\Services\Cms\HtmlCacheService;
@@ -65,6 +66,7 @@ class CommentAdminService
         if ($comment->entry) {
             $this->htmlCache->forgetByEntry($comment->entry);
         }
+        event(new CommentModerated($comment, $status));
 
         return Result::ok($comment, match ($status) {
             Comment::STATUS_APPROVED => '已通过，将显示在前台',

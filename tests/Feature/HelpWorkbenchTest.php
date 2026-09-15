@@ -37,6 +37,8 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('建栏目')
             ->assertSee('常见问题')
             ->assertSee('换了主题，前台还是旧样子')
+            ->assertSee('不想让搜索引擎抓某几页')
+            ->assertSee('robots.txt 补充规则')
             ->assertSee(route('admin.settings.edit'), false)
             ->assertSee(route('admin.help', ['topic' => 'admin']), false)
             ->assertSee(route('admin.help', ['topic' => 'themes']), false)
@@ -63,7 +65,10 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('index/index.blade.php')
             ->assertSee('list.list')
             ->assertSee('品牌站')
-            ->assertSee('@cmsContent');
+            ->assertSee('@cmsContent')
+            ->assertSee('二次开发用事件')
+            ->assertSee('App\\Events\\EntrySaved')
+            ->assertSee('Event::listen');
 
         $this->get(route('admin.help', ['topic' => 'tags']))
             ->assertOk()
@@ -72,8 +77,9 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('@cmsAdv')
             ->assertSee('<img src=')
             ->assertDontSee('<img src="{{ $item->image }}"', false)
+            ->assertSee('cms_media($item->image)', false)
             ->assertSee('@cmsForm')
-            ->assertSee('cms_media')
+            ->assertSee('CMS_MEDIA_DISK')
             ->assertSee('必须改名');
     }
 
@@ -92,7 +98,10 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee(route('admin.stats.index'), false)
             ->assertSee(route('admin.locales.index'), false)
             ->assertSee(route('admin.friend-links.index'), false)
-            ->assertSee('友链');
+            ->assertSee('友链')
+            ->assertSee('robots.txt 补充规则')
+            ->assertSee('从媒体库挑图')
+            ->assertSee('CMS_MEDIA_DISK');
     }
 
     public function test_env_laravel_and_docker_topics(): void
@@ -105,7 +114,11 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('MySQL')
             ->assertSee('nginx')
             ->assertSee('CREATE DATABASE cms')
-            ->assertSee('try_files');
+            ->assertSee('try_files')
+            ->assertSee('对象存储')
+            ->assertSee('搜索引擎 robots.txt')
+            ->assertSee('robots.txt 补充规则')
+            ->assertSee('CMS_MEDIA_DISK');
 
         $this->get(route('admin.help', ['topic' => 'schedule']))
             ->assertOk()
@@ -119,6 +132,7 @@ class HelpWorkbenchTest extends TestCase
             ->assertOk()
             ->assertSee('用 Laravel 命令行安装')
             ->assertSee('php artisan cms:install')
+            ->assertSee('App\\Events\\*')
             ->assertSee(route('admin.help', ['topic' => 'env']), false);
 
         $this->get(route('admin.help', ['topic' => 'docker']))
@@ -163,6 +177,13 @@ class HelpWorkbenchTest extends TestCase
         $this->get(route('admin.help', ['topic' => 'env']))
             ->assertOk()
             ->assertSee('What you need to go live')
+            ->assertSee('robots.txt extra rules')
             ->assertDontSee('上线要准备什么');
+
+        $this->get(route('admin.help', ['topic' => 'theme']))
+            ->assertOk()
+            ->assertSee('Extend with events')
+            ->assertSee('App\\Events\\EntrySaved')
+            ->assertDontSee('二次开发用事件');
     }
 }

@@ -33,3 +33,27 @@ CI runs the full suite. Do not skip tests to hide GD/SQLite gaps — declare the
 - Admin copy: Chinese names first, no jargon columns, no identical-status badges.
 - Do not commit `.env`, backups, or `storage/app` uploads.
 - Match surrounding style. If you use Pint locally: `vendor/bin/pint --dirty`.
+
+## Events
+
+Listen in `AppServiceProvider` (or a dedicated listener). Do not fork controllers for “when an article is published”.
+
+| Event | When |
+|-------|------|
+| `App\Events\EntrySaved` | Entry saved (`$created`, `$publishedNow`) |
+| `App\Events\CommentSubmitted` | New comment |
+| `App\Events\CommentModerated` | Admin approved / rejected / spam |
+| `App\Events\FormSubmitted` | Front form POST |
+| `App\Events\ThemeActivated` | Theme slug changed |
+| `App\Events\SettingSaved` | Settings keys written |
+
+```php
+use App\Events\EntrySaved;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(EntrySaved::class, function (EntrySaved $e) {
+    if ($e->publishedNow) {
+        // ping a search engine, write a log, …
+    }
+});
+```

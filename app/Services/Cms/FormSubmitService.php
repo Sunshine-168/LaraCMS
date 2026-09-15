@@ -2,6 +2,7 @@
 
 namespace App\Services\Cms;
 
+use App\Events\FormSubmitted;
 use App\Models\Cms\CmsForm;
 use App\Models\Cms\FormSubmission;
 use App\Models\Cms\Member;
@@ -76,6 +77,7 @@ class FormSubmitService
                 (string) $request->ip()
             );
         }
+        event(new FormSubmitted($submission, $form));
 
         return Result::ok($submission, '提交成功，我们会尽快联系您。');
     }

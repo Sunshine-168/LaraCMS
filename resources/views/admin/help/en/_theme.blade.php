@@ -85,3 +85,31 @@
 }</code></pre>
 </div>
 <p class="hint">No executable PHP in the zip. Custom model JSON can live in <code>models/slug.json</code> (same as “Export model”). Object titles are written per language on apply. Keep viewport, the language switcher, and <code>cms_ui()</code> in the layout.</p>
+
+<h3>Extend with events, not core edits</h3>
+<p class="muted">Saving entries, comments, forms, switching themes, and writing settings dispatch Laravel events. Listen in <code>app/Providers/AppServiceProvider.php</code> with <code>Event::listen</code>. The same table is in <code>CONTRIBUTING.md</code>.</p>
+<table class="help-doc">
+    <thead>
+        <tr><th>Event</th><th>When</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>App\Events\EntrySaved</code></td><td>An entry was saved. <code>$created</code> is a new row; <code>$publishedNow</code> means it became published this save (member drafts do not set that)</td></tr>
+        <tr><td><code>App\Events\CommentSubmitted</code></td><td>A front comment was posted (including pending)</td></tr>
+        <tr><td><code>App\Events\CommentModerated</code></td><td>Admin approved / rejected / marked spam</td></tr>
+        <tr><td><code>App\Events\FormSubmitted</code></td><td>A front form POST succeeded</td></tr>
+        <tr><td><code>App\Events\ThemeActivated</code></td><td>The current site’s theme changed (<code>$slug</code> / <code>$previous</code>)</td></tr>
+        <tr><td><code>App\Events\SettingSaved</code></td><td>Settings keys were written (<code>$keys</code>)</td></tr>
+    </tbody>
+</table>
+<div class="code">
+    <button type="button" class="copy" data-copy>{{ $copy }}</button>
+<pre><code>use App\Events\EntrySaved;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(EntrySaved::class, function (EntrySaved $e) {
+    if ($e->publishedNow) {
+        // ping a search engine, write a log, …
+    }
+});</code></pre>
+</div>
+<p class="hint">Bulk status changes on the entry list do not fire <code>EntrySaved</code>, so you do not mail hundreds of times. Do not fork controllers for “when an article is published”.</p>

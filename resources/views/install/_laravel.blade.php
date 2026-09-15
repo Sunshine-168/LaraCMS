@@ -43,5 +43,6 @@ DB_PASSWORD=请换成强密码</code></pre>
         </div>
         <p class="muted">浏览器打开 <a href="{{ url('/') }}">{{ url('/') }}</a>，后台 <a href="{{ url('/admin/login') }}">{{ url('/admin/login') }}</a>，用上面填的邮箱登录。</p>
         <p class="hint">也可以不跑 <code>cms:install</code>，执行前两步后打开 <a href="{{ $webInstallUrl }}">网页安装</a> 用浏览器点完。</p>
+        <p class="hint">二次开发不要改核心文件。文章保存、评论、表单、换主题会发出 <code>App\Events\*</code>，写法见后台说明「模板」。</p>
     </div>
 </div>

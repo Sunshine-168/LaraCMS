@@ -236,27 +236,31 @@ document.addEventListener('DOMContentLoaded', function () {
     zone?.addEventListener('drop', function (e) {
         window.CmsEditor.uploadFromPicker(e.dataTransfer && e.dataTransfer.files);
     });
-    document.querySelectorAll('[data-media-pick]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var target = document.querySelector(btn.getAttribute('data-media-pick'));
-            if (!target) return;
-            window.CmsEditor.openPicker(function (url) {
-                target.value = url;
-                target.dispatchEvent(new Event('input'));
-            });
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-media-pick]');
+        if (!btn) return;
+        var sel = btn.getAttribute('data-media-pick');
+        var target = sel ? document.querySelector(sel) : null;
+        if (!target) return;
+        e.preventDefault();
+        window.CmsEditor.openPicker(function (url) {
+            target.value = url;
+            target.dispatchEvent(new Event('input'));
         });
     });
-    document.querySelectorAll('[data-media-pick-append]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var target = document.querySelector(btn.getAttribute('data-media-pick-append'));
-            if (!target) return;
-            window.CmsEditor.openPicker(function (url) {
-                var cur = (target.value || '').trim();
-                var parts = cur ? cur.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
-                if (parts.indexOf(url) === -1) parts.push(url);
-                target.value = parts.join(',');
-                target.dispatchEvent(new Event('input'));
-            });
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-media-pick-append]');
+        if (!btn) return;
+        var sel = btn.getAttribute('data-media-pick-append');
+        var target = sel ? document.querySelector(sel) : null;
+        if (!target) return;
+        e.preventDefault();
+        window.CmsEditor.openPicker(function (url) {
+            var cur = (target.value || '').trim();
+            var parts = cur ? cur.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+            if (parts.indexOf(url) === -1) parts.push(url);
+            target.value = parts.join(',');
+            target.dispatchEvent(new Event('input'));
         });
     });
     function parseUrls(raw) {

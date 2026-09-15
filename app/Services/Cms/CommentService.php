@@ -2,6 +2,7 @@
 
 namespace App\Services\Cms;
 
+use App\Events\CommentSubmitted;
 use App\Models\Cms\Comment;
 use App\Models\Cms\Entry;
 use App\Models\Cms\Member;
@@ -116,6 +117,7 @@ class CommentService
         }
 
         $this->notifyAdmin($entry, $comment);
+        event(new CommentSubmitted($comment, $entry));
 
         $msg = $status === Comment::STATUS_APPROVED
             ? '评论已发布'
