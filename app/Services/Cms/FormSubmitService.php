@@ -17,11 +17,11 @@ class FormSubmitService
     {
         $form = CmsForm::query()->where('slug', $slug)->where('is_active', true)->first();
         if (! $form) {
-            return Result::fail('表单不存在');
+            return Result::fail(cms_ui('form_missing'));
         }
 
         if (! $skipCaptcha && config('cms.form_captcha', true) && ! Captcha::check($request->input('captcha'))) {
-            return Result::fail('验证码错误');
+            return Result::fail(cms_ui('captcha_error'));
         }
 
         $rules = [];
@@ -49,7 +49,7 @@ class FormSubmitService
 
         $validated = $rules === []
             ? $request->except(['_token', 'captcha', 'api_token'])
-            : $request->validate($rules);
+            : $request->validate($rules, [], $this->fieldAttributes($form));
 
         $data = [];
         foreach ($allowed as $key) {
@@ -59,7 +59,7 @@ class FormSubmitService
         }
 
         if ($member && ! $member->canMember('form_submit')) {
-            return Result::fail('当前会员组无权提交表单');
+            return Result::fail(cms_ui('cannot_submit_form'));
         }
 
         $submission = FormSubmission::query()->create([
@@ -79,6 +79,17 @@ class FormSubmitService
         }
         event(new FormSubmitted($submission, $form));
 
-        return Result::ok($submission, '提交成功，我们会尽快联系您。');
+        return Result::ok($submission, cms_ui('form_ok'));
+    }
+
+    /** @return array<string, string> */
+    protected function fieldAttributes(CmsForm $form): array
+    {
+        $names = [];
+        foreach (app(\App\Services\Cms\Tags\FormTag::class)->get(['slug' => $form->slug]) as $field) {
+            $names[(string) $field->name] = (string) $field->label;
+        }
+
+        return $names;
     }
 }

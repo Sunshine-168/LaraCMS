@@ -29,19 +29,28 @@
         chunk: @json(cms_route('member.upload.chunk')),
         complete: @json(cms_route('member.upload.complete')),
     };
+    const i18n = {
+        init: @json(cms_ui('upload_init')),
+        initFail: @json(cms_ui('upload_init_fail')),
+        chunkFail: @json(cms_ui('upload_chunk_fail')),
+        progress: @json(cms_ui('upload_progress')),
+        mergeFail: @json(cms_ui('upload_merge_fail')),
+        done: @json(cms_ui('upload_done')),
+        fail: @json(cms_ui('upload_fail')),
+    };
     const setMsg = (t) => { if (progress) progress.textContent = t; };
     fileInput.addEventListener('change', async () => {
         const file = fileInput.files && fileInput.files[0];
         if (!file) return;
         const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize));
-        setMsg('初始化…');
+        setMsg(i18n.init);
         try {
             const initRes = await fetch(urls.init, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'},
                 body: JSON.stringify({filename: file.name, total_chunks: totalChunks, total_size: file.size}),
             }).then(r => r.json());
-            if (!initRes.ok) throw new Error(initRes.msg || '初始化失败');
+            if (!initRes.ok) throw new Error(initRes.msg || i18n.initFail);
             const uploadId = initRes.data.upload_id;
             for (let i = 0; i < totalChunks; i++) {
                 const blob = file.slice(i * chunkSize, Math.min(file.size, (i + 1) * chunkSize));
@@ -51,23 +60,23 @@
                 fd.append('chunk', blob, file.name + '.part' + i);
                 fd.append('_token', csrf);
                 const chunkRes = await fetch(urls.chunk, {method: 'POST', headers: {'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'}, body: fd}).then(r => r.json());
-                if (!chunkRes.ok) throw new Error(chunkRes.msg || ('分片 ' + i + ' 失败'));
-                setMsg('上传中 ' + Math.round(((i + 1) / totalChunks) * 100) + '%');
+                if (!chunkRes.ok) throw new Error(chunkRes.msg || i18n.chunkFail.replace(':n', String(i)));
+                setMsg(i18n.progress.replace(':pct', String(Math.round(((i + 1) / totalChunks) * 100))));
             }
             const doneRes = await fetch(urls.complete, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'},
                 body: JSON.stringify({upload_id: uploadId, purpose}),
             }).then(r => r.json());
-            if (!doneRes.ok) throw new Error(doneRes.msg || '合并失败');
+            if (!doneRes.ok) throw new Error(doneRes.msg || i18n.mergeFail);
             if (target) target.value = doneRes.data.url || '';
             if (preview && doneRes.data.url) {
                 preview.src = doneRes.data.url;
                 preview.style.display = '';
             }
-            setMsg('上传完成');
+            setMsg(i18n.done);
         } catch (e) {
-            setMsg(e.message || '上传失败');
+            setMsg(e.message || i18n.fail);
         }
     });
 })();

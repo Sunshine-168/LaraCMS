@@ -1,10 +1,11 @@
 @extends('themes.manga.partials.layout')
 @section('content')
     @include('cms.partials.front-hero-copy', [
-        'fallbackTitle' => '漫画库',
-        'fallbackSub' => '筛选地区 / 状态',
+        'fallbackTitle' => cms_ui('manga_hero'),
+        'fallbackSub' => cms_ui('manga_hero_sub'),
     ])
     <div style="margin:12px 0">
+        @include('cms.partials.filter-all', ['filterAllClass' => 'btn'])
         @cmsFilter(['model'=>'manga'])
             @foreach(($item->choices ?? []) as $val => $label)
                 @php $v = is_int($val) ? $label : $val; @endphp
@@ -16,7 +17,9 @@
     <div class="grid">
         @cmsContent(['model'=>'manga','num'=>12,'page'=>true])
             <a class="card" href="{{ $item->url }}">
-                <img src="{{ cms_media($item->cover) ?: 'https://picsum.photos/seed/'.$item->id.'/400/560' }}" alt="">
+                @if($item->cover)
+                    <img src="{{ cms_media($item->cover) }}" alt="">
+                @endif
                 <div class="body">
                     <strong>{{ $item->t('title') }}</strong>
                     <div class="muted">{{ $item->attr('author') }} · {{ $item->attr('status') }}</div>

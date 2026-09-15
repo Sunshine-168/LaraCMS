@@ -3,7 +3,7 @@
 @section('icon', 'flag')
 @php $usage = (int) ($usage ?? 0); @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.flags.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.flags.index') }}">{{ admin_back('flags') }}</a>
 @endsection
 @section('content')
     @if($flag->exists && $usage > 0)

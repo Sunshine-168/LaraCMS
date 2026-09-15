@@ -80,6 +80,9 @@
   "i18n": true,
   "responsive": true,
   "models": ["article", "page", "product"],
+  "config": {
+    "home_notice": {"title": "Home notice", "type": "textarea", "value": ""}
+  },
   "categories": [
     {"slug": "news", "title": {"zh_cn": "新闻中心", "en": "News"}, "model": "article", "type": "list", "menu": true}
   ]

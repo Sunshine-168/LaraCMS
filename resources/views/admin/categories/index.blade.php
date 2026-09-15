@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '栏目管理')
+@section('title', admin_t('nav.categories'))
 @section('icon', 'sitemap')
 @section('header_actions')
     <a class="btn btn-sm" href="{{ route('admin.categories.create') }}"><i class="fas fa-plus"></i> 新建栏目</a>

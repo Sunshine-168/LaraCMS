@@ -107,7 +107,9 @@ class FriendLinkWorkbenchTest extends TestCase
         $this->actingAs($editor, 'admin')
             ->get(route('admin.friend-links.index'))
             ->assertOk()
-            ->assertSee('添加友链');
+            ->assertSee('添加友链')
+            ->assertSee('>友链</span>', false)
+            ->assertDontSee('nav-fold is-open', false);
 
         $this->actingAs($operator, 'admin')
             ->get(route('admin.friend-links.index'))

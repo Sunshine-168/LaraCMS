@@ -14,7 +14,8 @@
         .hero h1{font-size:40px;margin:0 0 10px} .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
         .card-soft{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
         h1,h2{line-height:1.25} .muted{color:#64748b;font-size:14px} footer{margin-top:48px;padding:24px 0;border-top:1px solid var(--line);color:#64748b;font-size:13px}
-        .btn{display:inline-block;padding:8px 14px;background:var(--accent);color:#fff;border-radius:6px} .content{line-height:1.75;font-size:16px}
+        .btn{display:inline-block;padding:8px 14px;background:var(--accent);color:#fff;border-radius:6px;border:0;cursor:pointer} .content{line-height:1.75;font-size:16px}
+        input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]),textarea,select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:inherit}
         .banner-slide{min-height:280px;border-radius:12px;background:#1b4f72 center/cover;color:#fff;display:flex;align-items:flex-end;padding:24px;margin-bottom:16px}
     </style>
     @include('cms.partials.front-appearance')
@@ -25,12 +26,13 @@
         @include('cms.partials.front-brand')
         <nav>
             @include('cms.partials.header-nav')
-            @include('cms.partials.front-toolbar', ['frontToolbarLogout' => true])
+            @include('cms.partials.front-toolbar')
             @include('cms.partials.lang-switch')
         </nav>
     </div>
 </header>
-<main class="wrap">
+<main id="content" class="wrap">
+    @include('cms.partials.front-theme-notice')
     @yield('content')
 </main>
 @include('cms.partials.front-footer')

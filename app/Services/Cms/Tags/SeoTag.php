@@ -25,9 +25,13 @@ class SeoTag
         $robots = $this->robotsMeta();
 
         $html = '<title>'.e($title)."</title>\n"
+            .'<meta name="csrf-token" content="'.e(csrf_token())."\">\n"
             .'<meta name="keywords" content="'.e($keywords)."\">\n"
             .'<meta name="description" content="'.e($description)."\">\n"
             .'<link rel="canonical" href="'.e($canonical)."\">\n"
+            .$this->hreflangLinks()
+            .'<meta property="og:locale" content="'.e($this->ogLocale())."\">\n"
+            .$this->ogLocaleAlternates()
             .'<meta property="og:type" content="'.e($ogType)."\">\n"
             .'<meta property="og:site_name" content="'.e($siteName)."\">\n"
             .'<meta property="og:title" content="'.e($title)."\">\n"
@@ -58,7 +62,7 @@ class SeoTag
             return 'noindex,nofollow';
         }
         $path = '/'.ltrim((string) request()->path(), '/');
-        if (str_starts_with($path, '/search')) {
+        if ($path === '/search' || str_ends_with($path, '/search')) {
             return 'noindex,follow';
         }
 
@@ -74,6 +78,61 @@ class SeoTag
         $logo = (string) ($this->context->site()['logo_url'] ?? '');
 
         return $this->abs($logo);
+    }
+
+    protected function hreflangLinks(): string
+    {
+        $html = '';
+        $codes = \App\Support\Locale::codes();
+        if (count($codes) < 2) {
+            return $html;
+        }
+        foreach ($codes as $code) {
+            $lang = $code === 'zh_cn' ? 'zh-CN' : \App\Support\Locale::toPublic($code);
+            $html .= '<link rel="alternate" hreflang="'.e($lang).'" href="'.e($this->abs(cms_locale_url($code)))."\">\n";
+        }
+        $default = \App\Support\Locale::default();
+        $html .= '<link rel="alternate" hreflang="x-default" href="'.e($this->abs(cms_locale_url($default)))."\">\n";
+
+        return $html;
+    }
+
+    protected function ogLocale(): string
+    {
+        return $this->ogLocaleFor(\App\Support\Locale::current());
+    }
+
+    protected function ogLocaleFor(string $code): string
+    {
+        return $code === 'zh_cn' ? 'zh_CN' : ($code === 'en' ? 'en_US' : str_replace('-', '_', \App\Support\Locale::toPublic($code)));
+    }
+
+    protected function ogLocaleAlternates(): string
+    {
+        $html = '';
+        $current = \App\Support\Locale::current();
+        foreach (\App\Support\Locale::codes() as $code) {
+            if ($code === $current) {
+                continue;
+            }
+            $html .= '<meta property="og:locale:alternate" content="'.e($this->ogLocaleFor($code))."\">\n";
+        }
+
+        return $html;
+    }
+
+    protected function isFrontHome(string $path): bool
+    {
+        if ($path === '/') {
+            return true;
+        }
+        foreach (\App\Support\Locale::codes() as $code) {
+            if ($path === '/'.\App\Support\Locale::toPublic($code)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function abs(string $path): string
@@ -130,18 +189,21 @@ class SeoTag
             ]);
         }
         $path = '/'.ltrim((string) request()->path(), '/');
-        if ($path !== '/') {
+        if (! $this->isFrontHome($path)) {
             return [];
         }
+
+        $home = $this->abs(cms_front_url());
+        $search = $this->abs(cms_front_url('search'));
 
         return [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
             'name' => $siteName,
-            'url' => url('/'),
+            'url' => $home,
             'potentialAction' => [
                 '@type' => 'SearchAction',
-                'target' => url('/search').'?q={search_term_string}',
+                'target' => $search.'?q={search_term_string}',
                 'query-input' => 'required name=search_term_string',
             ],
         ];

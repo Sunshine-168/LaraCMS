@@ -257,60 +257,69 @@ class HtmlCacheService
             return ['ok' => 0, 'fail' => 0, 'urls' => []];
         }
 
-        $urls = ['/'];
-        foreach (Locale::codes() as $code) {
-            if ($code === Locale::default() && Locale::hideDefault()) {
-                continue;
-            }
-            $urls[] = '/'.Locale::toPublic($code);
-        }
-
-        Category::query()->published()->orderBy('sort_order')->limit(50)->each(function (Category $cat) use (&$urls) {
+        $previous = Locale::current();
+        $site = CurrentSite::model();
+        try {
+            $urls = ['/'];
             foreach (Locale::codes() as $code) {
-                Locale::set($code);
-                $urls[] = $cat->frontUrl();
-            }
-        });
-
-        Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])->orderByDesc('id')->limit($entryLimit)
-            ->each(function (Entry $entry) use (&$urls) {
-                if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
-                    return;
+                if ($code === Locale::default() && Locale::hideDefault()) {
+                    continue;
                 }
+                $urls[] = '/'.Locale::toPublic($code);
+            }
+
+            Category::query()->published()->orderBy('sort_order')->limit(50)->each(function (Category $cat) use (&$urls) {
                 foreach (Locale::codes() as $code) {
                     Locale::set($code);
-                    $url = $entry->url;
-                    if ($url && ! str_starts_with($url, 'http') && $url !== '#') {
-                        $urls[] = $url;
-                    }
+                    $urls[] = $cat->frontUrl();
                 }
             });
 
-        $urls = array_values(array_unique($urls));
-        $ok = 0;
-        $fail = 0;
-        /** @var HttpKernel $kernel */
-        $kernel = app(HttpKernel::class);
+            Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])->orderByDesc('id')->limit($entryLimit)
+                ->each(function (Entry $entry) use (&$urls) {
+                    if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
+                        return;
+                    }
+                    foreach (Locale::codes() as $code) {
+                        Locale::set($code);
+                        $url = $entry->url;
+                        if ($url && ! str_starts_with($url, 'http') && $url !== '#') {
+                            $urls[] = $url;
+                        }
+                    }
+                });
 
-        foreach ($urls as $url) {
-            try {
-                $request = Request::create($url, 'GET', [], [], [], [
-                    'HTTP_USER_AGENT' => 'CMS-HtmlWarm/1.0',
-                    'HTTP_ACCEPT' => 'text/html',
-                ]);
-                $response = $kernel->handle($request);
-                if ($response->getStatusCode() === 200) {
-                    $ok++;
-                } else {
+            $urls = array_values(array_unique($urls));
+            $ok = 0;
+            $fail = 0;
+            /** @var HttpKernel $kernel */
+            $kernel = app(HttpKernel::class);
+
+            foreach ($urls as $url) {
+                try {
+                    $request = Request::create($url, 'GET', [], [], [], [
+                        'HTTP_USER_AGENT' => 'CMS-HtmlWarm/1.0',
+                        'HTTP_ACCEPT' => 'text/html',
+                    ]);
+                    $response = $kernel->handle($request);
+                    if ($response->getStatusCode() === 200) {
+                        $ok++;
+                    } else {
+                        $fail++;
+                    }
+                    $kernel->terminate($request, $response);
+                } catch (\Throwable) {
                     $fail++;
                 }
-                $kernel->terminate($request, $response);
-            } catch (\Throwable) {
-                $fail++;
             }
-        }
 
-        return compact('ok', 'fail', 'urls');
+            return compact('ok', 'fail', 'urls');
+        } finally {
+            if ($site) {
+                CurrentSite::set($site);
+            }
+            Locale::set($previous);
+        }
     }
 
     /** @return list<string> */

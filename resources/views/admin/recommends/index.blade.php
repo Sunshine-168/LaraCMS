@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '推荐位')
+@section('title', admin_t('nav.recommends'))
 @section('icon', 'th-large')
 @section('header_actions')
     <a class="btn btn-sm" href="{{ route('admin.recommends.create') }}"><i class="fas fa-plus"></i> 新建推荐位</a>

@@ -117,7 +117,12 @@ class HtmlCacheController extends Controller
 
         $limit = (int) $request->input('entries', 0);
         if ($request->expectsJson()) {
-            return response()->json($this->diskHtml->startJob($limit));
+            $job = $this->diskHtml->startJob($limit);
+            if (! empty($job['conflict'])) {
+                return response()->json($job, 422);
+            }
+
+            return response()->json($job);
         }
 
         $result = $this->diskHtml->build($limit > 0 ? $limit : 200);
@@ -129,14 +134,18 @@ class HtmlCacheController extends Controller
         return redirect()->route('admin.html-cache.edit')->with('status', $msg);
     }
 
-    /** 再写一批静态文件 */
+    /** 再处理一批（生成或删除） */
     public function stepDisk(Request $request): JsonResponse
     {
-        if (! $this->diskHtml->enabled()) {
+        $job = $this->diskHtml->publicJob();
+        $kind = $job['kind'] ?? 'build';
+        if ($kind !== 'clear' && ! $this->diskHtml->enabled()) {
             return response()->json(['message' => '请先打开磁盘静态页并保存', 'status' => 'error'], 422);
         }
 
-        return response()->json($this->diskHtml->stepJob((int) $request->input('chunk', 6)));
+        $chunk = (int) $request->input('chunk', $kind === 'clear' ? 40 : 6);
+
+        return response()->json($this->diskHtml->stepJob($chunk));
     }
 
     /** 当前生成进度 */
@@ -151,9 +160,18 @@ class HtmlCacheController extends Controller
         return response()->json($this->diskHtml->cancelJob());
     }
 
-    /** 清空磁盘 HTML */
-    public function clearDisk(): RedirectResponse
+    /** 清空磁盘 HTML（JSON 走进度；普通提交一次删完） */
+    public function clearDisk(Request $request): JsonResponse|RedirectResponse
     {
+        if ($request->expectsJson()) {
+            $job = $this->diskHtml->startClearJob();
+            if (! empty($job['conflict'])) {
+                return response()->json($job, 422);
+            }
+
+            return response()->json($job);
+        }
+
         $n = $this->diskHtml->clear();
 
         return redirect()->route('admin.html-cache.edit')->with(

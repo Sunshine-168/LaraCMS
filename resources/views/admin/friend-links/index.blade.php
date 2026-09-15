@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '友链')
+@section('title', admin_t('nav.friend_links'))
 @section('icon', 'link')
 @php
     $composeFocus = session('friend_link_quick_added') || $links->isEmpty();

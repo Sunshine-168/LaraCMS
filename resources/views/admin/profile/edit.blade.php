@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '修改密码')
+@section('title', admin_t('top.password'))
 @section('icon', 'user')
 @section('content')
     <div class="settings-page profile-page">
@@ -14,7 +14,7 @@
             @method('PUT')
             <label for="profile-name">名称</label>
             <input id="profile-name" type="text" name="name" value="{{ old('name', $user->name) }}" required maxlength="100" autocomplete="name">
-            <p class="muted field-hint">顶栏和操作日志里看到的名字。</p>
+            <p class="muted field-hint">顶栏和日志里看到的名字。</p>
 
             <label>登录邮箱</label>
             <input type="email" value="{{ $user->email }}" disabled>

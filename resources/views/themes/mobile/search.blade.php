@@ -2,16 +2,5 @@
 @section('content')
     <h1>{{ cms_ui('search') }}</h1>
     @include('cms.partials.search-form')
-    <div class="grid">
-        @forelse(($results ?? []) as $item)
-            <a class="card-soft" href="{{ $item->url }}"><strong>{{ $item->t('title') }}</strong></a>
-        @empty
-            @if(($q ?? '') !== '')
-                <p class="muted">{{ cms_ui('no_results') }}</p>
-            @endif
-        @endforelse
-    </div>
-    @if(isset($results) && method_exists($results, 'links'))
-        <div style="margin-top:12px">@cmsPaginate</div>
-    @endif
+    @include('cms.partials.search-results', ['searchListClass' => 'grid'])
 @endsection

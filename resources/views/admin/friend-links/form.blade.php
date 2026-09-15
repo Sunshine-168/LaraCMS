@@ -9,7 +9,7 @@
     $imageVal = old('image', $link->image);
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.friend-links.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.friend-links.index') }}">{{ admin_back('friend_links') }}</a>
 @endsection
 @section('content')
     <form method="post" class="friend-link-form" action="{{ $link->exists ? route('admin.friend-links.update', $link) : route('admin.friend-links.store') }}">

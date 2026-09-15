@@ -23,7 +23,7 @@ class CommentController extends Controller
             'content' => 'required|string|max:2000',
             'parent_id' => 'nullable|integer',
             'captcha' => 'nullable|string|max:20',
-        ]);
+        ], [], cms_validation_attributes());
 
         $result = $this->comments->submit(
             $entry,

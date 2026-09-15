@@ -30,8 +30,7 @@ class FrontGateAndThemeTest extends TestCase
 
     public function test_download_and_rss_honor_member_gate(): void
     {
-        $entry = Entry::query()->find(4);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('client-windows');
         $entry->attrs = array_merge($entry->attrs ?? [], [
             'require_login' => false,
             'islogin' => false,
@@ -142,21 +141,19 @@ class FrontGateAndThemeTest extends TestCase
 
     public function test_guest_search_and_api_omit_gated_and_links_use_go(): void
     {
-        $gated = Entry::query()->find(4);
-        $this->assertNotNull($gated);
+        $gated = $this->seededEntry('client-windows');
 
         $this->get('/search?q=Windows')
             ->assertOk()
             ->assertDontSee($gated->t('title'), false);
 
         $listIds = array_column($this->getJson('/api/content/list')->assertOk()->json('data.list'), 'id');
-        $this->assertNotContains(4, $listIds);
+        $this->assertNotContains($gated->id, $listIds);
 
         $searchIds = array_column($this->getJson('/api/search?q=Windows')->assertOk()->json('data.list'), 'id');
-        $this->assertNotContains(4, $searchIds);
+        $this->assertNotContains($gated->id, $searchIds);
 
-        $link = Entry::query()->with('modelDef')->find(5);
-        $this->assertNotNull($link);
+        $link = $this->seededEntry('github');
         $this->assertStringContainsString('/go/'.$link->id, $link->url);
 
         $this->get('/en/member/login')

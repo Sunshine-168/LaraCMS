@@ -1,8 +1,8 @@
 @extends('admin.layout')
-@section('title', '导入内容模型')
+@section('title', admin_t('crud.import_models'))
 @section('icon', 'file-import')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">{{ admin_back('models') }}</a>
 @endsection
 @section('content')
     <form method="post" class="model-form" action="{{ route('admin.models.import.submit') }}" enctype="multipart/form-data">

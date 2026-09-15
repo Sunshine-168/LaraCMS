@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '站点地图')
+@section('title', admin_t('nav.sitemap'))
 @section('icon', 'map')
 @php
     $options = $options ?? [];
@@ -71,7 +71,7 @@
                     <p class="muted field-hint">一行一条。本站路径按你写的收录（英文站请写 /en/...），也可以写完整 https://。不要写 HTML 标签。</p>
 
                     <div class="form-actions">
-                        <button class="btn" type="submit">保存站点地图</button>
+                        <button class="btn" type="submit">保存</button>
                     </div>
                 </form>
             </div>

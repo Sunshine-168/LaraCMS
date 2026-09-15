@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '全页缓存')
+@section('title', admin_t('nav.cache'))
 @section('icon', 'bolt')
 @php
     $enabled = (bool) ($enabled ?? false);
@@ -19,7 +19,7 @@
 @endsection
 @section('content')
     <div class="html-cache-page">
-        <p class="muted recycle-lead">把首页、栏目和文章先做好存起来，访客打开更快。后台、会员中心、搜索和下载不会存。改内容后会自动换新的。模板和配置缓存用右上角「清空缓存」。</p>
+        <p class="muted recycle-lead">全页缓存会把首页、栏目和文章先做好存起来，访客打开更快。后台、会员中心、搜索和下载不会存。改内容后会自动换新的。模板和配置缓存用右上角「清空缓存」。</p>
 
         <div class="html-cache-card">
             <div class="html-cache-status">
@@ -114,21 +114,19 @@
             <div class="html-cache-actions">
                 <button class="btn" type="button" id="diskBuildBtn" data-off="{{ $diskEnabled ? '0' : '1' }}" @disabled(! $diskEnabled)>开始生成</button>
                 <button class="btn-quiet" type="button" id="diskCancelBtn" hidden>停止</button>
-                <form method="post" action="{{ route('admin.html-cache.disk-clear') }}" onsubmit="return confirm('删掉这些文件后，前台改回动态生成。确定？')">
-                    @csrf
-                    <button class="btn-quiet" type="submit" id="diskClearBtn">删掉静态文件</button>
-                </form>
+                <button class="btn-quiet" type="button" id="diskClearBtn">删掉静态文件</button>
             </div>
             <p class="muted field-hint">
                 @if($diskEnabled)
-                    会生成首页、栏目和已发布的文章。页面多时会分批写。生成时请不要关掉这个页面。
+                    会生成首页、栏目和已发布的文章。页面多时会分批写，文件多时会分批删。进行中请不要关掉这个页面。
                 @else
-                    打开并保存后，才能生成。
+                    打开并保存后，才能生成。已有文件仍可分批删除。
                 @endif
             </p>
             <div class="disk-html-progress{{ in_array($diskJob['status'] ?? '', ['done', 'cancelled'], true) ? ' is-done' : '' }}"
                  id="diskHtmlProgress"
                  data-status="{{ $diskJob['status'] ?? 'idle' }}"
+                 data-kind="{{ $diskJob['kind'] ?? 'build' }}"
                  data-percent="{{ $diskJob['percent'] ?? 0 }}"
                  @if(($diskJob['status'] ?? 'idle') === 'idle') hidden @endif>
                 <div class="disk-html-bar"><i id="diskHtmlBar" style="width: {{ (int) ($diskJob['percent'] ?? 0) }}%"></i></div>
@@ -142,6 +140,7 @@
 (function () {
     var btn = document.getElementById('diskBuildBtn');
     var stopBtn = document.getElementById('diskCancelBtn');
+    var clearBtn = document.getElementById('diskClearBtn');
     var box = document.getElementById('diskHtmlProgress');
     var bar = document.getElementById('diskHtmlBar');
     var msg = document.getElementById('diskHtmlMsg');
@@ -150,10 +149,12 @@
     var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
     var urls = {
         start: @json(route('admin.html-cache.disk-build')),
+        clear: @json(route('admin.html-cache.disk-clear')),
         step: @json(route('admin.html-cache.disk-step')),
         cancel: @json(route('admin.html-cache.disk-cancel'))
     };
     var looping = false;
+    var stepChunk = 6;
     function locked() {
         return btn.getAttribute('data-off') === '1';
     }
@@ -167,10 +168,20 @@
         };
     }
 
+    function idleButtons() {
+        btn.disabled = locked();
+        if (clearBtn) clearBtn.disabled = false;
+        if (stopBtn) stopBtn.hidden = true;
+    }
+
     function paint(data) {
         box.hidden = false;
         bar.style.width = (data.percent || 0) + '%';
-        msg.textContent = data.message || ('已写 ' + (data.done || 0) + ' / ' + (data.total || 0));
+        var kind = data.kind || 'build';
+        var fallback = kind === 'clear'
+            ? ('已删 ' + (data.done || 0) + ' / ' + (data.total || 0))
+            : ('已写 ' + (data.done || 0) + ' / ' + (data.total || 0));
+        msg.textContent = data.message || fallback;
         box.classList.toggle('is-done', data.status === 'done');
         box.classList.toggle('is-stop', data.status === 'cancelled' || data.status === 'error');
         if (count && typeof data.file_count === 'number') {
@@ -180,7 +191,10 @@
         }
         var busy = data.status === 'running';
         btn.disabled = busy || locked();
+        if (clearBtn) clearBtn.disabled = busy;
         if (stopBtn) stopBtn.hidden = !busy;
+        if (kind === 'clear') stepChunk = 40;
+        else if (kind === 'build') stepChunk = 6;
     }
 
     async function post(url, body) {
@@ -192,24 +206,25 @@
         return data;
     }
 
-    async function loop() {
+    async function loop(chunk) {
+        if (chunk) stepChunk = chunk;
         looping = true;
         try {
             while (looping) {
-                var data = await post(urls.step, { chunk: 6 });
+                var data = await post(urls.step, { chunk: stepChunk });
                 paint(data);
                 if (data.status !== 'running') break;
             }
         } catch (e) {
-            paint({ status: 'error', percent: 0, message: e.message || '生成中断了', done: 0, total: 0 });
+            paint({ status: 'error', percent: 0, message: e.message || '处理中断了', done: 0, total: 0 });
         }
         looping = false;
-        btn.disabled = locked();
-        if (stopBtn) stopBtn.hidden = true;
+        idleButtons();
     }
 
     btn.addEventListener('click', async function () {
         btn.disabled = true;
+        if (clearBtn) clearBtn.disabled = true;
         box.hidden = false;
         msg.textContent = '正在列出要写的页面…';
         bar.style.width = '0%';
@@ -217,11 +232,30 @@
         try {
             var data = await post(urls.start, { entries: 0 });
             paint(data);
-            if (data.status === 'running') await loop();
-            else btn.disabled = locked();
+            if (data.status === 'running') await loop(6);
+            else idleButtons();
         } catch (e) {
             paint({ status: 'error', percent: 0, message: e.message || '没能开始', done: 0, total: 0 });
-            btn.disabled = locked();
+            idleButtons();
+        }
+    });
+
+    clearBtn?.addEventListener('click', async function () {
+        if (!confirm('删掉这些文件后，前台改回动态生成。文件多时会分批删。确定？')) return;
+        btn.disabled = true;
+        clearBtn.disabled = true;
+        box.hidden = false;
+        msg.textContent = '正在列出要删的文件…';
+        bar.style.width = '0%';
+        box.classList.remove('is-done', 'is-stop');
+        try {
+            var data = await post(urls.clear, {});
+            paint(data);
+            if (data.status === 'running') await loop(40);
+            else idleButtons();
+        } catch (e) {
+            paint({ status: 'error', percent: 0, message: e.message || '没能开始删除', done: 0, total: 0 });
+            idleButtons();
         }
     });
 
@@ -232,12 +266,11 @@
         } catch (e) {
             msg.textContent = e.message || '没能停止';
         }
-        btn.disabled = locked();
-        stopBtn.hidden = true;
+        idleButtons();
     });
 
     if (box.getAttribute('data-status') === 'running') {
-        loop();
+        loop((box.getAttribute('data-kind') || 'build') === 'clear' ? 40 : 6);
     } else if ((box.getAttribute('data-status') || 'idle') !== 'idle') {
         stopBtn && (stopBtn.hidden = true);
     }

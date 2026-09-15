@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '内容模型')
+@section('title', admin_t('nav.models'))
 @section('icon', 'cube')
 @section('header_actions')
     <a class="btn btn-muted btn-sm" href="{{ route('admin.models.import') }}"><i class="fas fa-file-import"></i> 导入</a>

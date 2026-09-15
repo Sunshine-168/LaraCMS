@@ -5,13 +5,13 @@
         @if($manga)
             <a href="{{ $manga->url }}">{{ $manga->t('title') }}</a>
         @else
-            <a href="/comics">{{ cms_ui('back_comics') }}</a>
+            <a href="{{ cms_front_url('comics') }}">{{ cms_ui('back_comics') }}</a>
         @endif
     </p>
     <div class="pages" style="margin-top:16px">
         @foreach(preg_split('/\r\n|\r|\n/', (string)$entry->attr('pages')) as $img)
             @if(trim($img) !== '')
-                <img src="{{ cms_media(trim($img)) }}" alt="" loading="lazy">
+                <img src="{{ cms_media(trim($img)) }}" alt="{{ $entry->t('title') }}" loading="lazy">
             @endif
         @endforeach
     </div>

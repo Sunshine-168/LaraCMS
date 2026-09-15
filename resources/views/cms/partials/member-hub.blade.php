@@ -1,9 +1,9 @@
 @if(!empty($canContribute))
     <h2 style="margin-top:28px">{{ cms_ui('my_posts') }}</h2>
     <p>
-        <a href="{{ cms_route('member.entries.index') }}">全部投稿</a>
+        <a href="{{ cms_route('member.entries.index') }}">{{ cms_ui('all_posts') }}</a>
         @if(($contributeModels ?? collect())->isNotEmpty())
-            · <a href="{{ cms_route('member.entries.create', ['model_id' => $contributeModels->first()->id]) }}">写新稿</a>
+            · <a href="{{ cms_route('member.entries.create', ['model_id' => $contributeModels->first()->id]) }}">{{ cms_ui('write_post') }}</a>
         @endif
     </p>
     @if(($myEntries ?? null) && $myEntries->isNotEmpty())
@@ -11,18 +11,18 @@
             @foreach($myEntries as $item)
                 <li style="margin:8px 0">
                     {{ $item->t('title') }}
-                    <span class="muted"> · {{ \App\Models\Cms\Entry::statusLabel($item->status) }}</span>
+                    <span class="muted"> · {{ cms_ui('status_'.$item->status) }}</span>
                     @if($item->status === 'published')
-                        · <a href="{{ $item->url }}">查看</a>
+                        · <a href="{{ $item->url }}">{{ cms_ui('view') }}</a>
                     @else
-                        · <a href="{{ cms_route('member.entries.edit', $item) }}">编辑</a>
+                        · <a href="{{ cms_route('member.entries.edit', $item) }}">{{ cms_ui('edit') }}</a>
                     @endif
                 </li>
             @endforeach
         </ul>
-        {{ $myEntries->links() }}
+        {{ $myEntries->links('cms.partials.paginate') }}
     @else
-        <p class="muted">还没有投稿。</p>
+        <p class="muted">{{ cms_ui('no_posts') }}</p>
     @endif
 @endif
 
@@ -32,17 +32,17 @@
         @foreach($favorites as $item)
             <li style="margin:8px 0">
                 <a href="{{ $item->url }}">{{ $item->t('title') }}</a>
-                <form method="post" action="{{ url(\App\Support\UrlMode::localePrefix().'/member/favorite/'.$item->id) }}" style="display:inline;margin-left:8px">
+                <form method="post" action="{{ cms_route('member.favorite', $item) }}" style="display:inline;margin-left:8px">
                     @csrf
-                    <button type="submit" class="muted">取消</button>
+                    <button type="submit" class="muted">{{ cms_ui('unfavorite_short') }}</button>
                 </form>
             </li>
         @endforeach
     </ul>
-    {{ $favorites->links() }}
+    {{ $favorites->links('cms.partials.paginate') }}
 @else
     <h2 style="margin-top:28px">{{ cms_ui('my_favorites') }}</h2>
-    <p class="muted">还没有收藏。</p>
+    <p class="muted">{{ cms_ui('no_favorites') }}</p>
 @endif
 
 @if(($comments ?? null) && $comments->isNotEmpty())
@@ -50,7 +50,7 @@
     <ul style="padding-left:18px">
         @foreach($comments as $comment)
             <li style="margin:8px 0">
-                <span class="muted">{{ $comment->created_at?->format('Y-m-d H:i') }} · {{ \App\Models\Cms\Comment::statusLabel($comment->status) }}</span>
+                <span class="muted">{{ $comment->created_at?->format('Y-m-d H:i') }} · {{ cms_ui('comment_'.$comment->status) }}</span>
                 @if($comment->entry)
                     · <a href="{{ $comment->entry->url }}">{{ $comment->entry->t('title') }}</a>
                 @endif
@@ -58,11 +58,11 @@
             </li>
         @endforeach
     </ul>
-    {{ $comments->links() }}
+    {{ $comments->links('cms.partials.paginate') }}
 @endif
 
 @if(($submissions ?? null) && $submissions->isNotEmpty())
-    <h2 style="margin-top:28px">我的留言</h2>
+    <h2 style="margin-top:28px">{{ cms_ui('my_inbox') }}</h2>
     <ul style="padding-left:18px">
         @foreach($submissions as $row)
             <li style="margin:8px 0">
@@ -72,7 +72,7 @@
             </li>
         @endforeach
     </ul>
-    {{ $submissions->links() }}
+    {{ $submissions->links('cms.partials.paginate') }}
 @endif
 
 @if(($memberEntries ?? null) && $memberEntries->isNotEmpty())

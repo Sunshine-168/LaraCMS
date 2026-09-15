@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>维护中 - {{ $siteName }}</title>
+    <title>{{ cms_ui('site_closed') }} - {{ $siteName }}</title>
     <style>
         body{margin:0;font-family:"Noto Sans SC","Segoe UI",sans-serif;background:#f4f7fb;color:#0f2744;display:grid;place-items:center;min-height:100vh}
         .box{max-width:480px;padding:32px;background:#fff;border:1px solid #dbe3ee;border-radius:12px;text-align:center}

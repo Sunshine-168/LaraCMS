@@ -1,5 +1,5 @@
 @if(($model->fields ?? collect())->isNotEmpty())
-    <h2 style="margin-top:24px">扩展字段</h2>
+    <h2 style="margin-top:24px">{{ cms_ui('extra_fields') }}</h2>
     @foreach($model->fields as $field)
         @php
             $val = old('attrs.'.$field->name, $entry->attr($field->name));
@@ -18,7 +18,7 @@
                         : collect();
                 @endphp
                 <select name="attrs[{{ $field->name }}]" style="width:100%;padding:8px">
-                    <option value="">请选择</option>
+                    <option value="">{{ cms_ui('please_select') }}</option>
                     @foreach($relatedEntries as $rel)
                         <option value="{{ $rel->id }}" @selected((string)$val === (string)$rel->id)>{{ $rel->t('title') }}</option>
                     @endforeach
@@ -32,7 +32,7 @@
             @elseif($field->type === 'datetime')
                 <input type="datetime-local" name="attrs[{{ $field->name }}]" value="{{ $val }}" style="width:100%;padding:8px">
             @elseif($field->type === 'checkbox' || $field->type === 'switch')
-                <label><input type="checkbox" name="attrs[{{ $field->name }}]" value="1" @checked((string)$val === '1' || $val === true || $val === 'true')> 是</label>
+                <label><input type="checkbox" name="attrs[{{ $field->name }}]" value="1" @checked((string)$val === '1' || $val === true || $val === 'true')> {{ cms_ui('yes') }}</label>
             @elseif($field->type === 'radio')
                 @foreach(($field->options['choices'] ?? []) as $k => $label)
                     @php $opt = is_int($k) ? $label : $k; @endphp
@@ -42,7 +42,7 @@
                 @endforeach
             @elseif($field->type === 'select')
                 <select name="attrs[{{ $field->name }}]" style="width:100%;padding:8px">
-                    <option value="">请选择</option>
+                    <option value="">{{ cms_ui('please_select') }}</option>
                     @foreach(($field->options['choices'] ?? []) as $k => $label)
                         @php $opt = is_int($k) ? $label : $k; @endphp
                         <option value="{{ $opt }}" @selected((string)$val === (string)$opt)>{{ $label }}</option>

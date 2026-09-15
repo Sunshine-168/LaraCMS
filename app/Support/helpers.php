@@ -15,6 +15,23 @@ if (! function_exists('cms_front_url')) {
     }
 }
 
+if (! function_exists('cms_path_is_current')) {
+    function cms_path_is_current(string $href): bool
+    {
+        $path = parse_url($href, PHP_URL_PATH);
+        $path = '/'.trim((string) ($path ?? ''), '/');
+        $req = '/'.trim((string) request()->path(), '/');
+        if ($path === '') {
+            $path = '/';
+        }
+        if ($req === '') {
+            $req = '/';
+        }
+
+        return $path === $req;
+    }
+}
+
 if (! function_exists('cms_route')) {
     function cms_route(string $name, mixed $parameters = [], bool $absolute = true): string
     {
@@ -51,6 +68,40 @@ if (! function_exists('cms_ui')) {
     }
 }
 
+if (! function_exists('cms_theme')) {
+    function cms_theme(string $key, string $default = ''): string
+    {
+        $value = \App\Support\ThemeVars::get($key);
+
+        return $value !== '' ? $value : $default;
+    }
+}
+
+if (! function_exists('cms_validation_attributes')) {
+    /** @return array<string, string> */
+    function cms_validation_attributes(): array
+    {
+        return [
+            'name' => cms_ui('form_name'),
+            'email' => cms_ui('email'),
+            'password' => cms_ui('password'),
+            'password_confirmation' => cms_ui('password_confirm'),
+            'current_password' => cms_ui('current_password'),
+            'author_name' => cms_ui('comment_name'),
+            'author_email' => cms_ui('comment_email'),
+            'content' => cms_ui('comment_body'),
+            'captcha' => cms_ui('captcha'),
+            'title' => cms_ui('title_field'),
+            'message' => cms_ui('form_message'),
+            'phone' => cms_ui('phone'),
+            'avatar' => cms_ui('avatar'),
+            'bio' => cms_ui('bio'),
+            'cover' => cms_ui('cover_url'),
+            'excerpt' => cms_ui('excerpt_field'),
+        ];
+    }
+}
+
 if (! function_exists('cms_locale_url')) {
     function cms_locale_url(string $targetLocale): string
     {
@@ -83,6 +134,13 @@ if (! function_exists('admin_t')) {
     function admin_t(string $key, array $replace = []): string
     {
         return trans('admin.'.$key, $replace);
+    }
+}
+
+if (! function_exists('admin_back')) {
+    function admin_back(string $navKey): string
+    {
+        return admin_t('crud.back', ['item' => admin_t('nav.'.$navKey)]);
     }
 }
 

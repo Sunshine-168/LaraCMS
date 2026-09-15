@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '仪表盘')
+@section('title', admin_t('nav.dashboard'))
 @section('fullwidth', true)
 @section('content')
     @if($kpis !== [])

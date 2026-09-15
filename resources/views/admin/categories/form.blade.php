@@ -74,7 +74,7 @@
 
         <p style="margin-top:16px;">
             <button class="btn" type="submit">保存</button>
-            <a class="btn btn-muted" href="{{ route('admin.categories.index') }}">返回列表</a>
+            <a class="btn btn-muted" href="{{ route('admin.categories.index') }}">{{ admin_back('categories') }}</a>
         </p>
     </form>
 @endsection

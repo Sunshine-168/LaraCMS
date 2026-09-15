@@ -17,7 +17,7 @@
 
 <h3>Use a theme on this site</h3>
 <ol class="help-steps">
-    <li>Open {!! $hl('themes', 'Themes') !!}. “Current” is the one in use.</li>
+    <li>Open {!! $hl('themes', 'Themes') !!}. “Current” is the one in use. “Configure” opens that skin’s phrases, models, and custom options.</li>
     <li>Click the preview. Themes without a home page cannot be used (no <code>index/index.blade.php</code>).</li>
     <li>Click “Use on this site”: that skin becomes current, and <strong>missing models</strong> and <strong>empty sections</strong> are added. Existing fields, sections, and entries are not changed or deleted.</li>
     <li>If this skin is already current but models are missing, the button is “Add missing models” — it does not switch skins.</li>
@@ -55,7 +55,7 @@
         <tr><td>Mobile</td><td>Phone skin</td><td>Similar to enterprise</td></tr>
     </tbody>
 </table>
-<p class="muted">“Use on this site” fills gaps from <code>theme.json</code> <code>models</code> / <code>categories</code>. Section titles may be <code>{"zh_cn":"新闻中心","en":"News"}</code>. Cards marked multilingual / responsive have a language switcher and a mobile width (or set <code>"i18n": true</code> and <code>"responsive": true</code>).</p>
+<p class="muted">“Use on this site” fills gaps from <code>theme.json</code> <code>models</code> / <code>categories</code> (the Configure page can override which models). Section titles may be <code>{"zh_cn":"新闻中心","en":"News"}</code>. Multilingual / responsive can also be toggled per skin. Custom options live in <code>config</code> and are read with <code>cms_theme('key')</code>.</p>
 
 <h3>Name, logo, mobile skin</h3>
 <p class="muted">Change the site name in {!! $hl('settings', 'Settings') !!}. {!! $hl('settingsLook', 'Settings → Look') !!} uploads logo / favicon, color, footer, ICP. Empty values keep the theme defaults.</p>

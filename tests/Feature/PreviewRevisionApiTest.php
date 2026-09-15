@@ -26,8 +26,7 @@ class PreviewRevisionApiTest extends TestCase
 
     public function test_draft_is_hidden_but_preview_token_works(): void
     {
-        $entry = Entry::query()->with(['category', 'modelDef'])->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
         $publicUrl = $entry->url;
         $entry->status = 'draft';
         $entry->published_at = null;
@@ -59,8 +58,7 @@ class PreviewRevisionApiTest extends TestCase
 
     public function test_save_snapshots_revision_and_restore_reverts_title(): void
     {
-        $entry = Entry::query()->with(['categories', 'tags'])->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
         $original = $entry->t('title');
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
         $this->actingAs($admin, 'admin');

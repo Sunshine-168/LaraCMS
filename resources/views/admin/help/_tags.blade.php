@@ -99,7 +99,8 @@
         <tr><td><code>cms_media($path)</code></td><td>附件地址。走「设置」里的 CDN；<code>.env</code> 配了 <code>CMS_MEDIA_DISK=s3</code> 时指向对象存储</td></tr>
         <tr><td><code>cms_route('download', $entry)</code></td><td>带语言前缀的命名路由</td></tr>
         <tr><td><code>cms_front_url('news')</code></td><td>前台路径</td></tr>
-        <tr><td><code>cms_ui('search')</code></td><td>主题短句，在「语言 → 主题文案」里改。搜索、登录、评论、翻页、上一篇、404 都走这里。可写 <code>cms_ui('hello', ['name' => $name])</code> 替换 <code>:name</code>。</td></tr>
+        <tr><td><code>cms_ui('search')</code></td><td>主题短句。全站默认在「语言 → 主题文案」；某一套可在主题「配置」里覆盖。可写 <code>cms_ui('hello', ['name' => $name])</code> 替换 <code>:name</code>。</td></tr>
+        <tr><td><code>cms_theme('home_notice')</code></td><td>这一套主题的自定义参数，在主题「配置」里填。键名来自 <code>theme.json</code> 的 <code>config</code>，也有首页公告、按钮等默认项。</td></tr>
         <tr><td><code>cms_t('中文', 'English')</code></td><td>按当前内容语言选一句。只有中英时够用，新语言请改用 <code>cms_ui()</code>。</td></tr>
     </tbody>
 </table>

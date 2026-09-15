@@ -21,15 +21,15 @@
 </head>
 <body>
 <header><div class="wrap">
-    @include('cms.partials.front-brand', ['fallback' => 'Sports'])
+    @include('cms.partials.front-brand', ['fallback' => cms_ui('sports_hero')])
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
         @include('cms.partials.lang-switch')
     </nav>
 </div></header>
-<main class="wrap" style="padding:20px 0">@yield('content')</main>
-<p class="wrap muted" style="padding-bottom:24px">仅作体育资讯/公开源目录演示，请遵守当地法律法规与版权要求。</p>
+<main id="content" class="wrap" style="padding:20px 0">@include('cms.partials.front-theme-notice')@yield('content')</main>
+<p class="wrap muted" style="padding-bottom:24px">{{ cms_theme('sports_disclaimer', cms_ui('sports_disclaimer')) }}</p>
 @include('cms.partials.front-footer')
 </body>
 </html>

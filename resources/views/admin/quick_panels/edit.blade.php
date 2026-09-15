@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '配置快捷面板')
+@section('title', admin_t('crud.quick_panel'))
 @section('icon', 'th')
 @section('content')
     <p class="muted">勾选首页「接下来做什么」里的动作（按任务命名，仅列出你有权限的项）。首页最多显示 8 个。全部取消并保存将恢复默认组合。</p>

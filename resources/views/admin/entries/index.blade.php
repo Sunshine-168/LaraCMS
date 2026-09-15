@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '内容管理')
+@section('title', admin_t('nav.entries'))
 @section('icon', 'file-alt')
 @php
     $status = $status ?? '';

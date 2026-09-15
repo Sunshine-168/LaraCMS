@@ -19,7 +19,7 @@
 </head>
 <body>
 <header class="wrap">
-    @include('cms.partials.front-brand', ['fallback' => 'Blog'])
+    @include('cms.partials.front-brand', ['fallback' => cms_ui('blog_hero')])
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
@@ -27,7 +27,7 @@
         <a href="{{ cms_route('rss') }}">RSS</a>
     </nav>
 </header>
-<main class="wrap">@yield('content')</main>
+<main id="content" class="wrap">@include('cms.partials.front-theme-notice')@yield('content')</main>
 @include('cms.partials.front-footer')
 </body>
 </html>

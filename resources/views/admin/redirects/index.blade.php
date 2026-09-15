@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '重定向')
+@section('title', admin_t('nav.redirects'))
 @section('icon', 'exchange-alt')
 @php
     $q = $q ?? '';

@@ -8,7 +8,7 @@
     $isLastSuper = $user->exists && $user->isSuperAdmin() && $superCount <= 1;
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.admin-users.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.admin-users.index') }}">{{ admin_back('admins') }}</a>
 @endsection
 @section('content')
     <form method="post" class="admin-user-form" action="{{ $user->exists ? route('admin.admin-users.update', $user) : route('admin.admin-users.store') }}">
@@ -42,7 +42,7 @@
                     </option>
                 @endforeach
             </select>
-            <p class="muted field-hint">决定能进哪些后台菜单。要改菜单权限，去「角色权限」。</p>
+            <p class="muted field-hint">决定能进哪些后台菜单。要改菜单权限，去「权限」。</p>
         @endif
 
         @if($isSelf || $isLastSuper)

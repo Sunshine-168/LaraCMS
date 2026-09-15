@@ -24,13 +24,13 @@ class MemberChunkUploadService
     public function init(Member $member, string $filename, int $totalChunks, int $totalSize): array
     {
         if (! $member->canMember('upload')) {
-            return Result::fail('无上传权限');
+            return Result::fail(cms_ui('no_upload'));
         }
         if ($totalChunks < 1 || $totalChunks > self::MAX_CHUNKS) {
-            return Result::fail('分片数量无效');
+            return Result::fail(cms_ui('chunks_invalid'));
         }
         if ($totalSize < 1 || $totalSize > self::MAX_TOTAL_BYTES) {
-            return Result::fail('文件过大（上限 50MB）');
+            return Result::fail(cms_ui('file_too_big'));
         }
 
         $safeName = $this->safeFilename($filename);
@@ -51,17 +51,17 @@ class MemberChunkUploadService
     public function storeChunk(Member $member, string $uploadId, int $index, UploadedFile $chunk): array
     {
         if (! $member->canMember('upload')) {
-            return Result::fail('无上传权限');
+            return Result::fail(cms_ui('no_upload'));
         }
         $meta = Cache::get($this->cacheKey($uploadId));
         if (! is_array($meta) || (int) ($meta['member_id'] ?? 0) !== (int) $member->id) {
-            return Result::fail('上传会话无效或已过期');
+            return Result::fail(cms_ui('upload_session'));
         }
         if ($index < 0 || $index >= (int) $meta['total_chunks']) {
-            return Result::fail('分片序号无效');
+            return Result::fail(cms_ui('chunk_index'));
         }
         if ($chunk->getSize() > self::MAX_CHUNK_BYTES) {
-            return Result::fail('分片过大');
+            return Result::fail(cms_ui('chunk_too_big'));
         }
 
         $path = 'chunks/'.$uploadId.'/'.$index.'.part';
@@ -78,18 +78,18 @@ class MemberChunkUploadService
     public function complete(Member $member, string $uploadId, string $purpose = 'file'): array
     {
         if (! $member->canMember('upload')) {
-            return Result::fail('无上传权限');
+            return Result::fail(cms_ui('no_upload'));
         }
         $meta = Cache::get($this->cacheKey($uploadId));
         if (! is_array($meta) || (int) ($meta['member_id'] ?? 0) !== (int) $member->id) {
-            return Result::fail('上传会话无效或已过期');
+            return Result::fail(cms_ui('upload_session'));
         }
 
         $total = (int) $meta['total_chunks'];
         $received = array_map('intval', $meta['received'] ?? []);
         for ($i = 0; $i < $total; $i++) {
             if (! in_array($i, $received, true) || ! Storage::disk('local')->exists('chunks/'.$uploadId.'/'.$i.'.part')) {
-                return Result::fail('分片未齐：缺少 '.$i);
+                return Result::fail(cms_ui('chunks_missing', ['n' => $i]));
             }
         }
 
@@ -100,7 +100,7 @@ class MemberChunkUploadService
 
         $out = fopen($destFull, 'wb');
         if (! $out) {
-            return Result::fail('无法写入目标文件');
+            return Result::fail(cms_ui('write_failed'));
         }
         $written = 0;
         for ($i = 0; $i < $total; $i++) {
@@ -110,7 +110,7 @@ class MemberChunkUploadService
                 fclose($out);
                 @unlink($destFull);
 
-                return Result::fail('读取分片失败');
+                return Result::fail(cms_ui('read_chunk_failed'));
             }
             while (! feof($in)) {
                 $buf = fread($in, 8192);
@@ -128,7 +128,7 @@ class MemberChunkUploadService
             @unlink($destFull);
             $this->cleanup($uploadId);
 
-            return Result::fail('合并后超过大小限制');
+            return Result::fail(cms_ui('merge_too_big'));
         }
 
         $mime = @mime_content_type($destFull) ?: 'application/octet-stream';
@@ -148,7 +148,7 @@ class MemberChunkUploadService
                 $media->delete();
                 $this->cleanup($uploadId);
 
-                return Result::fail('头像须为图片');
+                return Result::fail(cms_ui('avatar_must_image'));
             }
             $member->avatar = $url;
             $member->save();
@@ -162,7 +162,7 @@ class MemberChunkUploadService
             'filename' => $meta['filename'],
             'mime' => $mime,
             'size' => $written,
-        ], '上传完成');
+        ], cms_ui('upload_done'));
     }
 
     protected function cleanup(string $uploadId): void

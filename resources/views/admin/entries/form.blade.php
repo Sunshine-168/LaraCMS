@@ -157,7 +157,7 @@
                         <label class="inline"><input type="checkbox" name="is_homepage" value="1" @checked(old('is_homepage', $entry->is_homepage))> 设为首页文档</label>
                         <div class="entry-save">
                             <button class="btn" type="submit">保存</button>
-                            <a class="btn btn-muted" href="{{ route('admin.entries.index', ['model_id' => $model->id]) }}">返回列表</a>
+                            <a class="btn btn-muted" href="{{ route('admin.entries.index', ['model_id' => $model->id]) }}">{{ admin_back('entries') }}</a>
                         </div>
                     </div>
                 </div>

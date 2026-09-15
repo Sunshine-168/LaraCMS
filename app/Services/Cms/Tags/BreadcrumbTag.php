@@ -19,8 +19,7 @@ class BreadcrumbTag
         $class = e((string) ($options['class'] ?? 'breadcrumb'));
         $parts = [];
 
-        $home = e((string) ($this->context->site()['title'] ?? config('app.name')));
-        $parts[] = '<a href="'.e(cms_front_url('')).'">'.$home.'</a>';
+        $parts[] = '<a href="'.e(cms_front_url('')).'">'.e(cms_ui('home')).'</a>';
 
         $category = $this->context->category();
         foreach ($this->ancestors($category) as $cat) {

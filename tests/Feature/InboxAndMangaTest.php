@@ -62,10 +62,8 @@ class InboxAndMangaTest extends TestCase
     {
         Setting::setValue('theme', 'manga');
 
-        $manga = Entry::query()->with(['category', 'modelDef'])->find(10);
-        $chapter = Entry::query()->with(['category', 'modelDef'])->find(11);
-        $this->assertNotNull($manga);
-        $this->assertNotNull($chapter);
+        $manga = $this->seededEntry('star-traveler');
+        $chapter = $this->seededEntry('star-ch1');
 
         $this->get($manga->url)
             ->assertOk()

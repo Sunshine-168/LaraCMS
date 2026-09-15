@@ -34,8 +34,7 @@ class MemberHubAndApiWriteTest extends TestCase
 
     public function test_scheduled_publish_is_hidden_on_id_url_and_flagged_in_admin(): void
     {
-        $entry = Entry::query()->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
         $entry->status = 'published';
         $entry->published_at = now()->addDay();
         $entry->save();
@@ -54,8 +53,7 @@ class MemberHubAndApiWriteTest extends TestCase
     {
         $member = Member::query()->where('email', 'member@example.com')->first();
         $this->assertNotNull($member);
-        $entry = Entry::query()->published()->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
 
         Captcha::generate();
         $this->actingAs($member, 'member')
@@ -77,7 +75,7 @@ class MemberHubAndApiWriteTest extends TestCase
 
         $this->assertSame($member->id, FormSubmission::query()->latest('id')->first()?->member_id);
 
-        $gated = Entry::query()->find(4);
+        $gated = $this->seededEntry('client-windows');
         $this->assertTrue($gated?->isMemberGated());
 
         $this->actingAs($member, 'member')
@@ -93,8 +91,7 @@ class MemberHubAndApiWriteTest extends TestCase
 
     public function test_sitemap_includes_tags_and_skips_member_gated_entries(): void
     {
-        $gated = Entry::query()->with(['category', 'modelDef'])->find(4);
-        $this->assertNotNull($gated);
+        $gated = $this->seededEntry('client-windows');
 
         $this->get('/sitemap.xml')
             ->assertOk()
@@ -107,8 +104,7 @@ class MemberHubAndApiWriteTest extends TestCase
     {
         Setting::setValue('api_enable', '1');
         Setting::setValue('api_token', 'write-token-test');
-        $entry = Entry::query()->published()->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
 
         $this->withHeaders(['X-CMS-Token' => 'write-token-test'])
             ->postJson('/api/form/contact', [

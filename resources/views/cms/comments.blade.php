@@ -7,7 +7,7 @@
 @endphp
 @include('cms.partials.favorite')
 @if($commentsEnabled)
-<section class="cms-comments" style="margin-top:36px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08)">
+<section class="cms-comments">
     <h2 style="font-size:1.25rem;margin:0 0 16px">{{ cms_ui('comments') }} @if($commentTree->count())<span class="muted" style="font-size:.9rem">({{ $commentTree->sum(fn($c) => 1 + $c->children->count()) }})</span>@endif</h2>
 
     @if(session('status'))
@@ -23,6 +23,9 @@
                 <span class="muted" style="font-weight:400;font-size:.85rem"> · {{ $comment->created_at?->format('Y-m-d H:i') }}</span>
             </div>
             <div style="margin-top:6px;white-space:pre-wrap">{{ $comment->content }}</div>
+            @if($canPost)
+                <p style="margin:8px 0 0"><button type="button" class="muted cms-comment-reply-btn" data-parent="{{ $comment->id }}" data-name="{{ $comment->author_name }}" style="background:none;border:0;padding:0;cursor:pointer;font:inherit;color:inherit">{{ cms_ui('reply') }}</button></p>
+            @endif
             @foreach($comment->children as $child)
                 <div class="cms-comment-reply" style="margin:12px 0 0 20px;padding-left:12px;border-left:2px solid rgba(0,0,0,.08)">
                     <div style="font-weight:600">{{ $child->author_name }}
@@ -37,7 +40,7 @@
     @endforelse
 
     @if($canPost)
-        <form method="post" action="{{ cms_route('comment.store', $entry) }}" style="margin-top:24px;max-width:560px">
+        <form method="post" action="{{ cms_route('comment.store', $entry) }}" class="cms-form" style="margin-top:24px;max-width:560px">
             @csrf
             @unless($member)
                 <label>{{ cms_ui('comment_name') }}</label>
@@ -48,6 +51,8 @@
                 <p class="muted">{{ cms_ui('comment_as_member', ['name' => $member->name]) }}</p>
             @endunless
             <label>{{ cms_ui('comment_body') }}</label>
+            <input type="hidden" name="parent_id" id="cmsCommentParent" value="{{ old('parent_id') }}">
+            <p id="cmsCommentReplyHint" class="muted" style="{{ old('parent_id') ? '' : 'display:none' }}"></p>
             <textarea name="content" rows="4" required maxlength="2000">{{ old('content') }}</textarea>
             @if(config('cms.form_captcha', true))
                 @php $cap = \App\Support\Captcha::generate(); @endphp
@@ -55,9 +60,37 @@
                 <input type="text" name="captcha" required maxlength="10" autocomplete="off" style="max-width:120px">
             @endif
             <p style="margin-top:12px">
-                <button type="submit">{{ cms_ui('comment_submit') }}</button>
+                <button class="btn" type="submit">{{ cms_ui('comment_submit') }}</button>
+                <button type="button" id="cmsCommentCancelReply" class="muted" style="display:none;background:none;border:0;margin-left:8px;cursor:pointer;font:inherit;color:inherit">{{ cms_ui('cancel_reply') }}</button>
             </p>
         </form>
+        <script>
+        (function () {
+            const parent = document.getElementById('cmsCommentParent');
+            const hint = document.getElementById('cmsCommentReplyHint');
+            const cancel = document.getElementById('cmsCommentCancelReply');
+            const tpl = @json(cms_ui('replying_to'));
+            const setReply = (id, name) => {
+                if (!parent) return;
+                parent.value = id || '';
+                if (hint) {
+                    hint.textContent = id ? tpl.replace(':name', name || '') : '';
+                    hint.style.display = id ? '' : 'none';
+                }
+                if (cancel) cancel.style.display = id ? '' : 'none';
+            };
+            document.querySelectorAll('.cms-comment-reply-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    setReply(btn.getAttribute('data-parent'), btn.getAttribute('data-name'));
+                    document.querySelector('.cms-comments textarea[name="content"]')?.focus();
+                });
+            });
+            cancel?.addEventListener('click', () => setReply('', ''));
+            if (parent && parent.value) {
+                setReply(parent.value, '');
+            }
+        })();
+        </script>
     @elseif(!$member)
         <p class="muted">{!! str_replace(':link', '<a href="'.e(cms_front_url('member/login')).'">'.e(cms_ui('login')).'</a>', e(cms_ui('comment_login'))) !!}</p>
     @endif

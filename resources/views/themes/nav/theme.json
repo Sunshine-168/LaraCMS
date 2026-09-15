@@ -4,6 +4,10 @@
     "i18n": true,
     "responsive": true,
     "models": ["link"],
+    "config": {
+        "hot": {"title": "热门标题", "type": "text", "value": ""},
+        "all_cats": {"title": "分类标题", "type": "text", "value": ""}
+    },
     "categories": [
         {"slug": "nav-tools", "title": {"zh_cn": "常用工具", "en": "Tools"}, "model": "link", "type": "list", "menu": true},
         {"slug": "nav-dev", "title": {"zh_cn": "开发资源", "en": "Dev"}, "model": "link", "type": "list", "menu": true}

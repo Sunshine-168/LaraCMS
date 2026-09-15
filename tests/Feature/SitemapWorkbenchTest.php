@@ -41,7 +41,8 @@ class SitemapWorkbenchTest extends TestCase
             ->assertSee('/sitemap.xml', false)
             ->assertSee('各语言')
             ->assertSee('robots.txt', false)
-            ->assertSee('保存站点地图')
+            ->assertSee('>保存</button>', false)
+            ->assertDontSee('保存站点地图')
             ->assertSee('sitemap-title', false)
             ->assertSee('sitemap-loc', false)
             ->assertSee('sitemap-split', false)
@@ -188,7 +189,9 @@ class SitemapWorkbenchTest extends TestCase
         $this->actingAs($editor, 'admin')
             ->get(route('admin.sitemap.edit'))
             ->assertOk()
-            ->assertSee('收录范围');
+            ->assertSee('收录范围')
+            ->assertSee('>地图</span>', false)
+            ->assertDontSee('nav-fold is-open', false);
 
         $this->actingAs($operator, 'admin')
             ->get(route('admin.sitemap.edit'))

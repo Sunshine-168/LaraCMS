@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '管理员')
+@section('title', admin_t('nav.admins'))
 @section('icon', 'user-cog')
 @php
     $q = $q ?? '';
@@ -23,7 +23,7 @@
 @endphp
 @section('header_actions')
     @if(auth('admin')->user()?->canPerm('roles'))
-        <a class="btn btn-muted btn-sm" href="{{ route('admin.roles.index') }}">角色权限</a>
+        <a class="btn btn-muted btn-sm" href="{{ route('admin.roles.index') }}">权限</a>
     @endif
 @endsection
 @section('content')

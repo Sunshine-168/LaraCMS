@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '站点管理')
+@section('title', admin_t('nav.sites'))
 @section('icon', 'globe')
 @php
     $currentId = (int) ($currentId ?? 0);

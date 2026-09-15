@@ -15,11 +15,11 @@
         </p>
         <p><label>{{ cms_ui('avatar') }}<br><input type="text" id="memberAvatar" name="avatar" value="{{ old('avatar', $member->avatar) }}" style="width:100%;padding:8px"></label></p>
         @if($member->canMember('upload'))
-            <p class="muted">分片上传头像（大文件自动切块）</p>
+            <p class="muted">{{ cms_ui('avatar_chunk_hint') }}</p>
             @include('cms.partials.member-chunk-upload', ['purpose' => 'avatar', 'targetInput' => 'memberAvatar', 'previewId' => 'memberAvatarPreview'])
         @endif
-        <p><label>{{ cms_ui('nickname') }}<br><input type="text" name="name" value="{{ old('name', $member->name) }}" required style="width:100%;padding:8px"></label></p>
-        <p><label>{{ cms_ui('phone') }}<br><input type="text" name="phone" value="{{ old('phone', $member->phone) }}" maxlength="32" style="width:100%;padding:8px"></label></p>
+        <p><label>{{ cms_ui('nickname') }}<br><input type="text" name="name" value="{{ old('name', $member->name) }}" required autocomplete="nickname" style="width:100%;padding:8px"></label></p>
+        <p><label>{{ cms_ui('phone') }}<br><input type="text" name="phone" value="{{ old('phone', $member->phone) }}" maxlength="32" autocomplete="tel" style="width:100%;padding:8px"></label></p>
         <p><label>{{ cms_ui('bio') }}<br><textarea name="bio" rows="3" maxlength="500" style="width:100%;padding:8px">{{ old('bio', $member->bio) }}</textarea></label></p>
         <p><button type="submit">{{ cms_ui('save_profile') }}</button></p>
     </form>
@@ -27,9 +27,9 @@
     <h2>{{ cms_ui('change_password') }}</h2>
     <form method="post" action="{{ cms_route('member.password') }}">
         @csrf
-        <p><label>{{ cms_ui('current_password') }}<br><input type="password" name="current_password" required style="width:100%;padding:8px"></label></p>
-        <p><label>{{ cms_ui('new_password') }}<br><input type="password" name="password" required minlength="10" style="width:100%;padding:8px"></label></p>
-        <p><label>{{ cms_ui('password_confirm') }}<br><input type="password" name="password_confirmation" required style="width:100%;padding:8px"></label></p>
+        <p><label>{{ cms_ui('current_password') }}<br><input type="password" name="current_password" required autocomplete="current-password" style="width:100%;padding:8px"></label></p>
+        <p><label>{{ cms_ui('new_password') }}<br><input type="password" name="password" required minlength="10" autocomplete="new-password" style="width:100%;padding:8px"></label></p>
+        <p><label>{{ cms_ui('password_confirm') }}<br><input type="password" name="password_confirmation" required autocomplete="new-password" style="width:100%;padding:8px"></label></p>
         <p><button type="submit">{{ cms_ui('save_password') }}</button></p>
     </form>
     @include('cms.partials.member-hub')

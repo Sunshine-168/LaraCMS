@@ -6,7 +6,7 @@
     $type = old('type', $recommend->type ?? 'image');
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.recommends.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.recommends.index') }}">{{ admin_back('recommends') }}</a>
 @endsection
 @section('content')
     <form method="post" class="rec-form" action="{{ $recommend->exists ? route('admin.recommends.update', $recommend) : route('admin.recommends.store') }}">

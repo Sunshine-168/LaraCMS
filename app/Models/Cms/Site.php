@@ -77,7 +77,7 @@ class Site extends Model
     public static function themeLabel(?string $theme): string
     {
         if ($theme === '' || $theme === null) {
-            return '跟站点设置';
+            return '跟设置';
         }
 
         return app(\App\Services\Cms\ThemeCatalog::class)->label($theme);

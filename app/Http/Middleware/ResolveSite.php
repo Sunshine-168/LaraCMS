@@ -6,6 +6,7 @@ use App\Models\Cms\Site;
 use App\Support\AdminSiteAccess;
 use App\Support\Cdn;
 use App\Support\CurrentSite;
+use App\Support\Locale;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,7 @@ class ResolveSite
     public function handle(Request $request, Closure $next): Response
     {
         CurrentSite::clear();
+        Locale::forgetCurrent();
 
         if (
             $request->is('install')

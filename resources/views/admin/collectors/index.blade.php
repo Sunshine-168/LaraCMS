@@ -1,8 +1,8 @@
 @extends('admin.layout')
-@section('title', '采集任务')
+@section('title', admin_t('nav.collectors'))
 @section('icon', 'cloud-download-alt')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.logs') }}">运行日志</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.logs') }}">{{ admin_t('crud.collector_logs') }}</a>
     <a class="btn btn-sm" href="{{ route('admin.collectors.create') }}"><i class="fas fa-plus"></i> 新建采集源</a>
 @endsection
 @section('content')

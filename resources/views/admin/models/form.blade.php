@@ -2,7 +2,7 @@
 @section('title', $model->exists ? '编辑模型' : '新建模型')
 @section('icon', 'cube')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">{{ admin_back('models') }}</a>
 @endsection
 @section('content')
     <form method="post" class="model-form" action="{{ $model->exists ? route('admin.models.update', $model) : route('admin.models.store') }}">
@@ -11,7 +11,7 @@
 
         <label for="model-name">名称</label>
         <input id="model-name" type="text" name="name" value="{{ old('name', $model->name) }}" placeholder="如 产品" required autofocus>
-        <p class="muted field-hint">内容列表 Tab 和「新建」按钮上看到的名字。</p>
+        <p class="muted field-hint">内容 Tab 和「新建」按钮上看到的名字。</p>
 
         <label for="model-slug">标识码</label>
         <input id="model-slug" type="text" name="slug" value="{{ old('slug', $model->slug) }}" placeholder="如 product" required {{ $model->exists ? 'readonly' : '' }}>

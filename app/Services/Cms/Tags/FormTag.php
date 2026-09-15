@@ -29,7 +29,10 @@ class FormTag
                 $field['choices'] = array_values(array_filter(array_map('trim', explode(',', $field['choices']))));
             }
 
-            return (object) $field;
+            $obj = (object) $field;
+            $obj->label = $this->fieldLabel($obj);
+
+            return $obj;
         });
     }
 
@@ -49,7 +52,16 @@ class FormTag
             ? ! empty($options['captcha'])
             : (bool) config('cms.form_captcha', true);
         $action = cms_route('form.submit', $form->slug);
-        $html = '<form method="post" action="'.e($action).'" class="cms-form" data-form="'.e($form->slug).'">';
+        $html = '';
+        $status = session('status');
+        $error = session('error');
+        if (is_string($status) && $status !== '') {
+            $html .= '<p class="muted cms-form-flash" style="color:green">'.e($status).'</p>';
+        }
+        if (is_string($error) && $error !== '') {
+            $html .= '<p class="muted cms-form-flash" style="color:#c0392b">'.e($error).'</p>';
+        }
+        $html .= '<form method="post" action="'.e($action).'" class="cms-form" data-form="'.e($form->slug).'">';
         $html .= '<input type="hidden" name="_token" value="'.e(csrf_token()).'">';
 
         foreach ($this->get(['slug' => $form->slug]) as $field) {
@@ -58,46 +70,53 @@ class FormTag
 
         if ($captcha) {
             $q = Captcha::generate();
-            $html .= '<div class="cms-form-item"><label>验证码：'.e($q['question']).'</label>';
+            $html .= '<div class="cms-form-item"><label>'.e(cms_ui('captcha')).'：'.e($q['question']).'</label>';
             $html .= '<input type="text" name="captcha" required autocomplete="off"></div>';
         }
 
-        $html .= '<button type="submit">'.e((string) ($options['submit'] ?? '提交')).'</button></form>';
+        $html .= '<button class="btn" type="submit">'.e((string) ($options['submit'] ?? cms_ui('submit_form'))).'</button></form>';
 
         return new HtmlString($html);
     }
 
     protected function renderField(object $field): string
     {
-        $name = e($field->name);
-        $label = e($field->label ?? $field->name);
+        $rawName = (string) $field->name;
+        $name = e($rawName);
+        $label = e($this->fieldLabel($field));
         $type = $field->type ?? 'text';
         $required = ! empty($field->required) ? ' required' : '';
         $placeholder = e((string) ($field->placeholder ?? ''));
         $choices = is_array($field->choices ?? null) ? $field->choices : [];
+        $old = old($rawName);
 
         $html = '<div class="cms-form-item"><label>'.$label.(! empty($field->required) ? ' *' : '').'</label>';
 
         if ($type === 'textarea') {
-            $html .= '<textarea name="'.$name.'" rows="4" placeholder="'.$placeholder.'"'.$required.'></textarea>';
+            $html .= '<textarea name="'.$name.'" rows="4" placeholder="'.$placeholder.'"'.$required.'>'.e(is_scalar($old) ? (string) $old : '').'</textarea>';
         } elseif ($type === 'select') {
             $html .= '<select name="'.$name.'"'.$required.'>';
-            $html .= '<option value="">请选择</option>';
+            $html .= '<option value="">'.e(cms_ui('please_select')).'</option>';
             foreach ($choices as $c) {
-                $html .= '<option value="'.e($c).'">'.e($c).'</option>';
+                $sel = is_scalar($old) && (string) $old === (string) $c ? ' selected' : '';
+                $html .= '<option value="'.e($c).'"'.$sel.'>'.e($c).'</option>';
             }
             $html .= '</select>';
         } elseif ($type === 'radio') {
             foreach ($choices as $c) {
-                $html .= '<label class="inline"><input type="radio" name="'.$name.'" value="'.e($c).'"'.$required.'> '.e($c).'</label> ';
+                $chk = is_scalar($old) && (string) $old === (string) $c ? ' checked' : '';
+                $html .= '<label class="inline"><input type="radio" name="'.$name.'" value="'.e($c).'"'.$required.$chk.'> '.e($c).'</label> ';
             }
         } elseif ($type === 'checkbox') {
+            $olds = is_array($old) ? $old : (is_scalar($old) && $old !== '' && $old !== null ? [$old] : []);
+            $olds = array_map(fn ($v) => (string) $v, $olds);
             foreach ($choices as $c) {
-                $html .= '<label class="inline"><input type="checkbox" name="'.$name.'[]" value="'.e($c).'"> '.e($c).'</label> ';
+                $chk = in_array((string) $c, $olds, true) ? ' checked' : '';
+                $html .= '<label class="inline"><input type="checkbox" name="'.$name.'[]" value="'.e($c).'"'.$chk.'> '.e($c).'</label> ';
             }
         } else {
             $inputType = in_array($type, ['email', 'number', 'tel'], true) ? $type : 'text';
-            $html .= '<input type="'.$inputType.'" name="'.$name.'" placeholder="'.$placeholder.'"'.$required.'>';
+            $html .= '<input type="'.$inputType.'" name="'.$name.'" value="'.e(is_scalar($old) ? (string) $old : '').'" placeholder="'.$placeholder.'"'.$required.'>';
         }
 
         return $html.'</div>';
@@ -112,5 +131,35 @@ class FormTag
         }
 
         return CmsForm::query()->where('slug', (string) $slug)->where('is_active', true)->first();
+    }
+
+    protected function fieldLabel(object $field): string
+    {
+        $raw = $field->label ?? null;
+        if (is_array($raw)) {
+            $locale = \App\Support\Locale::current();
+            foreach ([$locale, \App\Support\Locale::default(), 'en', 'zh_cn'] as $code) {
+                if (! empty($raw[$code]) && is_string($raw[$code])) {
+                    return $raw[$code];
+                }
+            }
+        }
+        $en = trim((string) ($field->label_en ?? ''));
+        if ($en !== '' && \App\Support\Locale::isEnglish()) {
+            return $en;
+        }
+        $map = [
+            'name' => 'form_name',
+            'email' => 'email',
+            'message' => 'form_message',
+            'phone' => 'phone',
+            'tel' => 'phone',
+        ];
+        $key = $map[(string) $field->name] ?? null;
+        if ($key && (\App\Support\Locale::isEnglish() || ! is_string($raw) || trim($raw) === '')) {
+            return cms_ui($key);
+        }
+
+        return is_string($raw) && $raw !== '' ? $raw : (string) $field->name;
     }
 }

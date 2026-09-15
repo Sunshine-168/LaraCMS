@@ -29,7 +29,7 @@ class FormInboxWorkbenchTest extends TestCase
             ->get(route('admin.form-submissions.index'))
             ->assertOk()
             ->assertSee('还没有留言')
-            ->assertSee('去表单定义')
+            ->assertSee('去表单')
             ->assertDontSee('暂无留言')
             ->assertDontSee('>ID</th>', false)
             ->assertDontSee('未读 0');

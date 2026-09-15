@@ -2,7 +2,7 @@
 @section('title', $redirect->exists ? '编辑跳转' : '新建跳转')
 @section('icon', 'exchange-alt')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.redirects.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.redirects.index') }}">{{ admin_back('redirects') }}</a>
 @endsection
 @section('content')
     @if($redirect->exists && $redirect->hits > 0)

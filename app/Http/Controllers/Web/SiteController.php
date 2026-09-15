@@ -48,7 +48,7 @@ class SiteController extends Controller
         $q = trim((string) $request->query('q', ''));
         $modelId = $request->integer('model_id') ?: null;
         $categoryId = $request->integer('category_id') ?: null;
-        $this->context->setSeo('搜索 '.$q.' - '.$site['title'], '', '');
+        $this->context->setSeo(cms_ui('search').' '.$q.' - '.$site['title'], '', '');
 
         $searchModels = ContentModel::query()
             ->where('is_active', true)
@@ -219,8 +219,8 @@ class SiteController extends Controller
                 $blocked = $this->memberAccessOrRedirect(
                     request(),
                     'view_member_content',
-                    '该内容需会员登录后查看',
-                    '当前会员组无权查看此内容'
+                    cms_ui('member_login_view'),
+                    cms_ui('member_deny_view')
                 );
                 if ($blocked) {
                     return $blocked;
@@ -234,7 +234,7 @@ class SiteController extends Controller
         $this->context->setCategory($category);
         $this->context->setArticle($entry);
         $this->context->setSeo(
-            ($preview ? '[预览] ' : '').($entry->t('meta_title') ?: $entry->t('title').' - '.$site['title']),
+            ($preview ? cms_ui('preview_mark') : '').($entry->t('meta_title') ?: $entry->t('title').' - '.$site['title']),
             '',
             $entry->t('meta_description') ?: ($entry->t('excerpt') ?: '')
         );
@@ -260,8 +260,8 @@ class SiteController extends Controller
             $blocked = $this->memberAccessOrRedirect(
                 $request,
                 'download',
-                '该资源需会员登录后下载',
-                '当前会员组无权下载'
+                cms_ui('member_login_download'),
+                cms_ui('member_deny_download')
             );
             if ($blocked) {
                 return $blocked;
@@ -293,8 +293,8 @@ class SiteController extends Controller
             $blocked = $this->memberAccessOrRedirect(
                 $request,
                 'view_member_content',
-                '该外链需会员登录后访问',
-                '当前会员组无权访问此外链'
+                cms_ui('member_login_link'),
+                cms_ui('member_deny_link')
             );
             if ($blocked) {
                 return $blocked;
@@ -343,7 +343,7 @@ class SiteController extends Controller
     {
         $result = $this->forms->submit($slug, $request, Auth::guard('member')->user());
         if (! $result['ok']) {
-            if ($result['msg'] === '表单不存在') {
+            if ($result['msg'] === cms_ui('form_missing')) {
                 abort(404);
             }
 

@@ -6,7 +6,7 @@
     $comments = (int) ($member->comments_count ?? 0);
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.members.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.members.index') }}">{{ admin_back('members') }}</a>
 @endsection
 @section('content')
     @if($member->exists && ($posts > 0 || $comments > 0))
@@ -38,7 +38,7 @@
                 </option>
             @endforeach
         </select>
-        <p class="muted field-hint">决定能不能投稿、下载、留言。分组权限在 <a href="{{ route('admin.member-groups.index') }}">会员分组</a> 里改。</p>
+        <p class="muted field-hint">决定能不能投稿、下载、留言。分组权限在 <a href="{{ route('admin.member-groups.index') }}">分组</a> 里改。</p>
 
         <label for="member-password">密码{{ $member->exists ? '（留空不改）' : '' }}</label>
         <input id="member-password" type="password" name="password" autocomplete="new-password" {{ $member->exists ? '' : 'required' }} minlength="8">

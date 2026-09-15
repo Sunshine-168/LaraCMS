@@ -42,13 +42,14 @@ class ThemeWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.themes.index'))
             ->assertOk()
-            ->assertSee('外观主题')
+            ->assertSee('>主题</h1>', false)
             ->assertSee('复制一套')
             ->assertSee('上传 zip')
             ->assertSee('resources/views/themes/')
             ->assertSee('企业')
             ->assertSee('默认')
             ->assertSee('用于本站')
+            ->assertSee('配置')
             ->assertSee('当前使用')
             ->assertSee('体育信号')
             ->assertSee('多语言')
@@ -331,6 +332,8 @@ BLADE
             ->assertForbidden();
         $this->get(route('admin.themes.preview', 'enterprise'))
             ->assertForbidden();
+        $this->get(route('admin.themes.show', 'enterprise'))
+            ->assertForbidden();
     }
 
     public function test_missing_preview_file_falls_back_to_svg(): void
@@ -341,6 +344,41 @@ BLADE
             ->assertOk()
             ->assertHeader('content-type', 'image/svg+xml; charset=utf-8')
             ->assertSee('企业', false);
+    }
+
+    public function test_theme_config_saves_vars_and_phrases(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.themes.show', 'enterprise'))
+            ->assertOk()
+            ->assertSee('模板多语言')
+            ->assertSee('这套要用的模型')
+            ->assertSee('自定义参数')
+            ->assertSee('首页公告')
+            ->assertSee('文章')
+            ->assertSee(admin_back('themes'));
+
+        $this->put(route('admin.themes.update', 'enterprise'), [
+            'i18n' => '1',
+            'responsive' => '1',
+            'models' => ['article', 'page', 'product', 'job'],
+            'vars' => [
+                'home_notice' => '主题公告标记',
+                'cta_text' => '主题按钮',
+                'cta_url' => '/about',
+            ],
+            'phrases' => [
+                'search' => ['zh_cn' => '搜本套', 'en' => 'Search here'],
+            ],
+        ])
+            ->assertRedirect(route('admin.themes.show', 'enterprise'))
+            ->assertSessionHas('status');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('主题公告标记')
+            ->assertSee('搜本套');
     }
 
     protected function writeDropIn(): void

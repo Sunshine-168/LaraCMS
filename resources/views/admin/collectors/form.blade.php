@@ -6,7 +6,7 @@
     $type = old('type', $collector->type ?: 'html');
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.index') }}">{{ admin_back('collectors') }}</a>
 @endsection
 @section('content')
     <form method="post" class="collector-form" id="collectorForm" action="{{ $collector->exists ? route('admin.collectors.update', $collector) : route('admin.collectors.store') }}">
@@ -50,7 +50,7 @@
                 <option value="{{ $category->id }}" @selected(old('category_id', $collector->category_id) == $category->id)>{{ $category->t('title') }}</option>
             @endforeach
         </select>
-        <p class="muted field-hint">采进来的稿会进这个栏目，可在内容管理里再改。</p>
+        <p class="muted field-hint">采进来的稿会进这个栏目，可在内容里再改。</p>
 
         <div class="collector-inline">
             <div>

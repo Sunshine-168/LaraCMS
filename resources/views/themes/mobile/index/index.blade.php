@@ -11,12 +11,12 @@
             <div>
                 <h1>{{ $item->t('title') }}</h1>
                 <p>{{ $item->t('notes') }}</p>
-                @if($item->url)<p><a class="btn" href="{{ $item->url }}">查看</a></p>@endif
+                @if($item->url)<p><a class="btn" href="{{ $item->url }}">{{ cms_theme('cta_text', cms_ui('view')) }}</a></p>@endif
             </div>
         </div>
         @endif
     @empty
-        @if(!empty($site['hero_title']) || !empty($site['hero_subtitle']))
+        @if(!empty($site['hero_title']) || !empty($site['hero_subtitle']) || cms_theme('home_title') !== '' || cms_theme('cta_text') !== '')
             <div class="hero">
                 <div>
                     @include('cms.partials.front-hero-copy')
@@ -26,7 +26,7 @@
     @endforelse
 
     <section style="margin:20px 0">
-        <h2>最新新闻</h2>
+        <h2>{{ cms_theme('latest_news', cms_ui('latest_news')) }}</h2>
         <div class="grid" style="margin-top:10px">
             @cmsAdv(['name' => 'latest_news'])
                 @if($item->html)

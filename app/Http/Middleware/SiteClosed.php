@@ -31,10 +31,10 @@ class SiteClosed
             return $next($request);
         }
 
-        $msg = trim((string) Setting::getValue('site_closed_message', '站点维护中，请稍后再访。'));
+        $msg = trim((string) Setting::getValue('site_closed_message', ''));
 
         return response()->view('errors.site-closed', [
-            'message' => $msg !== '' ? $msg : '站点维护中，请稍后再访。',
+            'message' => $msg !== '' ? $msg : cms_ui('site_closed_default'),
             'siteName' => Setting::getValue('site_name', config('app.name')),
         ], 503);
     }

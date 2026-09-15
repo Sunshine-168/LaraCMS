@@ -24,8 +24,9 @@
         .meta { color:#64748b; font-size:13px; margin-bottom:8px; }
         .card-soft { background:#fff; border:1px solid var(--line); border-radius:10px; padding:16px; margin:12px 0; }
         .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-        .btn { display:inline-block; background:var(--accent); color:#fff; padding:8px 14px; border-radius:6px; }
+        .btn { display:inline-block; background:var(--accent); color:#fff; padding:8px 14px; border-radius:6px; border:0; cursor:pointer; }
         .muted { color:#64748b; font-size:13px; }
+        input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]), textarea, select { font:inherit; padding:8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:inherit; }
         footer { border-top:1px solid var(--line); padding:24px 0; color:#64748b; font-size:13px; }
     </style>
     @include('cms.partials.front-appearance')
@@ -41,7 +42,8 @@
         </nav>
     </div>
 </header>
-<main class="wrap">
+<main id="content" class="wrap">
+    @include('cms.partials.front-theme-notice')
     @yield('content')
 </main>
 @include('cms.partials.front-footer')

@@ -1,8 +1,8 @@
 @extends('admin.layout')
-@section('title', '运行日志')
+@section('title', admin_t('crud.collector_logs'))
 @section('icon', 'history')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.index') }}">返回采集任务</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.collectors.index') }}">{{ admin_back('collectors') }}</a>
 @endsection
 @section('content')
     <div class="entry-index collector-logs">

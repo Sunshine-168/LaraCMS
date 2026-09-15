@@ -3,14 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Cms\HtmlCacheService;
 use App\Services\Cms\ThemeCatalog;
+use App\Services\Cms\ThemePackInstaller;
+use App\Support\Locale;
+use App\Support\ThemeUi;
+use App\Support\ThemeVars;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ThemeController extends Controller
 {
-    public function __construct(private readonly ThemeCatalog $themes) {}
+    public function __construct(
+        private readonly ThemeCatalog $themes,
+        private readonly HtmlCacheService $htmlCache,
+        private readonly ThemePackInstaller $packs,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -77,6 +86,62 @@ class ThemeController extends Controller
         }
 
         return $redirect;
+    }
+
+    public function show(string $theme): View
+    {
+        $item = $this->themes->get($theme);
+        if (! $item) {
+            abort(404);
+        }
+        $vars = ThemeVars::all($theme);
+        $schema = ThemeVars::schema($theme);
+        foreach ($schema as &$field) {
+            $field['current'] = $vars[$field['key']] ?? $field['value'];
+        }
+        unset($field);
+
+        return view('admin.themes.show', [
+            'theme' => $item,
+            'models' => $this->themes->choosableModels($theme),
+            'selected' => array_column($item['models'], 'slug'),
+            'fields' => $schema,
+            'locales' => Locale::configured(),
+            'phrases' => ThemeUi::storedFor($theme),
+            'phraseKeys' => ThemeUi::packKeys(),
+            'phraseCatalog' => ThemeUi::catalog(),
+            'categories' => $this->themes->packCategories($theme),
+        ]);
+    }
+
+    public function update(Request $request, string $theme): RedirectResponse
+    {
+        $item = $this->themes->get($theme);
+        if (! $item) {
+            abort(404);
+        }
+
+        $this->themes->saveSetup($theme, [
+            'i18n' => $request->boolean('i18n'),
+            'responsive' => $request->boolean('responsive'),
+            'models' => (array) $request->input('models', []),
+        ]);
+        ThemeVars::save($theme, (array) $request->input('vars', []));
+        ThemeUi::saveFor($theme, (array) $request->input('phrases', []));
+        $this->htmlCache->forgetAll('theme-config:'.$theme);
+
+        $msg = '已保存「'.$item['name'].'」的配置';
+        if ($item['current']) {
+            $pack = $this->packs->ensure($theme);
+            $extra = trim((string) ($pack['msg'] ?? ''));
+            if ($extra !== '') {
+                $msg .= '。'.$extra;
+            }
+        }
+
+        return redirect()
+            ->route('admin.themes.show', $theme)
+            ->with('status', $msg);
     }
 
     public function preview(string $theme): \Symfony\Component\HttpFoundation\Response

@@ -55,7 +55,7 @@
 
         <h3>回复</h3>
         @if($submission->guestEmail())
-            <p class="muted field-hint">将发到 {{ $submission->guestEmail() }}。需要先在站点设置里配好 SMTP。</p>
+            <p class="muted field-hint">将发到 {{ $submission->guestEmail() }}。需要先在设置里配好 SMTP。</p>
         @else
             <p class="muted field-hint">这条没有邮箱，只能留内部备注。</p>
         @endif

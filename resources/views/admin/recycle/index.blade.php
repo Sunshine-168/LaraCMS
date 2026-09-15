@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '回收站')
+@section('title', admin_t('nav.recycle'))
 @section('icon', 'trash-alt')
 @php
     $q = $q ?? '';
@@ -20,7 +20,7 @@
     };
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.entries.index') }}">返回内容列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.entries.index') }}">{{ admin_back('entries') }}</a>
     @if($entries->total() > 0)
         <form action="{{ route('admin.recycle.empty') }}" method="post" onsubmit="return confirm(@json('将彻底删除回收站里的 '.$entries->total().' 篇，不可恢复。确定清空？'))">
             @csrf
@@ -55,12 +55,12 @@
                     <a class="btn btn-muted" href="{{ route('admin.recycle.index') }}">清除筛选</a>
                 @else
                     <p>回收站是空的。</p>
-                    <p class="muted">从内容列表删除的稿件会先放在这里，可以随时还原。不会自动清空。</p>
-                    <a class="btn btn-muted" href="{{ route('admin.entries.index') }}">去内容列表</a>
+                    <p class="muted">从内容里删除的稿件会先放在这里，可以随时还原。不会自动清空。</p>
+                    <a class="btn btn-muted" href="{{ route('admin.entries.index') }}">去内容</a>
                 @endif
             </div>
         @else
-            <p class="muted recycle-lead">还原后回到内容列表，状态与栏目保持删除前的样子。彻底删除无法恢复。</p>
+            <p class="muted recycle-lead">还原后回到内容，状态与栏目保持删除前的样子。彻底删除无法恢复。</p>
             <form method="post" action="{{ route('admin.recycle.batch') }}" id="batchForm">
                 @csrf
                 <input type="hidden" name="keep_q" value="{{ $q }}">
@@ -156,7 +156,7 @@
             if (!confirm('将彻底删除已选的 ' + n + ' 篇，无法恢复。确定吗？')) e.preventDefault();
             return;
         }
-        if (!confirm('还原已选的 ' + n + ' 篇到内容列表？')) e.preventDefault();
+        if (!confirm('还原已选的 ' + n + ' 篇到内容？')) e.preventDefault();
     });
     syncCount();
 })();

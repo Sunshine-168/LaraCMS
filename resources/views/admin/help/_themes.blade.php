@@ -17,7 +17,7 @@
 
 <h3>怎么换到本站</h3>
 <ol class="help-steps">
-    <li>打开{!! $hl('themes', '主题') !!}。卡片上「当前使用」就是正在用的。</li>
+    <li>打开{!! $hl('themes', '主题') !!}。卡片上「当前使用」就是正在用的。点「配置」进这一套的多语言、模型和自定义参数。</li>
     <li>点预览图看长什么样。缺首页的不能用于本站（没有 <code>index/index.blade.php</code>）。</li>
     <li>点「用于本站」：会把这套外观设为当前主题，并<strong>补上缺少的内容模型</strong>和<strong>空栏目</strong>。已有模型字段、已有栏目和文章都不会改、不会删。</li>
     <li>当前这套还缺模型时，按钮是「补上模型」，只补缺的，不换外观。</li>
@@ -55,7 +55,7 @@
         <tr><td>移动</td><td>手机皮肤</td><td>与企业类似，可作手机外观</td></tr>
     </tbody>
 </table>
-<p class="muted">点「用于本站」时按 <code>theme.json</code> 里的 <code>models</code> / <code>categories</code> 补缺。栏目标题可写成 <code>{"zh_cn":"新闻中心","en":"News"}</code>，点用时会按语言写入。卡片上「多语言」「自适应」表示这套带语言切换和手机宽度（也可在 json 里写 <code>"i18n": true</code>、<code>"responsive": true</code>）。</p>
+<p class="muted">点「用于本站」时按 <code>theme.json</code> 里的 <code>models</code> / <code>categories</code> 补缺（配置页勾选的模型会覆盖 json）。栏目标题可写成 <code>{"zh_cn":"新闻中心","en":"News"}</code>。卡片上「多语言」「自适应」也可在配置页勾选。自定义参数写在 <code>config</code>，前台 <code>cms_theme('键')</code>。</p>
 
 <h3>站名、Logo、手机外观</h3>
 <p class="muted">{!! $hl('settings', '设置') !!}里改网站名称。{!! $hl('settingsLook', '设置 → 外观') !!}可上传 Logo / Favicon、主色、页脚、ICP。留空则用主题自带配色。</p>

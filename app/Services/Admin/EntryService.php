@@ -244,7 +244,7 @@ class EntryService
         $entry->restore();
         $this->htmlCache->forgetByEntry($entry);
 
-        return Result::ok($entry, '已还原，可在内容列表中继续编辑');
+        return Result::ok($entry, '已还原，可在内容里继续编辑');
     }
 
     /** @param  list<int>  $ids */
@@ -264,7 +264,7 @@ class EntryService
         }
 
         return $count > 0
-            ? Result::ok(null, '已还原 '.$count.' 篇，可在内容列表中继续编辑')
+            ? Result::ok(null, '已还原 '.$count.' 篇，可在内容里继续编辑')
             : Result::fail('没有可还原的内容');
     }
 

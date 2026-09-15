@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '评论审核')
+@section('title', admin_t('nav.comments'))
 @section('icon', 'comments')
 @php
     $q = $q ?? '';

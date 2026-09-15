@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '蜘蛛统计')
+@section('title', admin_t('crud.stats_spiders'))
 @section('icon', 'spider')
 @section('fullwidth', true)
 @section('content')

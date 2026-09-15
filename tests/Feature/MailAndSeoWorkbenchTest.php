@@ -49,8 +49,22 @@ class MailAndSeoWorkbenchTest extends TestCase
             ->assertOk()
             ->assertSee('property="og:title"', false)
             ->assertSee('rel="canonical"', false)
+            ->assertSee('hreflang="zh-CN"', false)
+            ->assertSee('hreflang="en"', false)
+            ->assertSee('hreflang="x-default"', false)
+            ->assertSee('property="og:locale"', false)
+            ->assertSee('og:locale:alternate', false)
             ->assertSee('application/ld+json', false)
             ->assertSee('"@type":"WebSite"', false);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('"@type":"WebSite"', false)
+            ->assertSee('/en/search', false);
+
+        $this->get('/en/search?q=hello')
+            ->assertOk()
+            ->assertSee('noindex,follow', false);
 
         $entry = Entry::query()->published()->first();
         $this->assertNotNull($entry);
@@ -66,6 +80,28 @@ class MailAndSeoWorkbenchTest extends TestCase
             ->assertNotFound()
             ->assertSee('页面不存在')
             ->assertSee('回首页');
+
+        $this->get('/en/this-page-does-not-exist-xyz999')
+            ->assertNotFound()
+            ->assertSee('Page not found')
+            ->assertSee('Back home')
+            ->assertDontSee('页面不存在');
+    }
+
+    public function test_themed_403(): void
+    {
+        $zh = \App\Support\FrontErrorPage::response(403);
+        $this->assertSame(403, $zh->getStatusCode());
+        $this->assertStringContainsString('无权访问', $zh->getContent());
+        $this->assertStringContainsString('回首页', $zh->getContent());
+
+        \App\Support\Locale::set('en');
+        $en = \App\Support\FrontErrorPage::response(403);
+        $this->assertSame(403, $en->getStatusCode());
+        $this->assertStringContainsString('Access denied', $en->getContent());
+        $this->assertStringContainsString('Back home', $en->getContent());
+        $this->assertStringNotContainsString('无权访问', $en->getContent());
+        \App\Support\Locale::forgetCurrent();
     }
 
     public function test_admin_forgot_password_sends_mail_and_resets(): void

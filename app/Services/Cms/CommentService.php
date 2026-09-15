@@ -52,30 +52,30 @@ class CommentService
     public function submit(Entry $entry, array $input, ?Member $member, string $ip, ?string $ua, bool $skipCaptcha = false): array
     {
         if (! $this->enabled()) {
-            return Result::fail('评论功能已关闭');
+            return Result::fail(cms_ui('comment_off'));
         }
         if (! $entry->isLive()) {
-            return Result::fail('内容不可评论');
+            return Result::fail(cms_ui('comment_closed'));
         }
         if (! $member && ! $this->guestsAllowed()) {
-            return Result::fail('请先登录后再评论');
+            return Result::fail(cms_ui('comment_login_first'));
         }
         if (! $skipCaptcha && config('cms.form_captcha', true) && ! Captcha::check($input['captcha'] ?? null)) {
-            return Result::fail('验证码错误');
+            return Result::fail(cms_ui('captcha_error'));
         }
 
         $siteId = CurrentSite::idOrDefault() ?? (int) $entry->site_id;
         $rateKey = 'cms.comment.rate.'.$siteId.'.'.$ip;
         $seconds = max(10, (int) Setting::getValue('comments_rate_seconds', '60'));
         if (Cache::has($rateKey)) {
-            return Result::fail("发表过于频繁，请 {$seconds} 秒后再试");
+            return Result::fail(cms_ui('comment_rate', ['n' => $seconds]));
         }
 
         $parentId = ! empty($input['parent_id']) ? (int) $input['parent_id'] : null;
         if ($parentId) {
             $parent = Comment::query()->approved()->where('entry_id', $entry->id)->find($parentId);
             if (! $parent) {
-                return Result::fail('回复的评论不存在或未通过审核');
+                return Result::fail(cms_ui('comment_parent_gone'));
             }
         }
 
@@ -86,12 +86,12 @@ class CommentService
             $email = $email !== '' ? $email : (string) $member->email;
         }
         if ($name === '') {
-            return Result::fail('请填写昵称');
+            return Result::fail(cms_ui('comment_need_name'));
         }
 
         $content = trim((string) ($input['content'] ?? ''));
         if (mb_strlen($content) < 2 || mb_strlen($content) > 2000) {
-            return Result::fail('评论内容需在 2～2000 字之间');
+            return Result::fail(cms_ui('comment_length'));
         }
 
         $auto = (bool) (int) Setting::getValue('comments_auto_approve', '0');
@@ -120,8 +120,8 @@ class CommentService
         event(new CommentSubmitted($comment, $entry));
 
         $msg = $status === Comment::STATUS_APPROVED
-            ? '评论已发布'
-            : '评论已提交，通过审核后显示';
+            ? cms_ui('comment_published')
+            : cms_ui('comment_queued');
 
         return Result::ok($comment, $msg);
     }

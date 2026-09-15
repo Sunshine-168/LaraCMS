@@ -7,5 +7,6 @@
         <div class="content">{!! $entry->linked_content ?? $entry->t('content') !!}</div>
         <p class="muted" style="margin-top:28px">{{ cms_ui('prev') }}：@cmsPrev · {{ cms_ui('next') }}：@cmsNext</p>
     </article>
+    @include('cms.partials.entry-tags')
     @include('cms.comments')
 @endsection

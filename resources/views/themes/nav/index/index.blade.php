@@ -1,11 +1,11 @@
 @extends('themes.nav.partials.layout')
 @section('content')
     @include('cms.partials.front-hero-copy', [
-        'fallbackTitle' => '网址导航',
-        'fallbackSub' => '精选常用站点，点击直达。',
+        'fallbackTitle' => cms_ui('nav_hero'),
+        'fallbackSub' => cms_ui('nav_hero_sub'),
     ])
     <section class="section">
-        <h2>热门推荐</h2>
+        <h2>{{ cms_theme('hot', cms_ui('hot')) }}</h2>
         <div class="grid">
             @cmsAdv(['name'=>'hot_links'])
                 @if($item->html)
@@ -20,7 +20,7 @@
         </div>
     </section>
     <section class="section">
-        <h2>全部分类</h2>
+        <h2>{{ cms_theme('all_cats', cms_ui('all_cats')) }}</h2>
         @cmsChannel(['type'=>'top','ismenu'=>1, 'as' => 'cat'])
             <h3 style="margin-top:20px">{{ $cat->t('title') }}</h3>
             <div class="grid">
@@ -30,7 +30,7 @@
                             <img src="{{ cms_media($link->cover ?: $link->attr('icon')) }}" alt="">
                         @endif
                         <div>{{ $link->t('title') }}</div>
-                        <div class="muted">点击 {{ $link->clicks }}</div>
+                        <div class="muted">{{ cms_ui('clicks') }} {{ $link->clicks }}</div>
                     </a>
                 @endcmsContent
             </div>

@@ -4,6 +4,10 @@
     "i18n": true,
     "responsive": true,
     "models": ["signal"],
+    "config": {
+        "live_hint": {"title": "赛事提示", "type": "text", "tips": "显示在首页公告里可一起写，也可单独调用 cms_theme('live_hint')", "value": ""},
+        "sports_disclaimer": {"title": "页脚声明", "type": "textarea", "value": ""}
+    },
     "categories": [
         {"slug": "matches", "title": {"zh_cn": "赛事信号", "en": "Matches"}, "model": "signal", "type": "list", "menu": true}
     ]

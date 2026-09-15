@@ -33,7 +33,7 @@ class LocaleWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.locales.index'))
             ->assertOk()
-            ->assertSee('语言管理')
+            ->assertSee('>语言</h1>', false)
             ->assertSee('内容语言')
             ->assertSee('后台界面')
             ->assertSee('主题文案')
@@ -174,6 +174,11 @@ class LocaleWorkbenchTest extends TestCase
             ->assertSee('>Dashboard</span>', false)
             ->assertSee('>Entries</span>', false)
             ->assertSee('View site');
+
+        $this->get(route('admin.entries.index'))
+            ->assertOk()
+            ->assertSee('>Entries</h1>', false)
+            ->assertDontSee('>内容</h1>', false);
     }
 
     public function test_theme_phrases_save_and_show_on_front(): void
@@ -285,6 +290,7 @@ class LocaleWorkbenchTest extends TestCase
             ->assertSee('Name')
             ->assertSee('Front label')
             ->assertSee('Add language')
+            ->assertSee('Back to Languages')
             ->assertSee('Hide the default language in the URL');
     }
 
@@ -390,11 +396,61 @@ class LocaleWorkbenchTest extends TestCase
         $this->get('/news/cms-launch')
             ->assertOk()
             ->assertSee('评论')
-            ->assertSee('提交评论');
+            ->assertSee('提交评论')
+            ->assertSee('跳到正文')
+            ->assertSee('回复');
 
         $this->get('/en/news/cms-launch')
             ->assertOk()
             ->assertSee('Comments')
-            ->assertSee('Post comment');
+            ->assertSee('Post comment')
+            ->assertSee('Skip to content')
+            ->assertSee('Reply')
+            ->assertSee('None')
+            ->assertSee('Previous')
+            ->assertSee('Next');
+    }
+
+    public function test_front_english_uses_chrome_phrases(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('>公司简介</h2>', false)
+            ->assertSee('了解更多')
+            ->assertSee('<span class="lang">', false);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('>About</h2>', false)
+            ->assertSee('Learn more')
+            ->assertSee('>News</h2>', false)
+            ->assertSee('>Products</h2>', false)
+            ->assertSee('>Contact</h2>', false)
+            ->assertSee('>Name</label>', false)
+            ->assertSee('>Message</label>', false)
+            ->assertDontSee('>公司简介</h2>', false)
+            ->assertDontSee('>了解更多</a>', false)
+            ->assertDontSee('>姓名</label>', false);
+
+        $this->get('/en/products/smart-gateway')
+            ->assertOk()
+            ->assertSee('Price');
+    }
+
+    public function test_theme_i18n_off_hides_lang_switch(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.themes.update', 'enterprise'), [
+                'i18n' => '0',
+                'responsive' => '1',
+                'models' => ['article', 'page', 'product', 'job'],
+            ])
+            ->assertRedirect();
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('<span class="lang">', false)
+            ->assertSee('>公司简介</h2>', false);
     }
 }

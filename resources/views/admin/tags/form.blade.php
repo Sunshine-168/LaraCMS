@@ -9,7 +9,7 @@
     $slugVal = old("locales.$default.slug", $tag->translation('slug', $default));
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.tags.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.tags.index') }}">{{ admin_back('tags') }}</a>
 @endsection
 @section('content')
     @if($tag->exists && ($tag->entries_count ?? 0) > 0)

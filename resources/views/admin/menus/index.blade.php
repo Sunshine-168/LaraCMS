@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '导航菜单')
+@section('title', admin_t('nav.menus'))
 @section('icon', 'bars')
 @section('header_actions')
     <a class="btn btn-sm" href="{{ route('admin.menus.create') }}"><i class="fas fa-plus"></i> 新建菜单</a>

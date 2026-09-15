@@ -83,7 +83,7 @@ DB_PASSWORD=请换成强密码</code></pre>
         <pre><code>Disallow: /private
 Disallow: /drafts</code></pre>
     </div>
-    <p class="hint">不要写 HTML 标签。大约最多 40 行、每行 200 字。改完打开前台 <code>/robots.txt</code> 核对。这和页面里的 <code>&lt;meta name="robots"&gt;</code> 不是一回事。收录哪些栏目和文章，装好后在后台「运营 → 更多 → 地图」。</p>
+    <p class="hint">不要写 HTML 标签。大约最多 40 行、每行 200 字。改完打开前台 <code>/robots.txt</code> 核对。这和页面里的 <code>&lt;meta name="robots"&gt;</code> 不是一回事。收录范围装好后在后台「运营 → 更多 → 地图」（站点地图）。</p>
 
     <h3>图片放到对象存储</h3>
     <p class="muted">默认传到本机 <code>storage/app/public</code>，前台用 <code>php artisan storage:link</code>。只换访问域名时，在{!! $hl('settingsMore', '设置 → 更多') !!}填「图片走这个域名」，不必改盘。</p>

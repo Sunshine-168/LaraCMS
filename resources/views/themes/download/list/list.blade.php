@@ -3,6 +3,7 @@
     @cmsBreadcrumb
     <h1>{{ $category->t('title') }}</h1>
     <div class="filters" style="margin:16px 0">
+        @include('cms.partials.filter-all')
         @cmsFilter
             @foreach(($item->choices ?? []) as $val => $label)
                 @php $v = is_int($val) ? $label : $val; @endphp
@@ -12,7 +13,7 @@
         @endcmsFilter
     </div>
     <div class="filters" style="margin:8px 0 16px">
-        排序：
+        {{ cms_ui('sort') }}：
         @cmsOrder
             <a class="{{ $item->current ? 'active' : '' }}" href="{{ $item->url }}">{{ $item->label }}</a>
         @endcmsOrder
@@ -20,8 +21,8 @@
     @cmsContent(['page'=>true,'num'=>$category->page_size ?: 12])
         <div class="card">
             <h3><a href="{{ $item->url }}">{{ $item->t('title') }}</a></h3>
-            <p class="muted">{{ $item->attr('platform') }} · {{ $item->attr('version') }} · 下载 {{ $item->downloads_count }}</p>
-            <a class="btn" href="{{ cms_route('download', $item) }}">下载</a>
+            <p class="muted">{{ $item->attr('platform') }} · {{ $item->attr('version') }} · {{ cms_ui('download') }} {{ $item->downloads_count }}</p>
+            <a class="btn" href="{{ cms_route('download', $item) }}">{{ cms_ui('download') }}</a>
         </div>
     @endcmsContent
     @cmsPaginate

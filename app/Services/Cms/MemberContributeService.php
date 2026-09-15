@@ -50,14 +50,14 @@ class MemberContributeService
     public function save(Member $member, ?Entry $entry, array $input, bool $submit = false): array
     {
         if (! $member->canMember('contribute')) {
-            return Result::fail('当前会员组无权投稿');
+            return Result::fail(cms_ui('cannot_contribute'));
         }
 
         $models = $this->modelsFor($member);
         $modelId = (int) ($input['model_id'] ?? $entry?->model_id ?? 0);
         $model = $models->firstWhere('id', $modelId);
         if (! $model) {
-            return Result::fail('该模型不允许会员投稿');
+            return Result::fail(cms_ui('cannot_contribute_model'));
         }
 
         if ($entry) {
@@ -75,13 +75,13 @@ class MemberContributeService
 
         $title = trim((string) ($input['title'] ?? ''));
         if ($title === '') {
-            return Result::fail('请填写标题');
+            return Result::fail(cms_ui('fill_title'));
         }
 
         $categoryId = (int) ($input['category_id'] ?? 0);
         $category = $this->categoriesFor($model)->firstWhere('id', $categoryId);
         if (! $category) {
-            return Result::fail('请选择栏目');
+            return Result::fail(cms_ui('pick_category'));
         }
 
         $slug = $this->uniqueSlug((string) ($input['slug'] ?? ''), $title, $entry->exists ? (int) $entry->id : null);
@@ -107,7 +107,7 @@ class MemberContributeService
             $entry->status = 'pending';
             $entry->published_at = null;
         } elseif ($entry->status === 'published') {
-            return Result::fail('已发布内容请联系管理员修改');
+            return Result::fail(cms_ui('published_locked'));
         } elseif ($entry->exists && $entry->status === 'pending') {
             $entry->status = 'pending';
             $entry->published_at = null;
@@ -125,7 +125,7 @@ class MemberContributeService
         }
         event(new EntrySaved($entry, $creating, false));
 
-        return Result::ok($entry, $submit ? '已提交审核' : '草稿已保存');
+        return Result::ok($entry, $submit ? cms_ui('submitted_review') : cms_ui('draft_saved'));
     }
 
     public function submit(Member $member, Entry $entry): array
@@ -145,10 +145,10 @@ class MemberContributeService
     public function assertOwnedEditable(Member $member, Entry $entry): ?string
     {
         if ((int) $entry->member_id !== (int) $member->id) {
-            return '只能编辑自己的投稿';
+            return cms_ui('only_own_posts');
         }
         if ($entry->status === 'published') {
-            return '已发布内容请联系管理员修改';
+            return cms_ui('published_locked');
         }
 
         return null;
@@ -157,9 +157,9 @@ class MemberContributeService
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            'published' => '已发布',
-            'pending' => '待审',
-            'draft' => '草稿',
+            'published' => cms_ui('status_published'),
+            'pending' => cms_ui('status_pending'),
+            'draft' => cms_ui('status_draft'),
             default => $status,
         };
     }
@@ -222,7 +222,7 @@ class MemberContributeService
             }
             if ($field->is_required && ! in_array($type, ['checkbox', 'switch'], true)
                 && trim((string) ($current[$name] ?? '')) === '') {
-                return $field->label.'不能为空';
+                return cms_ui('field_required', ['name' => $field->label]);
             }
         }
 

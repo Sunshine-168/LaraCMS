@@ -31,6 +31,11 @@ class QuickPanelTest extends TestCase
         $keys = array_column($nav, 'key');
         $this->assertSame(['entries', 'front', 'settings'], $keys);
 
+        $options = array_column(app(QuickPanelService::class)->editOptions($admin), 'key');
+        $this->assertContains('friend_links', $options);
+        $this->assertContains('sitemap', $options);
+        $this->assertContains('recycle', $options);
+
         $this->actingAs($admin, 'admin')
             ->get(route('admin.dashboard'))
             ->assertOk()

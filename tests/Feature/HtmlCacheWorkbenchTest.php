@@ -37,6 +37,8 @@ class HtmlCacheWorkbenchTest extends TestCase
             ->assertSee('清空已存页面')
             ->assertSee('磁盘静态页')
             ->assertSee('开始生成')
+            ->assertSee('删掉静态文件')
+            ->assertSee('已有文件仍可分批删除')
             ->assertSee('启用，允许在后台生成静态文件')
             ->assertSee('未开启')
             ->assertSee('清空缓存')
@@ -118,7 +120,7 @@ class HtmlCacheWorkbenchTest extends TestCase
 
         $start = $this->postJson(route('admin.html-cache.disk-build'))
             ->assertOk()
-            ->assertJsonStructure(['status', 'done', 'total', 'ok', 'fail', 'percent', 'message', 'file_count']);
+            ->assertJsonStructure(['status', 'kind', 'done', 'total', 'ok', 'fail', 'percent', 'message', 'file_count']);
 
         $this->assertGreaterThan(0, (int) $start->json('total'));
         $this->assertSame('running', $start->json('status'));
@@ -134,6 +136,50 @@ class HtmlCacheWorkbenchTest extends TestCase
 
         $this->postJson(route('admin.html-cache.disk-cancel'))
             ->assertOk();
+
+        \Illuminate\Support\Facades\File::deleteDirectory($root);
+    }
+
+    public function test_disk_html_clear_reports_progress(): void
+    {
+        $root = storage_path('framework/testing/disk-html-clear');
+        config(['cms.disk_html.root' => $root]);
+        \Illuminate\Support\Facades\File::deleteDirectory($root);
+        \Illuminate\Support\Facades\File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'news'.DIRECTORY_SEPARATOR.'a');
+        \Illuminate\Support\Facades\File::put($root.DIRECTORY_SEPARATOR.'index.html', 'home');
+        \Illuminate\Support\Facades\File::put($root.DIRECTORY_SEPARATOR.'news'.DIRECTORY_SEPARATOR.'index.html', 'list');
+        \Illuminate\Support\Facades\File::put($root.DIRECTORY_SEPARATOR.'news'.DIRECTORY_SEPARATOR.'a'.DIRECTORY_SEPARATOR.'index.html', 'item');
+
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+        Setting::setValue('disk_html_enabled', '1');
+
+        $start = $this->postJson(route('admin.html-cache.disk-clear'))
+            ->assertOk()
+            ->assertJsonPath('status', 'running')
+            ->assertJsonPath('kind', 'clear')
+            ->assertJsonPath('total', 3);
+
+        $this->postJson(route('admin.html-cache.disk-build'))
+            ->assertStatus(422)
+            ->assertJsonPath('conflict', true);
+
+        $step = $this->postJson(route('admin.html-cache.disk-step'), ['chunk' => 2])
+            ->assertOk()
+            ->assertJsonPath('kind', 'clear');
+        $this->assertSame(2, (int) $step->json('done'));
+        $this->assertContains($step->json('status'), ['running', 'done']);
+
+        $job = $step->json();
+        while (($job['status'] ?? '') === 'running') {
+            $job = $this->postJson(route('admin.html-cache.disk-step'), ['chunk' => 2])->json();
+        }
+
+        $this->assertSame('done', $job['status']);
+        $this->assertSame(3, (int) $job['ok']);
+        $this->assertSame(0, (int) $job['file_count']);
+        $this->assertFileDoesNotExist($root.DIRECTORY_SEPARATOR.'index.html');
+        $this->assertDirectoryDoesNotExist($root.DIRECTORY_SEPARATOR.'news');
 
         \Illuminate\Support\Facades\File::deleteDirectory($root);
     }

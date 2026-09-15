@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '媒体库')
+@section('title', admin_t('nav.media'))
 @section('icon', 'photo-video')
 @php
     $q = $q ?? '';

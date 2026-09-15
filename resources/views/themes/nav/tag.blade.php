@@ -1,6 +1,6 @@
 @extends('themes.nav.partials.layout')
 @section('content')
-    <h1>标签：{{ $tag->t('title') }}</h1>
+    <h1>{{ cms_ui('tag') }}：{{ $tag->t('title') }}</h1>
     <div class="grid">
         @forelse($entries as $item)
             <a class="link" href="{{ $item->url }}">
@@ -10,8 +10,8 @@
                 <div>{{ $item->t('title') }}</div>
             </a>
         @empty
-            <p class="muted">该标签下暂无内容。</p>
+            <p class="muted">{{ cms_ui('tag_empty') }}</p>
         @endforelse
     </div>
-    {{ $entries->links() }}
+    {{ $entries->links('cms.partials.paginate') }}
 @endsection

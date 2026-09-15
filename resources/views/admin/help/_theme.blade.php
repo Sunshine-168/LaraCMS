@@ -79,6 +79,9 @@
   "i18n": true,
   "responsive": true,
   "models": ["article", "page", "product"],
+  "config": {
+    "home_notice": {"title": "首页公告", "type": "textarea", "value": ""}
+  },
   "categories": [
     {"slug": "news", "title": {"zh_cn": "新闻中心", "en": "News"}, "model": "article", "type": "list", "menu": true}
   ]

@@ -31,6 +31,7 @@ class RedirectWorkbenchTest extends TestCase
             ->assertSee('旧地址，如 /old-news')
             ->assertSee('打开完整表单')
             ->assertSee('还没有跳转')
+            ->assertSee('nav-fold is-open', false)
             ->assertSee(route('admin.redirects.create'), false)
             ->assertDontSee('新建规则')
             ->assertDontSee('暂无重定向规则')

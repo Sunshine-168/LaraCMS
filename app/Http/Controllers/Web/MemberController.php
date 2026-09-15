@@ -45,7 +45,7 @@ class MemberController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
             'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
-        ]);
+        ], [], cms_validation_attributes());
         Captcha::assertValid($request->input('captcha'));
 
         $ok = Auth::guard('member')->attempt(
@@ -53,12 +53,12 @@ class MemberController extends Controller
             $request->boolean('remember')
         );
         if (! $ok) {
-            return back()->withErrors(['email' => '邮箱或密码错误'])->withInput();
+            return back()->withErrors(['email' => cms_ui('login_fail')])->withInput();
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(cms_route('member.profile'))->with('status', '登录成功');
+        return redirect()->intended(cms_route('member.profile'))->with('status', cms_ui('login_ok'));
     }
 
     /** 注册页 */
@@ -78,7 +78,7 @@ class MemberController extends Controller
             ],
             'password' => ['required', 'confirmed', Password::defaults()],
             'captcha' => config('cms.auth_captcha') ? 'required' : 'nullable',
-        ]);
+        ], [], cms_validation_attributes());
         Captcha::assertValid($request->input('captcha'));
 
         $defaultGroupId = MemberGroup::query()
@@ -97,7 +97,7 @@ class MemberController extends Controller
         Auth::guard('member')->login($member);
         $request->session()->regenerate();
 
-        return redirect()->to(cms_route('member.profile'))->with('status', '注册成功');
+        return redirect()->to(cms_route('member.profile'))->with('status', cms_ui('register_ok'));
     }
 
     /** 找回密码页 */
@@ -109,7 +109,7 @@ class MemberController extends Controller
     /** 申请重置：生成一次性链接（未配邮件时直接展示链接，便于本地调试） */
     public function sendReset(Request $request): RedirectResponse
     {
-        $data = $request->validate(['email' => 'required|email']);
+        $data = $request->validate(['email' => 'required|email'], [], cms_validation_attributes());
         $member = Member::query()->where('email', $data['email'])->where('is_active', true)->first();
 
         if ($member) {
@@ -119,21 +119,23 @@ class MemberController extends Controller
             $member->save();
 
             $url = cms_route('member.reset', ['token' => $token, 'email' => $member->email]);
-            $sent = MailConfig::send($member->email, '重置密码', 'mail.reset', [
+            $sent = MailConfig::send($member->email, cms_ui('mail_reset_subject'), 'mail.reset', [
                 'siteName' => (string) \App\Models\Cms\Setting::getValue('site_name', config('app.name')),
-                'heading' => '重置会员密码',
-                'audience' => '会员',
+                'heading' => cms_ui('mail_reset_heading'),
+                'audience' => cms_ui('mail_reset_audience'),
                 'url' => $url,
+                'actionText' => cms_ui('mail_reset_action'),
+                'body' => cms_ui('mail_reset_body', ['audience' => cms_ui('mail_reset_audience')]),
             ]);
             if ($sent) {
-                return back()->with('status', '重置邮件已发送，请查收邮箱');
+                return back()->with('status', cms_ui('reset_mail_sent'));
             }
             if (MailConfig::showDebugLink()) {
-                return back()->with('status', '未配置发信。本地调试可使用下面的链接（1 小时内有效）')->with('reset_url', $url);
+                return back()->with('status', cms_ui('reset_debug'))->with('reset_url', $url);
             }
         }
 
-        return back()->with('status', '若该邮箱已注册，将发送重置指引');
+        return back()->with('status', cms_ui('reset_sent_if'));
     }
 
     /** 重置密码页 */
@@ -142,7 +144,7 @@ class MemberController extends Controller
         $request->validate([
             'token' => 'required|string',
             'email' => 'required|email',
-        ]);
+        ], [], cms_validation_attributes());
         $site = $this->site->bootSite();
 
         return $this->memberPage('member.reset', [
@@ -159,7 +161,7 @@ class MemberController extends Controller
             'email' => 'required|email',
             'token' => 'required|string',
             'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        ], [], cms_validation_attributes());
 
         $member = Member::query()->where('email', $data['email'])->where('is_active', true)->first();
         if (
@@ -169,7 +171,7 @@ class MemberController extends Controller
             || $member->reset_token_expires_at->isPast()
             || ! hash_equals($member->reset_token, hash('sha256', $data['token']))
         ) {
-            return back()->withErrors(['email' => '重置链接无效或已过期']);
+            return back()->withErrors(['email' => cms_ui('reset_invalid')]);
         }
 
         $member->password = $data['password'];
@@ -177,7 +179,7 @@ class MemberController extends Controller
         $member->reset_token_expires_at = null;
         $member->save();
 
-        return redirect()->to(cms_route('member.login'))->with('status', '密码已重置，请登录');
+        return redirect()->to(cms_route('member.login'))->with('status', cms_ui('password_reset_ok'));
     }
 
     /** 会员中心 */
@@ -227,7 +229,7 @@ class MemberController extends Controller
             'avatar' => 'nullable|string|max:500',
             'phone' => 'nullable|string|max:32',
             'bio' => 'nullable|string|max:500',
-        ]);
+        ], [], cms_validation_attributes());
         $member->name = $data['name'];
         if (array_key_exists('avatar', $data) && $data['avatar'] !== null) {
             $member->avatar = $data['avatar'] !== '' ? $data['avatar'] : null;
@@ -236,7 +238,7 @@ class MemberController extends Controller
         $member->bio = ($data['bio'] ?? '') !== '' ? $data['bio'] : null;
         $member->save();
 
-        return back()->with('status', '资料已更新');
+        return back()->with('status', cms_ui('profile_saved'));
     }
 
     /** 分片上传：初始化 */
@@ -244,7 +246,7 @@ class MemberController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+            return response()->json(['ok' => false, 'msg' => cms_ui('not_logged_in')], 401);
         }
         $data = $request->validate([
             'filename' => 'required|string|max:200',
@@ -261,7 +263,7 @@ class MemberController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+            return response()->json(['ok' => false, 'msg' => cms_ui('not_logged_in')], 401);
         }
         $data = $request->validate([
             'upload_id' => 'required|string|max:64',
@@ -278,7 +280,7 @@ class MemberController extends Controller
     {
         $member = Auth::guard('member')->user();
         if (! $member) {
-            return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+            return response()->json(['ok' => false, 'msg' => cms_ui('not_logged_in')], 401);
         }
         $data = $request->validate([
             'upload_id' => 'required|string|max:64',
@@ -295,14 +297,14 @@ class MemberController extends Controller
         $member = Auth::guard('member')->user();
         if (! $member) {
             if ($request->expectsJson()) {
-                return response()->json(['ok' => false, 'msg' => '未登录'], 401);
+                return response()->json(['ok' => false, 'msg' => cms_ui('not_logged_in')], 401);
             }
 
             return redirect()->to(cms_route('member.login'))->with('url.intended', url()->previous());
         }
 
         if ($entry->isMemberGated() && ! $member->canMember('view_member_content')) {
-            return back()->withErrors(['favorite' => '无权收藏该内容']);
+            return back()->withErrors(['favorite' => cms_ui('cannot_favorite')]);
         }
 
         $result = $this->favorites->toggle($member, $entry);
@@ -324,16 +326,16 @@ class MemberController extends Controller
         $data = $request->validate([
             'current_password' => 'required|string',
             'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        ], [], cms_validation_attributes());
 
         if (! Hash::check($data['current_password'], $member->password)) {
-            return back()->withErrors(['current_password' => '当前密码不正确']);
+            return back()->withErrors(['current_password' => cms_ui('password_wrong')]);
         }
 
         $member->password = $data['password'];
         $member->save();
 
-        return back()->with('status', '密码已更新');
+        return back()->with('status', cms_ui('password_saved'));
     }
 
     /** 退出 */
@@ -343,7 +345,7 @@ class MemberController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->to(cms_route('home'));
     }
 
     /** @param  array<string, mixed>  $data */

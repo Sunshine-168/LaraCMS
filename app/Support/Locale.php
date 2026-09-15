@@ -77,6 +77,12 @@ class Locale
         app()->setLocale($locale === 'zh_cn' ? 'zh_CN' : $locale);
     }
 
+    /** 每个 HTTP 请求开头清掉，避免上一请求 / 队列任务把内容语言留在进程里 */
+    public static function forgetCurrent(): void
+    {
+        self::$current = null;
+    }
+
     public static function current(): string
     {
         return self::$current ?: self::default();

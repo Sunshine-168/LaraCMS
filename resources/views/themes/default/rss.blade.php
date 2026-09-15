@@ -2,8 +2,9 @@
 <rss version="2.0">
 <channel>
     <title>{{ $site['title'] ?? config('app.name') }}</title>
-    <link>{{ url('/') }}</link>
+    <link>{{ cms_front_url() }}</link>
     <description>{{ $site['description'] ?? '' }}</description>
+    <language>{{ \App\Support\Locale::htmlLang() }}</language>
     @foreach($entries as $entry)
     <item>
         <title>{{ $entry->t('title') }}</title>

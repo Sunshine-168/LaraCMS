@@ -22,7 +22,7 @@ class PrevNextTag
 
         $neighbor = $this->findNeighbor($article, $direction === 'prev');
         if (! $neighbor) {
-            $msg = e((string) ($options['msg'] ?? ($direction === 'prev' ? '没有了' : '没有了')));
+            $msg = e((string) ($options['msg'] ?? cms_ui('no_more')));
 
             return new HtmlString('<span class="cms-'.$direction.'">'.$msg.'</span>');
         }

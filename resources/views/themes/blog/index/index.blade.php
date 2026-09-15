@@ -1,7 +1,7 @@
 @extends('themes.blog.partials.layout')
 @section('content')
     @include('cms.partials.front-hero-copy', [
-        'fallbackSub' => '简单博客主题 · 文章来自 article 模型',
+        'fallbackSub' => cms_ui('blog_hero_sub'),
     ])
     @cmsContent(['model'=>'article','num'=>10,'page'=>true,'order'=>'published_at desc'])
         <article>

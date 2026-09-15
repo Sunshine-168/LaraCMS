@@ -77,6 +77,8 @@ class DashboardWorkbenchTest extends TestCase
         $this->assertContains('entries_write', $defaults);
         $this->assertNotContains('models', $defaults);
         $this->assertNotContains('html_cache', $defaults);
+        $this->assertNotContains('sitemap', $defaults);
+        $this->assertNotContains('friend_links', $defaults);
 
         $this->actingAs($editor, 'admin')
             ->get(route('admin.dashboard'))

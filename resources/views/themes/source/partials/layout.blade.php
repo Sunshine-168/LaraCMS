@@ -18,7 +18,7 @@
 </head>
 <body>
 <header><div class="wrap">
-    @include('cms.partials.front-brand', ['fallback' => '源码站'])
+    @include('cms.partials.front-brand', ['fallback' => cms_ui('source_hero')])
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
@@ -30,7 +30,7 @@
         </span>
     </nav>
 </div></header>
-<main class="wrap" style="padding:20px 0">@yield('content')</main>
+<main id="content" class="wrap" style="padding:20px 0">@include('cms.partials.front-theme-notice')@yield('content')</main>
 @include('cms.partials.front-footer')
 </body>
 </html>

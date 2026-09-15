@@ -46,7 +46,7 @@ class MemberEntryController extends Controller
         $member = Auth::guard('member')->user();
         $models = $this->contribute->modelsFor($member);
         if ($models->isEmpty()) {
-            return redirect()->to(cms_route('member.profile'))->with('error', '当前没有开放投稿的模型');
+            return redirect()->to(cms_route('member.profile'))->with('error', cms_ui('no_contribute_models'));
         }
         $model = $models->firstWhere('id', $request->integer('model_id')) ?? $models->first();
         $model->load(['fields.categories']);
@@ -88,7 +88,7 @@ class MemberEntryController extends Controller
         $models = $this->contribute->modelsFor($member);
         $model = $models->firstWhere('id', $entry->model_id) ?? $entry->modelDef;
         if (! $model) {
-            return redirect()->to(cms_route('member.entries.index'))->with('error', '模型不存在');
+            return redirect()->to(cms_route('member.entries.index'))->with('error', cms_ui('model_missing'));
         }
         $model->load(['fields.categories']);
 
@@ -123,7 +123,7 @@ class MemberEntryController extends Controller
             return redirect()->to(cms_route('member.login'));
         }
         if (! $member->canMember('contribute')) {
-            return redirect()->to(cms_route('member.profile'))->with('error', '当前会员组无权投稿');
+            return redirect()->to(cms_route('member.profile'))->with('error', cms_ui('cannot_contribute'));
         }
 
         return true;

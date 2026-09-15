@@ -31,7 +31,6 @@ class MemberGroupWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.member-groups.index'))
             ->assertOk()
-            ->assertSee('会员分组')
             ->assertSee('新增分组')
             ->assertSee('显示名，如 普通会员')
             ->assertSee('普通会员')

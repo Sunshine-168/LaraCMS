@@ -107,7 +107,7 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function publicJob(): array
     {
@@ -116,40 +116,38 @@ class DiskHtmlService
 
     public function clear(): int
     {
-        $root = $this->rootPath();
-        if (! is_dir($root)) {
-            return 0;
+        $files = $this->listHtmlFiles();
+        foreach ($files as $file) {
+            File::delete($file);
         }
-        $count = 0;
-        foreach (File::allFiles($root) as $file) {
-            if ($file->getExtension() === 'html') {
-                File::delete($file->getPathname());
-                $count++;
-            }
-        }
-        foreach (array_reverse(File::directories($root)) as $dir) {
-            if (count(File::allFiles($dir)) === 0 && count(File::directories($dir)) === 0) {
-                @rmdir($dir);
-            }
-        }
+        $this->pruneEmptyDirs($this->rootPath());
 
-        return $count;
+        return count($files);
     }
 
     public function fileCount(): int
     {
+        return count($this->listHtmlFiles());
+    }
+
+    /** @return list<string> */
+    public function listHtmlFiles(): array
+    {
         $root = $this->rootPath();
         if (! is_dir($root)) {
-            return 0;
+            return [];
         }
-        $n = 0;
-        foreach (File::allFiles($root) as $file) {
-            if ($file->getExtension() === 'html') {
-                $n++;
+        $files = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($iterator as $item) {
+            if ($item->isFile() && strtolower($item->getExtension()) === 'html') {
+                $files[] = $item->getPathname();
             }
         }
 
-        return $n;
+        return $files;
     }
 
     /**
@@ -176,12 +174,18 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function startJob(int $entryLimit = 0): array
     {
+        $busy = $this->busyPublic('build');
+        if ($busy !== null) {
+            return $busy;
+        }
+
         $urls = $this->collectUrls($entryLimit);
         $job = $this->emptyJob();
+        $job['kind'] = 'build';
         $job['status'] = $urls === [] ? 'done' : 'running';
         $job['urls'] = $urls;
         $job['total'] = count($urls);
@@ -199,13 +203,46 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     */
+    public function startClearJob(): array
+    {
+        $busy = $this->busyPublic('clear');
+        if ($busy !== null) {
+            return $busy;
+        }
+
+        $files = $this->listHtmlFiles();
+        $job = $this->emptyJob();
+        $job['kind'] = 'clear';
+        $job['status'] = $files === [] ? 'done' : 'running';
+        $job['files'] = $files;
+        $job['total'] = count($files);
+        $job['current'] = $files === [] ? '' : $this->relativeHtmlPath($files[0]);
+        $job['started_at'] = now()->toIso8601String();
+        if ($files === []) {
+            $job['finished_at'] = now()->toIso8601String();
+            $job['message'] = '没有可删的静态文件';
+        } else {
+            $job['message'] = '准备删 '.$job['total'].' 个文件';
+        }
+        $this->putJob($job);
+
+        return $this->toPublic($job);
+    }
+
+    /**
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function stepJob(int $chunk = 6): array
     {
         $job = $this->rawJob();
         if (($job['status'] ?? '') !== 'running') {
             return $this->toPublic($job);
+        }
+
+        if (($job['kind'] ?? 'build') === 'clear') {
+            return $this->stepClearJob($job, $chunk);
         }
 
         File::ensureDirectoryExists($this->rootPath());
@@ -247,16 +284,23 @@ class DiskHtmlService
     }
 
     /**
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     public function cancelJob(): array
     {
         $job = $this->rawJob();
         if (($job['status'] ?? '') === 'running') {
+            $kind = (string) ($job['kind'] ?? 'build');
             $job['status'] = 'cancelled';
             $job['finished_at'] = now()->toIso8601String();
-            $job['message'] = '已停止。已经写好 '.$job['ok'].' 个文件';
-            unset($job['urls']);
+            if ($kind === 'clear') {
+                $this->pruneEmptyDirs($this->rootPath());
+                $job['message'] = '已停止。已经删掉 '.$job['ok'].' 个文件';
+                unset($job['files']);
+            } else {
+                $job['message'] = '已停止。已经写好 '.$job['ok'].' 个文件';
+                unset($job['urls']);
+            }
             $this->putJob($job);
         }
 
@@ -266,46 +310,51 @@ class DiskHtmlService
     /** @return list<string> */
     public function collectUrls(int $entryLimit = 0): array
     {
-        $urls = ['/'];
-        foreach (Locale::codes() as $code) {
-            if ($code === Locale::default() && Locale::hideDefault()) {
-                continue;
-            }
-            $urls[] = '/'.Locale::toPublic($code);
-        }
-
-        Category::query()->active()->orderBy('sort_order')->limit(500)->each(function (Category $cat) use (&$urls) {
-            if ($cat->type === 'link') {
-                return;
-            }
+        $previous = Locale::current();
+        try {
+            $urls = ['/'];
             foreach (Locale::codes() as $code) {
-                Locale::set($code);
-                $this->pushUrl($urls, $cat->frontUrl());
+                if ($code === Locale::default() && Locale::hideDefault()) {
+                    continue;
+                }
+                $urls[] = '/'.Locale::toPublic($code);
             }
-        });
 
-        $entries = Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])
-            ->orderByDesc('published_at');
-        $entries->limit($entryLimit > 0 ? $entryLimit : 5000);
-        $entries->each(function (Entry $entry) use (&$urls) {
-            if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
-                return;
-            }
-            foreach (Locale::codes() as $code) {
-                Locale::set($code);
-                $this->pushUrl($urls, (string) $entry->url);
-            }
-        });
+            Category::query()->active()->orderBy('sort_order')->limit(500)->each(function (Category $cat) use (&$urls) {
+                if ($cat->type === 'link') {
+                    return;
+                }
+                foreach (Locale::codes() as $code) {
+                    Locale::set($code);
+                    $this->pushUrl($urls, $cat->frontUrl());
+                }
+            });
 
-        $out = [];
-        foreach ($urls as $url) {
-            $norm = $this->normalizeUrl((string) $url);
-            if ($norm !== null) {
-                $out[] = $norm;
+            $entries = Entry::query()->published()->visibleToGuests()->with(['category', 'modelDef'])
+                ->orderByDesc('published_at');
+            $entries->limit($entryLimit > 0 ? $entryLimit : 5000);
+            $entries->each(function (Entry $entry) use (&$urls) {
+                if ($entry->modelDef?->kind === 'single' || $entry->modelDef?->slug === 'link' || $entry->isMemberGated()) {
+                    return;
+                }
+                foreach (Locale::codes() as $code) {
+                    Locale::set($code);
+                    $this->pushUrl($urls, (string) $entry->url);
+                }
+            });
+
+            $out = [];
+            foreach ($urls as $url) {
+                $norm = $this->normalizeUrl((string) $url);
+                if ($norm !== null) {
+                    $out[] = $norm;
+                }
             }
+
+            return array_values(array_unique($out));
+        } finally {
+            Locale::set($previous);
         }
-
-        return array_values(array_unique($out));
     }
 
     protected function writeUrl(string $urlPath): ?string
@@ -387,12 +436,100 @@ class DiskHtmlService
         return $urlPath;
     }
 
+    /**
+     * @param  array<string, mixed>  $job
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     */
+    protected function stepClearJob(array $job, int $chunk): array
+    {
+        $chunk = max(1, min(80, $chunk));
+        $files = $job['files'] ?? [];
+        $end = min((int) $job['index'] + $chunk, (int) $job['total']);
+        for ($i = (int) $job['index']; $i < $end; $i++) {
+            $file = (string) ($files[$i] ?? '');
+            $job['current'] = $file === '' ? '' : $this->relativeHtmlPath($file);
+            $job['message'] = $file === '' ? '正在删…' : '正在删 '.$job['current'];
+            if ($file === '' || ! is_file($file) || File::delete($file)) {
+                $job['ok']++;
+            } else {
+                $job['fail']++;
+                $job['errors'][] = $job['current'];
+            }
+            $job['index'] = $i + 1;
+        }
+
+        if ((int) $job['index'] >= (int) $job['total']) {
+            $this->pruneEmptyDirs($this->rootPath());
+            $job['status'] = 'done';
+            $job['current'] = '';
+            $job['finished_at'] = now()->toIso8601String();
+            $job['message'] = '已删掉 '.$job['ok'].' 个文件';
+            if ((int) $job['fail'] > 0) {
+                $job['message'] .= '，'.$job['fail'].' 个没删掉';
+            }
+            unset($job['files']);
+        }
+
+        $this->putJob($job);
+
+        return $this->toPublic($job);
+    }
+
+    protected function pruneEmptyDirs(string $root): void
+    {
+        if (! is_dir($root)) {
+            return;
+        }
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                @rmdir($item->getPathname());
+            }
+        }
+    }
+
+    protected function relativeHtmlPath(string $file): string
+    {
+        $root = rtrim(str_replace('\\', '/', $this->rootPath()), '/');
+        $norm = str_replace('\\', '/', $file);
+        if (str_starts_with($norm, $root.'/')) {
+            return substr($norm, strlen($root) + 1);
+        }
+
+        return basename($file);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected function busyPublic(string $wantKind): ?array
+    {
+        $current = $this->rawJob();
+        if (($current['status'] ?? '') !== 'running') {
+            return null;
+        }
+        $pub = $this->toPublic($current);
+        if ((string) ($current['kind'] ?? 'build') !== $wantKind) {
+            $pub['conflict'] = true;
+            $pub['message'] = ($current['kind'] ?? 'build') === 'clear'
+                ? '正在删除，请先停止'
+                : '正在生成，请先停止';
+        }
+
+        return $pub;
+    }
+
     /** @return array<string, mixed> */
     protected function emptyJob(): array
     {
         return [
             'status' => 'idle',
+            'kind' => 'build',
             'urls' => [],
+            'files' => [],
             'index' => 0,
             'total' => 0,
             'ok' => 0,
@@ -421,15 +558,21 @@ class DiskHtmlService
 
     /**
      * @param  array<string, mixed>  $job
-     * @return array{status:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
+     * @return array{status:string,kind:string,done:int,total:int,ok:int,fail:int,percent:int,current:string,message:string,file_count:int,errors:list<string>}
      */
     protected function toPublic(array $job): array
     {
         $total = (int) ($job['total'] ?? 0);
         $done = (int) ($job['index'] ?? 0);
+        $kind = (string) ($job['kind'] ?? 'build');
+        $status = (string) ($job['status'] ?? 'idle');
+        $fileCount = ($status === 'running' && $kind === 'clear')
+            ? max(0, $total - $done)
+            : $this->fileCount();
 
         return [
-            'status' => (string) ($job['status'] ?? 'idle'),
+            'status' => $status,
+            'kind' => $kind,
             'done' => $done,
             'total' => $total,
             'ok' => (int) ($job['ok'] ?? 0),
@@ -437,7 +580,7 @@ class DiskHtmlService
             'percent' => $total > 0 ? (int) floor($done * 100 / $total) : 0,
             'current' => (string) ($job['current'] ?? ''),
             'message' => (string) ($job['message'] ?? ''),
-            'file_count' => $this->fileCount(),
+            'file_count' => $fileCount,
             'errors' => array_values(array_slice($job['errors'] ?? [], 0, 10)),
         ];
     }

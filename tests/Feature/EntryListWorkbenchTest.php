@@ -94,7 +94,7 @@ class EntryListWorkbenchTest extends TestCase
     public function test_published_filter_hides_scheduled_and_scheduled_filter_shows_it(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
-        $entry = Entry::query()->find(9);
+        $entry = Entry::query()->get()->first(fn (Entry $e) => $e->t('slug') === 'hello-blog');
         $this->assertNotNull($entry);
         $entry->status = 'published';
         $entry->published_at = now()->addDay();
@@ -114,7 +114,7 @@ class EntryListWorkbenchTest extends TestCase
 
     public function test_editor_cannot_see_row_publish_but_super_can(): void
     {
-        $pending = Entry::query()->find(2);
+        $pending = Entry::query()->get()->first(fn (Entry $e) => $e->t('slug') === 'cms-launch');
         $this->assertNotNull($pending);
         $pending->status = 'pending';
         $pending->published_at = null;

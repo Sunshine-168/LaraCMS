@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '标签管理')
+@section('title', admin_t('nav.tags'))
 @section('icon', 'tags')
 @php
     $q = $q ?? '';

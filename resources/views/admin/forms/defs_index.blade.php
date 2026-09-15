@@ -1,8 +1,8 @@
 @extends('admin.layout')
-@section('title', '表单定义')
+@section('title', admin_t('nav.forms'))
 @section('icon', 'clipboard-list')
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.form-submissions.index') }}"><i class="fas fa-inbox"></i> 留言收件箱</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.form-submissions.index') }}"><i class="fas fa-inbox"></i> 留言</a>
     <a class="btn btn-sm" href="{{ route('admin.forms.create') }}"><i class="fas fa-plus"></i> 新建表单</a>
 @endsection
 @section('content')
@@ -10,7 +10,7 @@
         @if($forms->isEmpty())
             <div class="list-empty">
                 <p>还没有表单。</p>
-                <p class="muted">联系、报名这类前台表单在这里建。主题用标识码调用，提交的内容进留言收件箱。</p>
+                <p class="muted">联系、报名这类前台表单在这里建。主题用标识码调用，提交的内容进留言。</p>
                 <a class="btn" href="{{ route('admin.forms.create') }}">新建表单</a>
             </div>
         @else

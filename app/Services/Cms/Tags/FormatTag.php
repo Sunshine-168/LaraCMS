@@ -11,7 +11,7 @@ class FormatTag
     public function date(array $options = []): HtmlString
     {
         $value = $options['name'] ?? $options['value'] ?? null;
-        $format = (string) ($options['format'] ?? 'Y-m-d');
+        $format = (string) ($options['format'] ?? (\App\Support\Locale::isEnglish() ? 'M j, Y' : 'Y-m-d'));
         if (! $value) {
             return new HtmlString('');
         }

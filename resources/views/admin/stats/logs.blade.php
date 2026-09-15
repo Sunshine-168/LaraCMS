@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '访问明细')
+@section('title', admin_t('crud.stats_logs'))
 @section('icon', 'list')
 @section('fullwidth', true)
 @section('content')

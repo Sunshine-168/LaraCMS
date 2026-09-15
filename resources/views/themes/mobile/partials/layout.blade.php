@@ -14,7 +14,8 @@
         .hero h1{font-size:24px;margin:0 0 8px} .grid{display:grid;grid-template-columns:1fr;gap:12px}
         .card-soft{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
         .muted{color:#64748b;font-size:13px} footer{margin-top:36px;padding:18px 0;border-top:1px solid var(--line);color:#64748b;font-size:12px}
-        .btn{display:inline-block;padding:10px 14px;background:var(--accent);color:#fff;border-radius:8px} .content{line-height:1.7}
+        .btn{display:inline-block;padding:10px 14px;background:var(--accent);color:#fff;border-radius:8px;border:0;cursor:pointer} .content{line-height:1.7}
+        input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]),textarea,select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}
         .banner-slide{min-height:160px;border-radius:10px;background:#0369a1 center/cover;color:#fff;display:flex;align-items:flex-end;padding:16px;margin-bottom:12px}
     </style>
     @include('cms.partials.front-appearance')
@@ -30,9 +31,10 @@
         </nav>
     </div>
 </header>
-<main class="wrap">
+<main id="content" class="wrap">
+    @include('cms.partials.front-theme-notice')
     @yield('content')
 </main>
-@include('cms.partials.front-footer', ['prefix' => '移动版 · '])
+@include('cms.partials.front-footer', ['prefix' => cms_ui('mobile_edition')])
 </body>
 </html>

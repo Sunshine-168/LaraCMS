@@ -106,4 +106,29 @@ class SideNavWorkbenchTest extends TestCase
         $this->assertStringNotContainsString('>会员</span>', $html);
         $this->assertStringNotContainsString('>缓存</span>', $html);
     }
+
+    public function test_operator_sees_flat_ops_without_friend_links(): void
+    {
+        $role = \App\Models\Admin\AdminRole::query()->where('slug', 'operator')->first();
+        $this->assertNotNull($role);
+        $ops = AdminUser::query()->create([
+            'name' => '运营',
+            'email' => 'ops-nav@example.com',
+            'password' => 'Ops@12345',
+            'role_id' => $role->id,
+            'is_active' => true,
+        ]);
+        $ops->sites()->sync([Site::default()->id]);
+
+        $html = $this->actingAs($ops, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('>跳转</span>', false)
+            ->assertSee('>说明</span>', false)
+            ->assertDontSee('>友链</span>', false)
+            ->assertDontSee('>地图</span>', false)
+            ->assertDontSee('>更多</summary>', false)
+            ->getContent();
+        $this->assertSame(0, substr_count($html, '>更多</summary>'));
+    }
 }

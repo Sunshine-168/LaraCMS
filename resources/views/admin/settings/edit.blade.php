@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '站点设置')
+@section('title', admin_t('nav.settings'))
 @section('icon', 'cog')
 @php
     $s = $settings;
@@ -222,7 +222,7 @@
             <h3>搜索引擎</h3>
             <label for="robots_extra">robots.txt 补充规则</label>
             <textarea id="robots_extra" name="robots_extra" rows="5" placeholder="Disallow: /private">{{ old('robots_extra', $s['robots_extra'] ?? '') }}</textarea>
-            <p class="muted field-hint">写在默认规则后面。关站时整站仍是 Disallow: /。后台、会员、安装、预览已经禁止抓取。前台地址 /robots.txt。收录哪些栏目和文章，到侧栏「运营 → 更多 → 地图」@if(auth('admin')->user()?->canPerm('sitemap'))（<a href="{{ route('admin.sitemap.edit') }}">打开</a>）@endif。</p>
+            <p class="muted field-hint">写在默认规则后面。关站时整站仍是 Disallow: /。后台、会员、安装、预览已经禁止抓取。前台地址 /robots.txt。收录范围在侧栏「运营 → 更多 → 地图」（站点地图）@if(auth('admin')->user()?->canPerm('sitemap'))（<a href="{{ route('admin.sitemap.edit') }}">打开</a>）@endif。</p>
 
             <h3>统计与内链</h3>
             <label for="analytics_code">统计代码</label>

@@ -78,11 +78,11 @@ class FinishUpTest extends TestCase
         $this->seed(CmsSeeder::class);
         CurrentSite::set(Site::default());
 
-        $download = Entry::query()->with(['category', 'modelDef'])->find(4);
+        $download = $this->seededEntry('client-windows');
         $download->attrs = array_merge($download->attrs ?? [], ['require_login' => false]);
         $download->save();
-        $source = Entry::query()->with(['category', 'modelDef'])->find(7);
-        $sports = Entry::query()->with(['category', 'modelDef'])->find(12);
+        $source = $this->seededEntry('shop-pro');
+        $sports = $this->seededEntry('sample-derby');
 
         Setting::setValue('theme', 'download');
         $this->get($download->url)

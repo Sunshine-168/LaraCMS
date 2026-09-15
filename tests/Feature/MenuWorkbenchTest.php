@@ -32,7 +32,6 @@ class MenuWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.menus.index'))
             ->assertOk()
-            ->assertSee('导航菜单')
             ->assertSee('主导航')
             ->assertSee('页头')
             ->assertSee($n.' 项')

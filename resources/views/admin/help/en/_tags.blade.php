@@ -100,7 +100,8 @@
         <tr><td><code>cms_media($path)</code></td><td>Asset URL. Honors the CDN in Settings; with <code>CMS_MEDIA_DISK=s3</code> it points at object storage</td></tr>
         <tr><td><code>cms_route('download', $entry)</code></td><td>Named route with locale prefix</td></tr>
         <tr><td><code>cms_front_url('news')</code></td><td>Front path</td></tr>
-        <tr><td><code>cms_ui('search')</code></td><td>Theme phrase from Languages → Theme phrases. Search, login, comments, pager, prev/next, 404. <code>cms_ui('hello', ['name' => $name])</code> replaces <code>:name</code>.</td></tr>
+        <tr><td><code>cms_ui('search')</code></td><td>Theme phrase. Site-wide defaults live in Languages → Theme phrases; a skin can override them on its Configure page. <code>cms_ui('hello', ['name' => $name])</code> replaces <code>:name</code>.</td></tr>
+        <tr><td><code>cms_theme('home_notice')</code></td><td>Per-theme options from Configure. Keys come from <code>theme.json</code> <code>config</code>, plus defaults such as the home notice and CTA.</td></tr>
         <tr><td><code>cms_t('中文', 'English')</code></td><td>Pick a string by content locale. Fine for two languages; use <code>cms_ui()</code> for more.</td></tr>
     </tbody>
 </table>

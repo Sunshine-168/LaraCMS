@@ -10,7 +10,7 @@
     }
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.member-groups.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.member-groups.index') }}">{{ admin_back('groups') }}</a>
 @endsection
 @section('content')
     @if($group->exists && $usage > 0)

@@ -116,6 +116,96 @@ class ThemeCatalog
         return $this->describe($slug, $dir, $this->currentSlug());
     }
 
+    /** @return array<string, mixed> */
+    public function manifest(string $slug): array
+    {
+        if (! $this->isValidSlug($slug)) {
+            return [];
+        }
+
+        return $this->readManifest($this->root().DIRECTORY_SEPARATOR.$slug);
+    }
+
+    /** @return array<string, mixed> */
+    public function setup(string $slug): array
+    {
+        if (! $this->isValidSlug($slug)) {
+            return [];
+        }
+        try {
+            $raw = Setting::getValue('theme_setup.'.$slug, '');
+        } catch (\Throwable) {
+            return [];
+        }
+        if (is_array($raw)) {
+            return $raw;
+        }
+        if (! is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param  array{i18n?:bool,responsive?:bool,models?:list<string>}  $data
+     */
+    public function saveSetup(string $slug, array $data): void
+    {
+        if (! $this->isValidSlug($slug)) {
+            return;
+        }
+        $models = [];
+        foreach ((array) ($data['models'] ?? []) as $model) {
+            $model = strtolower(trim((string) $model));
+            if ($this->isValidModelSlug($model)) {
+                $models[] = $model;
+            }
+        }
+        Setting::setValue('theme_setup.'.$slug, json_encode([
+            'i18n' => ! empty($data['i18n']),
+            'responsive' => ! empty($data['responsive']),
+            'models' => array_values(array_unique($models)),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    /** @return array<string, string> */
+    public function choosableModels(string $slug): array
+    {
+        $out = [];
+        foreach (BundledContentModels::definitions() as $modelSlug => $def) {
+            $out[$modelSlug] = (string) ($def['name'] ?? $modelSlug);
+        }
+        foreach (ContentModel::query()->orderBy('sort_order')->orderBy('id')->get() as $model) {
+            $out[$model->slug] = (string) $model->name;
+        }
+        $item = $this->get($slug);
+        foreach ((array) ($item['models'] ?? []) as $row) {
+            $modelSlug = (string) ($row['slug'] ?? '');
+            if ($modelSlug !== '') {
+                $out[$modelSlug] = (string) ($row['name'] ?? $modelSlug);
+            }
+        }
+        ksort($out);
+
+        return $out;
+    }
+
+    public function supportsI18n(?string $slug = null): bool
+    {
+        $slug = trim((string) ($slug ?: config('cms.theme', $this->currentSlug())));
+        if (! $this->isValidSlug($slug)) {
+            return true;
+        }
+        $setup = $this->setup($slug);
+        if (array_key_exists('i18n', $setup)) {
+            return (bool) $setup['i18n'];
+        }
+
+        return $this->manifestFlag($this->manifest($slug), 'i18n');
+    }
+
     public function apply(string $slug): array
     {
         $item = $this->get($slug);
@@ -273,7 +363,8 @@ class ThemeCatalog
         if (array_key_exists('description', $json)) {
             $meta['description'] = (string) $json['description'];
         }
-        $models = $this->packModelSummaries($dir, $json);
+        $models = $this->packModelSummaries($dir, $json, $slug);
+        $setup = $this->setup($slug);
 
         return [
             'slug' => $slug,
@@ -286,8 +377,12 @@ class ThemeCatalog
             'models' => $models,
             'models_ready' => $models === [] || ! in_array(false, array_column($models, 'ready'), true),
             'preview_url' => route('admin.themes.preview', $slug),
-            'i18n' => $this->manifestFlag($json, 'i18n'),
-            'responsive' => $this->manifestFlag($json, 'responsive'),
+            'i18n' => array_key_exists('i18n', $setup)
+                ? (bool) $setup['i18n']
+                : $this->manifestFlag($json, 'i18n'),
+            'responsive' => array_key_exists('responsive', $setup)
+                ? (bool) $setup['responsive']
+                : $this->manifestFlag($json, 'responsive'),
         ];
     }
 
@@ -423,7 +518,7 @@ SVG;
         $dir = $this->root().DIRECTORY_SEPARATOR.$slug;
         $json = $this->readManifest($dir);
         $out = [];
-        foreach ($this->packModelSlugs($dir, $json) as $modelSlug) {
+        foreach ($this->packModelSlugs($dir, $json, $slug) as $modelSlug) {
             $payload = $this->resolveModelPayload($dir, $json, $modelSlug);
             if ($payload !== null) {
                 $out[] = $payload;
@@ -477,7 +572,7 @@ SVG;
             'description' => $description,
             'from' => $from,
         ];
-        foreach (['models', 'categories', 'preview', 'i18n', 'responsive'] as $key) {
+        foreach (['models', 'categories', 'preview', 'i18n', 'responsive', 'config'] as $key) {
             if (array_key_exists($key, $existing)) {
                 $payload[$key] = $existing[$key];
             }
@@ -492,10 +587,10 @@ SVG;
      * @param  array<string, mixed>  $json
      * @return list<array{slug:string,name:string,ready:bool}>
      */
-    protected function packModelSummaries(string $dir, array $json): array
+    protected function packModelSummaries(string $dir, array $json, string $slug): array
     {
         $out = [];
-        foreach ($this->packModelSlugs($dir, $json) as $modelSlug) {
+        foreach ($this->packModelSlugs($dir, $json, $slug) as $modelSlug) {
             $payload = $this->resolveModelPayload($dir, $json, $modelSlug);
             $out[] = [
                 'slug' => $modelSlug,
@@ -511,10 +606,11 @@ SVG;
      * @param  array<string, mixed>  $json
      * @return list<string>
      */
-    protected function packModelSlugs(string $dir, array $json): array
+    protected function packModelSlugs(string $dir, array $json, string $slug): array
     {
         $slugs = [];
-        $listed = $json['models'] ?? [];
+        $setup = $this->setup($slug);
+        $listed = array_key_exists('models', $setup) ? $setup['models'] : ($json['models'] ?? []);
         if (is_array($listed)) {
             foreach ($listed as $row) {
                 if (is_string($row) && $this->isValidModelSlug($row)) {

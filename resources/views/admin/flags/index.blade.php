@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '推荐属性')
+@section('title', admin_t('nav.flags'))
 @section('icon', 'flag')
 @php
     $composeFocus = session('flag_quick_added') || $flags->isEmpty();

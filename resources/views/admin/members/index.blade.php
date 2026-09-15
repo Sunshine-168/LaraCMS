@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '会员管理')
+@section('title', admin_t('nav.members'))
 @section('icon', 'users')
 @php
     $q = $q ?? '';
@@ -18,7 +18,7 @@
     };
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.member-groups.index') }}">会员分组</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.member-groups.index') }}">分组</a>
     <a class="btn btn-sm" href="{{ route('admin.members.create') }}"><i class="fas fa-plus"></i> 新建会员</a>
 @endsection
 @section('content')

@@ -9,7 +9,7 @@
     }
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.forms.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.forms.index') }}">{{ admin_back('forms') }}</a>
 @endsection
 @section('content')
     <form method="post" class="form-def-form" action="{{ $form->exists ? route('admin.forms.update', $form) : route('admin.forms.store') }}" id="formDef">
@@ -32,7 +32,7 @@
 
         <label for="form-notify">提交通知邮箱</label>
         <input id="form-notify" type="email" name="notify_email" value="{{ old('notify_email', $form->notify_email) }}" placeholder="可空，如 ops@example.com">
-        <p class="muted field-hint">有人提交时发邮件。需先在站点设置里配好 SMTP。</p>
+        <p class="muted field-hint">有人提交时发邮件。需先在设置里配好 SMTP。</p>
 
         <h3>字段</h3>
         <p class="muted field-hint">显示名是访客看到的。字段名给模板用。下拉 / 单选 / 多选的选项用逗号分隔，如：咨询,投诉,合作。</p>

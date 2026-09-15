@@ -2189,6 +2189,49 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     margin-top: 6px;
 }
 .theme-card-actions form { margin: 0; }
+.theme-card-title a {
+    color: inherit;
+    text-decoration: none;
+}
+.theme-card-title a:hover { text-decoration: underline; }
+.theme-setup { max-width: 760px; }
+.theme-setup .html-cache-card { margin-bottom: 16px; }
+.theme-setup-hero {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.theme-setup-shot {
+    display: block;
+    width: 200px;
+    flex: 0 0 200px;
+    aspect-ratio: 16 / 10;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #e8eef5;
+}
+.theme-setup-shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.theme-setup-group {
+    margin: 16px 0 8px;
+    font-size: 14px;
+}
+.theme-model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 6px 12px;
+    margin-top: 8px;
+}
+.theme-model-grid .inline { margin: 0; align-items: center; }
+.theme-setup .data input[type=text] { width: 100%; max-width: none; min-width: 0; }
+@media (max-width: 720px) {
+    .theme-setup-hero { flex-direction: column; }
+    .theme-setup-shot { width: 100%; flex-basis: auto; }
+}
 .card-header form {
     margin: 0;
 }

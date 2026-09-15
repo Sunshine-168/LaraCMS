@@ -90,25 +90,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
             if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-                try {
-                    app(\App\Services\Cms\SiteFrontService::class)->bootSite();
-                } catch (\Throwable) {
+                return \App\Support\FrontErrorPage::response(404);
+            }
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                $status = $e->getStatusCode();
+                if (in_array($status, [403, 419], true)) {
+                    return \App\Support\FrontErrorPage::response($status);
                 }
-                try {
-                    $ctx = app(\App\Cms\CmsViewContext::class);
-                    $site = $ctx->site();
-                    $name = (string) ($site['title'] ?? config('app.name'));
-                    $ctx->setSeo('页面不存在 - '.$name, '', '')->setNoIndex(true);
-                } catch (\Throwable) {
-                }
-                $theme = (string) config('cms.theme', 'enterprise');
-                $layout = view()->exists("themes.{$theme}.partials.layout")
-                    ? "themes.{$theme}.partials.layout"
-                    : (view()->exists("themes.{$theme}.layout") ? "themes.{$theme}.layout" : 'errors.bare');
-
-                return response()->view('errors.404', [
-                    'layout' => $layout,
-                ], 404);
             }
             if (config('app.debug')) {
                 return null;

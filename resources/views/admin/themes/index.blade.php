@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '外观主题')
+@section('title', admin_t('nav.themes'))
 @section('icon', 'palette')
 @php
     $themes = $themes ?? [];
@@ -12,7 +12,7 @@
 @endsection
 @section('content')
     <div class="entry-index theme-index">
-        <p class="muted recycle-lead">点「用于本站」会补上这套外观缺的模型和空栏目（<code>theme.json</code> 里可写中英标题），已有文章和字段不改。自带主题都带语言切换和手机宽度；前台短句在「<a href="{{ route('admin.locales.index', ['tab' => 'theme']) }}">语言 → 主题文案</a>」。也可以把文件夹放到 <code>resources/views/themes/</code> 下。换完后还是旧样子，到「<a href="{{ route('admin.html-cache.edit') }}">缓存</a>」清空。</p>
+        <p class="muted recycle-lead">点卡片或「配置」进入这一套：多语言短句、要补的模型和自定义参数。点「用于本站」会补上缺的模型和空栏目（<code>theme.json</code> 里可写中英标题），已有文章和字段不改。自带主题都带语言切换和手机宽度。全站短句在「<a href="{{ route('admin.locales.index', ['tab' => 'theme']) }}">语言 → 主题文案</a>」。也可以把文件夹放到 <code>resources/views/themes/</code> 下。换完后还是旧样子，到「<a href="{{ route('admin.html-cache.edit') }}">缓存</a>」清空。</p>
 
         @if($add === 'copy')
             @php $from = old('from', 'enterprise'); @endphp
@@ -64,7 +64,7 @@
                         </a>
                         <div class="theme-card-body">
                         <div class="theme-card-head">
-                            <div class="theme-card-title">{{ $item['name'] }}</div>
+                            <div class="theme-card-title"><a href="{{ route('admin.themes.show', $item['slug']) }}">{{ $item['name'] }}</a></div>
                             <div class="theme-card-badges">
                                 @if($item['current'])
                                     <span class="badge badge-ok">当前使用</span>
@@ -98,6 +98,7 @@
                             <p class="theme-card-models">模型 {{ collect($item['models'])->pluck('name')->implode('、') }}</p>
                         @endif
                         <div class="theme-card-actions">
+                            <a class="btn-quiet" href="{{ route('admin.themes.show', $item['slug']) }}">配置</a>
                             @if($item['current'] && ($item['models'] ?? []) !== [] && empty($item['models_ready']))
                                 <form action="{{ route('admin.themes.apply', $item['slug']) }}" method="post">
                                     @csrf

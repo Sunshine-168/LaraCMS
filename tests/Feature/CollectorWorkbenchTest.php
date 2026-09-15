@@ -36,7 +36,6 @@ class CollectorWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.collectors.index'))
             ->assertOk()
-            ->assertSee('采集任务')
             ->assertSee('新建采集源')
             ->assertSee('运行日志')
             ->assertSee('Laravel Blog RSS')

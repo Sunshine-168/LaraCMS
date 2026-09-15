@@ -25,13 +25,13 @@ class MapTag
         }
         $width = e((string) ($options['width'] ?? '100%'));
         $height = e((string) ($options['height'] ?? '320'));
-        $title = e((string) ($options['title'] ?? $address ?: '地图'));
+        $title = e((string) ($options['title'] ?? $address ?: cms_ui('map')));
 
         if ($point && str_contains($point, ',')) {
             [$lng, $lat] = array_map('trim', explode(',', $point, 2));
         } else {
-            $lng = '116.397';
-            $lat = '39.908';
+            $lng = (string) (\App\Models\Cms\Setting::getValue('map_default_lng', '116.397') ?: '116.397');
+            $lat = (string) (\App\Models\Cms\Setting::getValue('map_default_lat', '39.908') ?: '39.908');
             if ($address === '' && $point !== '') {
                 $address = $point;
             }

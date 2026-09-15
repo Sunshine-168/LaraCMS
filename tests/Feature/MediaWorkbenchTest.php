@@ -40,7 +40,7 @@ class MediaWorkbenchTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.media.index'))
             ->assertOk()
-            ->assertSee('媒体库')
+            ->assertSee('>媒体</h1>', false)
             ->assertSee('点击或拖入文件')
             ->assertSee('搜索文件名或说明')
             ->assertSee('shot.png')

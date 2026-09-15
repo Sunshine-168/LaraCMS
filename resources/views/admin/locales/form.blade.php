@@ -5,7 +5,7 @@
     $isDefaultNow = (bool) old('is_default', $locale->is_default);
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.locales.index', ['tab' => 'content']) }}">{{ admin_t('locale.back_list') }}</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.locales.index', ['tab' => 'content']) }}">{{ admin_back('locales') }}</a>
 @endsection
 @section('content')
     @if($errors->any())

@@ -39,8 +39,8 @@
         <tr><th>Area</th><th>What you do</th></tr>
     </thead>
     <tbody>
-        <tr><td>Content</td><td>{!! $hl('categories', 'Sections') !!}, {!! $hl('entries', 'entries') !!}, tags, media, inbox, comments. More has flags, {!! $hl('recommends', 'blocks') !!}, {!! $hl('models', 'models') !!}, {!! $hl('menus', 'menus') !!}, {!! $hl('forms', 'forms') !!}, and trash.</td></tr>
-        <tr><td>Operations</td><td>{!! $hl('members', 'Members') !!}, collectors, {!! $hl('cache', 'cache') !!} (page cache and disk HTML). More has {!! $hl('friendLinks', 'friend links') !!}, {!! $hl('sitemap', 'sitemap') !!}, redirects, and groups.</td></tr>
+        <tr><td>Content</td><td>{!! $hl('categories', 'Sections') !!}, {!! $hl('entries', 'entries') !!}, {!! $hl('entryTags', 'tags') !!}, {!! $hl('media', 'media') !!}, {!! $hl('submissions', 'inbox') !!}, {!! $hl('comments', 'comments') !!}. More has {!! $hl('flags', 'flags') !!}, {!! $hl('recommends', 'blocks') !!}, {!! $hl('models', 'models') !!}, {!! $hl('menus', 'menus') !!}, {!! $hl('forms', 'forms') !!}, and {!! $hl('recycle', 'trash') !!}.</td></tr>
+        <tr><td>Operations</td><td>{!! $hl('members', 'Members') !!}, {!! $hl('collectors', 'collectors') !!}, {!! $hl('cache', 'cache') !!} (page cache and disk HTML). More has {!! $hl('friendLinks', 'friend links') !!}, {!! $hl('sitemap', 'Sitemap') !!}, {!! $hl('redirects', 'redirects') !!}, and {!! $hl('groups', 'groups') !!}.</td></tr>
         <tr><td>System</td><td>{!! $hl('sites', 'Sites') !!}, {!! $hl('settings', 'Settings') !!}, {!! $hl('themes', 'themes') !!}, languages, logs, admins, roles, and this help. Help stays here so accounts without operations rights can still open it.</td></tr>
     </tbody>
 </table>

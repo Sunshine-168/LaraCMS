@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ \App\Support\Locale::htmlLang() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $subject ?? '通知' }}</title>
+    <title>{{ $subject ?? cms_ui('mail_notice') }}</title>
 </head>
 <body style="margin:0;background:#f4f7fb;color:#0f2744;font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:24px 12px">

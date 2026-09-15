@@ -8,7 +8,7 @@
     }
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.roles.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.roles.index') }}">{{ admin_back('roles') }}</a>
 @endsection
 @section('content')
     @if($role->exists && ($role->users_count ?? 0) > 0)

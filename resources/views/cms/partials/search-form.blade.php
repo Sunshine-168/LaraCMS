@@ -1,5 +1,5 @@
 <form method="get" action="{{ cms_front_url('search') }}" class="cms-search-form" style="margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-    <input type="search" name="q" value="{{ $q ?? '' }}" placeholder="{{ cms_ui('keywords') }}" style="padding:8px;min-width:200px;flex:1;max-width:420px">
+    <input type="search" name="q" value="{{ $q ?? '' }}" placeholder="{{ cms_ui('keywords') }}" autocomplete="on" enterkeyhint="search" style="padding:8px;min-width:200px;flex:1;max-width:420px">
     @if(($searchModels ?? collect())->isNotEmpty())
         <select name="model_id" style="padding:8px">
             <option value="">{{ cms_ui('all_models') }}</option>

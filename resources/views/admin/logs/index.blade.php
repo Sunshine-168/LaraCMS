@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '操作日志')
+@section('title', admin_t('nav.logs'))
 @section('icon', 'clipboard-list')
 @php
     $q = $q ?? '';

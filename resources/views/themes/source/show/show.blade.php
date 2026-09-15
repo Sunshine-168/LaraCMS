@@ -3,13 +3,14 @@
     @cmsBreadcrumb
     <div class="card">
         <h1>{{ $entry->t('title') }}</h1>
-        <p class="muted">授权 {{ $entry->attr('license') }} / {{ $entry->attr('price') ?: '免费' }}</p>
+        <p class="muted">{{ cms_ui('license') }} {{ $entry->attr('license') }} / {{ $entry->attr('price') ?: cms_ui('free') }}</p>
         <div>{!! $entry->linked_content ?? $entry->t('content') !!}</div>
         <p style="margin-top:16px">
-            @if($entry->attr('demo_url'))<a href="{{ $entry->attr('demo_url') }}" target="_blank">在线演示</a> / @endif
-            <a class="btn" href="{{ cms_route('download', $entry) }}">下载源码包</a>
+            @if($entry->attr('demo_url'))<a href="{{ $entry->attr('demo_url') }}" target="_blank">{{ cms_ui('demo_online') }}</a> / @endif
+            <a class="btn" href="{{ cms_route('download', $entry) }}">{{ cms_ui('download_pack') }}</a>
         </p>
         <p>{{ cms_ui('prev') }}：@cmsPrev / {{ cms_ui('next') }}：@cmsNext</p>
+        @include('cms.partials.entry-tags')
     </div>
 
     @include('cms.comments')

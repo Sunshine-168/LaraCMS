@@ -5,7 +5,7 @@
     $types = ['text','textarea','editor','number','url','image','images','file','date','datetime','select','radio','checkbox','switch','map','entry'];
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.models.index') }}">{{ admin_back('models') }}</a>
 @endsection
 @section('content')
     <form method="post" class="model-form" action="{{ $field->exists ? route('admin.models.fields.update', [$model, $field]) : route('admin.models.fields.store', $model) }}">

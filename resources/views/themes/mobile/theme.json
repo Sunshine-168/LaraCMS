@@ -2,5 +2,8 @@
     "name": "移动",
     "description": "手机外观",
     "i18n": true,
-    "responsive": true
+    "responsive": true,
+    "config": {
+        "latest_news": {"title": "新闻标题", "type": "text", "value": ""}
+    }
 }

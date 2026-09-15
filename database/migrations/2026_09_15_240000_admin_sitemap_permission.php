@@ -17,7 +17,7 @@ return new class extends Migration
         if (! $exists) {
             DB::table('admin_permissions')->insert([
                 'key' => 'sitemap',
-                'name' => '站点地图',
+                'name' => '地图',
                 'group' => '运营',
                 'sort' => 123,
                 'created_at' => $now,

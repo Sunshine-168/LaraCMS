@@ -39,8 +39,8 @@
         <tr><th>位置</th><th>做什么</th></tr>
     </thead>
     <tbody>
-        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、标签、媒体、留言、评论。更多里有推荐属性、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}、回收站。</td></tr>
-        <tr><td>运营</td><td>{!! $hl('members', '会员') !!}、采集、{!! $hl('cache', '缓存') !!}（页面缓存和磁盘静态页）。更多里有{!! $hl('friendLinks', '友链') !!}、{!! $hl('sitemap', '地图') !!}、跳转、分组。</td></tr>
+        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、{!! $hl('entryTags', '标签') !!}、{!! $hl('media', '媒体') !!}、{!! $hl('submissions', '留言') !!}、{!! $hl('comments', '评论') !!}。更多里有{!! $hl('flags', '推荐') !!}、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}、{!! $hl('recycle', '回收站') !!}。</td></tr>
+        <tr><td>运营</td><td>{!! $hl('members', '会员') !!}、{!! $hl('collectors', '采集') !!}、{!! $hl('cache', '缓存') !!}（页面缓存和磁盘静态页）。更多里有{!! $hl('friendLinks', '友链') !!}、{!! $hl('sitemap', '地图') !!}、{!! $hl('redirects', '跳转') !!}、{!! $hl('groups', '分组') !!}。</td></tr>
         <tr><td>系统</td><td>{!! $hl('sites', '站点') !!}、{!! $hl('settings', '设置') !!}、{!! $hl('themes', '主题') !!}、语言、日志、管理员、权限，以及本页说明。说明不跟权限走，所以留在系统最底下。</td></tr>
     </tbody>
 </table>
@@ -86,7 +86,7 @@
     </details>
     <details>
         <summary>站点地图在哪</summary>
-        <p>搜索引擎看 <code>/sitemap.xml</code>（英文站是 <code>/en/sitemap.xml</code>）。给人看的目录是 <code>/sitemap</code>，可在后台关掉，页脚链接会一起消失。勾选栏目 / 文章 / 标签、加补充地址，都在侧栏「运营 → 更多 → {!! $hl('sitemap', '地图') !!}」。会员才能看的文章、没有公开文章的标签不会列入。栏目标识不要写成 sitemap。</p>
+        <p>搜索引擎看 <code>/sitemap.xml</code>（英文站是 <code>/en/sitemap.xml</code>）。给人看的目录是 <code>/sitemap</code>，可在后台关掉，页脚链接会一起消失。勾选栏目 / 文章 / 标签、加补充地址，都在侧栏「运营 → 更多 → {!! $hl('sitemap', '地图') !!}」（这项就叫地图）。会员才能看的文章、没有公开文章的标签不会列入。栏目标识不要写成 sitemap。</p>
     </details>
     <details>
         <summary>想重新跑安装向导</summary>

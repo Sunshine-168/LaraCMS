@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '流量统计')
+@section('title', admin_t('nav.stats'))
 @section('icon', 'chart-line')
 @section('fullwidth', true)
 @section('content')

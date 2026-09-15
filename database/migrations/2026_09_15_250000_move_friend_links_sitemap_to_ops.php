@@ -19,8 +19,13 @@ return new class extends Migration
             'updated_at' => $now,
         ]);
         DB::table('admin_permissions')->where('key', 'sitemap')->update([
+            'name' => '地图',
             'group' => '运营',
             'sort' => 123,
+            'updated_at' => $now,
+        ]);
+        DB::table('admin_permissions')->where('key', 'redirects')->update([
+            'name' => '跳转',
             'updated_at' => $now,
         ]);
     }
@@ -38,8 +43,13 @@ return new class extends Migration
             'updated_at' => $now,
         ]);
         DB::table('admin_permissions')->where('key', 'sitemap')->update([
+            'name' => '站点地图',
             'group' => '内容',
             'sort' => 127,
+            'updated_at' => $now,
+        ]);
+        DB::table('admin_permissions')->where('key', 'redirects')->update([
+            'name' => '重定向',
             'updated_at' => $now,
         ]);
     }

@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '留言收件箱')
+@section('title', admin_t('nav.inbox'))
 @section('icon', 'inbox')
 @php
     $q = $q ?? '';
@@ -31,7 +31,7 @@
     @if($unreadCount > 0)
         <span class="badge badge-warn">未读 {{ $unreadCount }}</span>
     @endif
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.forms.index') }}">表单定义</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.forms.index') }}">表单</a>
     @if($submissions->total() > 0 || $hasFilters)
         <a class="btn btn-muted btn-sm" href="{{ route('admin.form-submissions.export', array_filter(['form_id' => $formId, 'status' => $status, 'q' => $q])) }}">导出 CSV</a>
     @endif
@@ -74,7 +74,7 @@
                 @else
                     <p>还没有留言。</p>
                     <p class="muted">前台表单提交后会出现在这里。可以回复到访客邮箱，或只留内部备注。</p>
-                    <a class="btn btn-muted" href="{{ route('admin.forms.index') }}">去表单定义</a>
+                    <a class="btn btn-muted" href="{{ route('admin.forms.index') }}">去表单</a>
                 @endif
             </div>
         @else

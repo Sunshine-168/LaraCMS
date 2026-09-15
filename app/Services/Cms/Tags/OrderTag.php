@@ -21,11 +21,11 @@ class OrderTag
     {
         $current = (string) request('order', $options['current'] ?? 'published_at desc');
         $items = collect([
-            ['value' => 'published_at desc', 'label' => '最新', 'column' => 'published_at'],
-            ['value' => 'published_at asc', 'label' => '最早', 'column' => 'published_at'],
-            ['value' => 'sort_order desc', 'label' => '权重', 'column' => 'sort_order'],
-            ['value' => 'views desc', 'label' => '浏览最多', 'column' => 'views'],
-            ['value' => 'downloads_count desc', 'label' => '下载最多', 'column' => 'downloads_count'],
+            ['value' => 'published_at desc', 'label' => cms_ui('sort_newest'), 'column' => 'published_at'],
+            ['value' => 'published_at asc', 'label' => cms_ui('sort_oldest'), 'column' => 'published_at'],
+            ['value' => 'sort_order desc', 'label' => cms_ui('sort_weight'), 'column' => 'sort_order'],
+            ['value' => 'views desc', 'label' => cms_ui('sort_views'), 'column' => 'views'],
+            ['value' => 'downloads_count desc', 'label' => cms_ui('sort_downloads'), 'column' => 'downloads_count'],
         ]);
 
         $modelId = $options['model'] ?? $this->context->category()?->model_id;

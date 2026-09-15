@@ -6,7 +6,7 @@
     $categories = $categories ?? collect();
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.menus.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.menus.index') }}">{{ admin_back('menus') }}</a>
 @endsection
 @section('content')
     <form method="post" class="menu-form" action="{{ $menu->exists ? route('admin.menus.update', $menu) : route('admin.menus.store') }}">

@@ -29,7 +29,7 @@ class RecycleWorkbenchTest extends TestCase
             ->assertOk()
             ->assertSee('回收站是空的')
             ->assertSee('不会自动清空')
-            ->assertSee('去内容列表')
+            ->assertSee('去内容')
             ->assertSee('nav-fold is-open', false)
             ->assertDontSee('>ID</th>', false)
             ->assertDontSee('清空回收站');
@@ -37,21 +37,24 @@ class RecycleWorkbenchTest extends TestCase
 
     public function test_deleted_entry_can_be_found_and_restored(): void
     {
+        $this->get('/en/sitemap.xml')->assertOk();
+
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
-        $about = Entry::query()->find(1);
-        $gateway = Entry::query()->find(3);
-        $this->assertNotNull($about);
-        $this->assertNotNull($gateway);
+        $about = $this->entryBySlug('about');
+        $gateway = $this->entryBySlug('smart-gateway');
 
         $this->actingAs($admin, 'admin')
             ->delete(route('admin.entries.destroy', $about))
             ->assertRedirect();
         $this->delete(route('admin.entries.destroy', $gateway));
 
+        $this->assertNotNull(Entry::onlyTrashed()->find($about->id));
+
         $this->get(route('admin.recycle.index'))
             ->assertOk()
             ->assertSee('关于我们')
             ->assertSee('智能网关')
+            ->assertDontSee('About Us')
             ->assertSee('还原')
             ->assertSee('form="batchForm"', false)
             ->assertSee('id="batchBar" hidden', false);
@@ -73,8 +76,7 @@ class RecycleWorkbenchTest extends TestCase
     public function test_batch_restore_keeps_search(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
-        $entry = Entry::query()->find(2);
-        $this->assertNotNull($entry);
+        $entry = $this->entryBySlug('cms-launch');
         $entry->delete();
 
         $this->actingAs($admin, 'admin')
@@ -87,5 +89,13 @@ class RecycleWorkbenchTest extends TestCase
             ->assertSessionHas('status');
 
         $this->assertNotNull(Entry::query()->find($entry->id));
+    }
+
+    private function entryBySlug(string $slug): Entry
+    {
+        $entry = Entry::query()->get()->first(fn (Entry $e) => $e->t('slug') === $slug);
+        $this->assertInstanceOf(Entry::class, $entry);
+
+        return $entry;
     }
 }

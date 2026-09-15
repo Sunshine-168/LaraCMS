@@ -4,6 +4,15 @@
     "i18n": true,
     "responsive": true,
     "models": ["article", "page", "product", "job"],
+    "config": {
+        "about_us": {"title": "简介标题", "type": "text", "tips": "首页「公司简介」那一块。留空用主题文案。", "value": ""},
+        "news": {"title": "新闻标题", "type": "text", "value": ""},
+        "products": {"title": "产品标题", "type": "text", "value": ""},
+        "contact": {"title": "联系标题", "type": "text", "value": ""},
+        "map_address": {"title": "地图地址", "type": "text", "value": ""},
+        "map_title": {"title": "地图名称", "type": "text", "value": ""},
+        "map_point": {"title": "地图坐标", "type": "text", "tips": "经度,纬度。留空用设置里的默认点。", "value": ""}
+    },
     "categories": [
         {"slug": "news", "title": {"zh_cn": "新闻中心", "en": "News"}, "model": "article", "type": "list", "menu": true},
         {"slug": "about", "title": {"zh_cn": "关于我们", "en": "About"}, "model": "page", "type": "single", "menu": true},

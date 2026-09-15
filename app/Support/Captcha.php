@@ -39,7 +39,7 @@ class Captcha
         }
         if (! self::check($answer)) {
             throw ValidationException::withMessages([
-                'captcha' => '验证码错误',
+                'captcha' => cms_ui('captcha_error'),
             ]);
         }
     }

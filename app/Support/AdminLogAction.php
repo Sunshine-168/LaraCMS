@@ -101,7 +101,7 @@ class AdminLogAction
             'html-cache/warm' => '预热了全页缓存',
             'html-cache/disk-build' => '生成了静态页',
             'html-cache/disk-step' => '生成静态页（进度）',
-            'html-cache/disk-cancel' => '取消了静态页生成',
+            'html-cache/disk-cancel' => '停止了静态页任务',
             'html-cache/disk-clear' => '删掉了静态页',
             'html-cache/disk' => '保存了磁盘静态页设置',
             'site/switch' => '切换了站点',
@@ -131,6 +131,7 @@ class AdminLogAction
             (bool) preg_match('#^collectors/\d+/run$#', $joined) => '运行了采集',
             (bool) preg_match('#^models/\d+/copy$#', $joined) => '复制了内容模型',
             (bool) preg_match('#^themes/[^/]+/use$#', $joined) => '把主题用于本站',
+            $method === 'PUT' && (bool) preg_match('#^themes/[^/]+$#', $joined) => '保存了主题配置',
             $method === 'DELETE' && (bool) preg_match('#^themes/[^/]+$#', $joined) => '删除了主题',
             default => null,
         };

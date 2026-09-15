@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '角色权限')
+@section('title', admin_t('nav.roles'))
 @section('icon', 'user-shield')
 @php
     $composeFocus = session('role_quick_added') || $roles->isEmpty();

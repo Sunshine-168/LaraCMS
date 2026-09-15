@@ -65,6 +65,6 @@ class CommentModerationTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.comments.index'))
             ->assertOk()
-            ->assertSee('评论审核');
+            ->assertSee('>评论</h1>', false);
     }
 }

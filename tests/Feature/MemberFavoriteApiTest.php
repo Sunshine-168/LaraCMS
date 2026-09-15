@@ -29,8 +29,7 @@ class MemberFavoriteApiTest extends TestCase
     {
         $member = Member::query()->where('email', 'member@example.com')->first();
         $this->assertNotNull($member);
-        $entry = Entry::query()->published()->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
 
         $this->actingAs($member, 'member')
             ->post(route('member.favorite', $entry))
@@ -68,8 +67,7 @@ class MemberFavoriteApiTest extends TestCase
 
     public function test_guest_favorite_redirects_to_login(): void
     {
-        $entry = Entry::query()->published()->find(9);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
 
         $this->post(route('member.favorite', $entry))
             ->assertRedirect(route('member.login'));
@@ -77,9 +75,8 @@ class MemberFavoriteApiTest extends TestCase
 
     public function test_member_api_login_profile_favorites_and_gated_content(): void
     {
-        $entry = Entry::query()->published()->find(9);
-        $gated = Entry::query()->find(4);
-        $this->assertNotNull($entry);
+        $entry = $this->seededEntry('hello-blog');
+        $gated = $this->seededEntry('client-windows');
         $this->assertTrue($gated?->isMemberGated());
 
         $headers = ['X-CMS-Token' => 'member-api-test'];

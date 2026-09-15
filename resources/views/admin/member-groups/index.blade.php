@@ -1,11 +1,11 @@
 @extends('admin.layout')
-@section('title', '会员分组')
+@section('title', admin_t('nav.groups'))
 @section('icon', 'user-tag')
 @php
     $composeFocus = session('group_quick_added') || $groups->isEmpty();
 @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.members.index') }}">会员管理</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.members.index') }}">会员</a>
 @endsection
 @section('content')
     <div class="entry-index member-group-index">

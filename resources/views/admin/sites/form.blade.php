@@ -3,7 +3,7 @@
 @section('icon', 'globe')
 @php $isCurrent = (bool) ($isCurrent ?? false); @endphp
 @section('header_actions')
-    <a class="btn btn-muted btn-sm" href="{{ route('admin.sites.index') }}">返回列表</a>
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.sites.index') }}">{{ admin_back('sites') }}</a>
 @endsection
 @section('content')
     @if($isCurrent)
@@ -22,14 +22,14 @@
         <input id="site-domain" type="text" name="domain" value="{{ old('domain', $site->domain) }}" placeholder="www.example.com" required>
         <p class="muted field-hint">不用加 http://。填 www.example.com 或 127.0.0.1。访客用这个地址打开对应网站。</p>
 
-        <label for="site-theme">外观主题</label>
+        <label for="site-theme">主题</label>
         <select id="site-theme" name="theme">
-            <option value="">跟站点设置走</option>
+            <option value="">跟设置走</option>
             @foreach($themes as $themeItem)
                 <option value="{{ $themeItem['slug'] }}" @selected(old('theme', $site->theme) === $themeItem['slug'])>{{ $themeItem['name'] }}</option>
             @endforeach
         </select>
-        <p class="muted field-hint">留空则用该站「站点设置」里选的主题。这里填了会盖过去。</p>
+        <p class="muted field-hint">留空则用该站「设置」里选的主题。这里填了会盖过去。</p>
 
         <label for="site-remark">备注</label>
         <input id="site-remark" type="text" name="remark" value="{{ old('remark', $site->remark) }}" placeholder="给自己看，前台看不到">

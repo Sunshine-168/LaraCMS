@@ -12,7 +12,7 @@ class MemberFavoriteService
     public function toggle(Member $member, Entry $entry): array
     {
         if (! $entry->isLive()) {
-            return Result::fail('内容不存在');
+            return Result::fail(cms_ui('content_missing'));
         }
 
         $existing = MemberFavorite::query()
@@ -23,7 +23,7 @@ class MemberFavoriteService
         if ($existing) {
             $existing->delete();
 
-            return Result::ok(['favorited' => false, 'entry_id' => $entry->id], '已取消收藏');
+            return Result::ok(['favorited' => false, 'entry_id' => $entry->id], cms_ui('unfavorited'));
         }
 
         MemberFavorite::query()->create([
@@ -31,6 +31,6 @@ class MemberFavoriteService
             'entry_id' => $entry->id,
         ]);
 
-        return Result::ok(['favorited' => true, 'entry_id' => $entry->id], '已收藏');
+        return Result::ok(['favorited' => true, 'entry_id' => $entry->id], cms_ui('favorited'));
     }
 }

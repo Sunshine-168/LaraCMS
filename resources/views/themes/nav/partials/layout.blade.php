@@ -20,14 +20,14 @@
 </head>
 <body>
 <header><div class="wrap">
-    @include('cms.partials.front-brand', ['fallback' => '导航'])
+    @include('cms.partials.front-brand', ['fallback' => cms_ui('nav_hero')])
     <nav>
         @include('cms.partials.header-nav')
         @include('cms.partials.front-toolbar')
         @include('cms.partials.lang-switch')
     </nav>
 </div></header>
-<main class="wrap">@yield('content')</main>
+<main id="content" class="wrap">@include('cms.partials.front-theme-notice')@yield('content')</main>
 @include('cms.partials.front-footer')
 </body>
 </html>
