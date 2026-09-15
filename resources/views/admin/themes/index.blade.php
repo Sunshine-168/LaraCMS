@@ -12,7 +12,7 @@
 @endsection
 @section('content')
     <div class="entry-index theme-index">
-        <p class="muted recycle-lead">点「用于本站」会补上这套外观缺的模型，已有文章和字段不改。也可以把文件夹放到 <code>resources/views/themes/</code> 下。换完后还是旧样子，到「<a href="{{ route('admin.html-cache.edit') }}">缓存</a>」清空。</p>
+        <p class="muted recycle-lead">点「用于本站」会补上这套外观缺的模型和空栏目（<code>theme.json</code> 里可写中英标题），已有文章和字段不改。自带主题都带语言切换和手机宽度；前台短句在「<a href="{{ route('admin.locales.index', ['tab' => 'theme']) }}">语言 → 主题文案</a>」。也可以把文件夹放到 <code>resources/views/themes/</code> 下。换完后还是旧样子，到「<a href="{{ route('admin.html-cache.edit') }}">缓存</a>」清空。</p>
 
         @if($add === 'copy')
             @php $from = old('from', 'enterprise'); @endphp
@@ -84,6 +84,14 @@
                             {{ $item['slug'] }}
                             @if($item['description'] !== '')
                                 · {{ $item['description'] }}
+                            @endif
+                        </p>
+                        <p class="theme-card-caps">
+                            @if(!empty($item['i18n']))
+                                <span>多语言</span>
+                            @endif
+                            @if(!empty($item['responsive']))
+                                <span>自适应</span>
                             @endif
                         </p>
                         @if(($item['models'] ?? []) !== [])

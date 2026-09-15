@@ -1,8 +1,10 @@
 {
     "name": "下载站",
     "description": "资料下载",
+    "i18n": true,
+    "responsive": true,
     "models": ["download"],
     "categories": [
-        {"slug": "downloads", "title": "下载中心", "model": "download", "type": "list", "menu": true}
+        {"slug": "downloads", "title": {"zh_cn": "下载中心", "en": "Downloads"}, "model": "download", "type": "list", "menu": true}
     ]
 }

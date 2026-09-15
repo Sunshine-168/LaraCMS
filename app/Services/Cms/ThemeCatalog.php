@@ -67,7 +67,7 @@ class ThemeCatalog
     }
 
     /**
-     * @return list<array{slug:string,name:string,description:string,builtin:bool,complete:bool,current:bool,path:string,models:list<array{slug:string,name:string,ready:bool}>,models_ready:bool,preview_url:string}>
+     * @return list<array{slug:string,name:string,description:string,builtin:bool,complete:bool,current:bool,path:string,models:list<array{slug:string,name:string,ready:bool}>,models_ready:bool,preview_url:string,i18n:bool,responsive:bool}>
      */
     public function all(): array
     {
@@ -102,7 +102,7 @@ class ThemeCatalog
         return array_values($found);
     }
 
-    /** @return array{slug:string,name:string,description:string,builtin:bool,complete:bool,current:bool,path:string,models:list<array{slug:string,name:string,ready:bool}>,models_ready:bool,preview_url:string}|null */
+    /** @return array{slug:string,name:string,description:string,builtin:bool,complete:bool,current:bool,path:string,models:list<array{slug:string,name:string,ready:bool}>,models_ready:bool,preview_url:string,i18n:bool,responsive:bool}|null */
     public function get(string $slug): ?array
     {
         if (! $this->isValidSlug($slug)) {
@@ -286,7 +286,19 @@ class ThemeCatalog
             'models' => $models,
             'models_ready' => $models === [] || ! in_array(false, array_column($models, 'ready'), true),
             'preview_url' => route('admin.themes.preview', $slug),
+            'i18n' => $this->manifestFlag($json, 'i18n'),
+            'responsive' => $this->manifestFlag($json, 'responsive'),
         ];
+    }
+
+    /** @param  array<string, mixed>  $json */
+    protected function manifestFlag(array $json, string $key): bool
+    {
+        if (! array_key_exists($key, $json)) {
+            return true;
+        }
+
+        return filter_var($json[$key], FILTER_VALIDATE_BOOLEAN);
     }
 
     public function previewPath(string $slug): ?string
@@ -433,12 +445,27 @@ SVG;
         }
         $out = [];
         foreach ($cats as $row) {
-            if (is_array($row) && ! empty($row['slug']) && ! empty($row['title']) && ! empty($row['model'])) {
+            if (is_array($row) && ! empty($row['slug']) && $this->categoryTitleFilled($row['title'] ?? null) && ! empty($row['model'])) {
                 $out[] = $row;
             }
         }
 
         return $out;
+    }
+
+    protected function categoryTitleFilled(mixed $title): bool
+    {
+        if (is_array($title)) {
+            foreach ($title as $text) {
+                if (trim((string) $text) !== '') {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return trim((string) $title) !== '';
     }
 
     protected function writeManifest(string $slug, string $name, string $description, string $from): void
@@ -450,8 +477,8 @@ SVG;
             'description' => $description,
             'from' => $from,
         ];
-        foreach (['models', 'categories', 'preview'] as $key) {
-            if (isset($existing[$key])) {
+        foreach (['models', 'categories', 'preview', 'i18n', 'responsive'] as $key) {
+            if (array_key_exists($key, $existing)) {
                 $payload[$key] = $existing[$key];
             }
         }

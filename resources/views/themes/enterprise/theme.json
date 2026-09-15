@@ -1,11 +1,13 @@
 {
     "name": "企业",
     "description": "公司官网",
+    "i18n": true,
+    "responsive": true,
     "models": ["article", "page", "product", "job"],
     "categories": [
-        {"slug": "news", "title": "新闻中心", "model": "article", "type": "list", "menu": true},
-        {"slug": "about", "title": "关于我们", "model": "page", "type": "single", "menu": true},
-        {"slug": "products", "title": "产品中心", "model": "product", "type": "list", "menu": true, "list_tpl": "list.list_product", "show_tpl": "show.show_product"},
-        {"slug": "jobs", "title": "加入我们", "model": "job", "type": "list", "menu": true}
+        {"slug": "news", "title": {"zh_cn": "新闻中心", "en": "News"}, "model": "article", "type": "list", "menu": true},
+        {"slug": "about", "title": {"zh_cn": "关于我们", "en": "About"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "products", "title": {"zh_cn": "产品中心", "en": "Products"}, "model": "product", "type": "list", "menu": true, "list_tpl": "list.list_product", "show_tpl": "show.show_product"},
+        {"slug": "jobs", "title": {"zh_cn": "加入我们", "en": "Jobs"}, "model": "job", "type": "list", "menu": true}
     ]
 }

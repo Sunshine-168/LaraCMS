@@ -72,7 +72,7 @@
         <tr><td><code>@@cmsContent</code></td><td>文档列表</td><td><code>catid</code>，<code>model</code>，<code>flag</code>，<code>num</code>，<code>page</code>，<code>order</code>，<code>insub</code>，<code>related</code> + <code>related_field</code></td></tr>
         <tr><td><code>@@cmsPaginate</code></td><td>分页（配合 <code>page=&gt;true</code>）</td><td>可传入分页视图名</td></tr>
         <tr><td><code>@@cmsArcone</code></td><td>指定一篇</td><td><code>aid</code> 或 <code>id</code></td></tr>
-        <tr><td><code>@@cmsAdv</code></td><td>推荐位</td><td><code>name</code> 必填；<code>num</code>；HTML 条目输出 <code>$item-&gt;html</code></td></tr>
+        <tr><td><code>@@cmsAdv</code></td><td>推荐位</td><td><code>name</code> 必填；<code>num</code>；HTML 条目输出 <code>$item-&gt;html</code>。首页友链用 <code>partners</code> 或 <code>friend_links</code></td></tr>
         <tr><td><code>@@cmsBreadcrumb</code></td><td>面包屑</td><td><code>symbol</code>，<code>class</code></td></tr>
         <tr><td><code>@@cmsPrev</code> / <code>@@cmsNext</code></td><td>同栏目上下篇</td><td><code>field</code>，<code>msg</code>（没有时的文字）</td></tr>
         <tr><td><code>@@cmsDate</code></td><td>格式化日期</td><td><code>name</code> 或 <code>value</code>，<code>format=Y-m-d</code></td></tr>

@@ -40,4 +40,5 @@
             @endcmsAdv
         </div>
     </section>
+    @include('cms.partials.friend-links')
 @endsection

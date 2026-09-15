@@ -82,19 +82,5 @@
         </div>
     </section>
 
-    <section style="margin:32px 0">
-        <h2>合作伙伴</h2>
-        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px">
-            @cmsAdv(['name' => 'partners'])
-                @if($item->html)
-                    {!! $item->html !!}
-                @else
-                <a href="{{ $item->url ?: '#' }}" class="card-soft" style="min-width:120px;text-align:center">
-                    @if($item->image)<img src="{{ $item->image }}" alt="" style="max-height:40px">@endif
-                    <div>{{ $item->t('title') }}</div>
-                </a>
-                @endif
-            @endcmsAdv
-        </div>
-    </section>
+    @include('cms.partials.friend-links')
 @endsection

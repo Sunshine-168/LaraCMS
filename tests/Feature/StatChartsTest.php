@@ -254,6 +254,28 @@ class StatChartsTest extends TestCase
         $this->assertStringContainsString('新闻中心', $csv);
     }
 
+    public function test_visit_logs_paginate_twenty(): void
+    {
+        for ($i = 1; $i <= 21; $i++) {
+            StatHit::query()->create([
+                'path' => '/paginate-hit',
+                'ip' => '10.20.0.'.$i,
+                'visitor_hash' => hash('sha256', 'paginate-'.$i),
+                'user_agent' => 'Mozilla/5.0 Chrome/120.0.0.0',
+                'is_spider' => false,
+                'status_code' => 200,
+                'created_at' => now(),
+            ]);
+        }
+
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.stats.logs', ['path' => '/paginate-hit']))
+            ->assertOk()
+            ->assertSee('共 21 条')
+            ->assertSee('page=2', false);
+    }
+
     public function test_pagination_uses_compact_bootstrap_not_tailwind_svg(): void
     {
         $html = (new \Illuminate\Pagination\LengthAwarePaginator(

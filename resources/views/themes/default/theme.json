@@ -1,4 +1,6 @@
 {
     "name": "默认",
-    "description": "兜底模板"
+    "description": "兜底模板",
+    "i18n": true,
+    "responsive": true
 }

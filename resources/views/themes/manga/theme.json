@@ -1,9 +1,11 @@
 {
     "name": "漫画",
     "description": "漫画连载",
+    "i18n": true,
+    "responsive": true,
     "models": ["manga", "chapter"],
     "categories": [
-        {"slug": "comics", "title": "漫画库", "model": "manga", "type": "list", "menu": true},
-        {"slug": "chapters", "title": "章节", "model": "chapter", "type": "list", "menu": false, "show_tpl": "show.chapter"}
+        {"slug": "comics", "title": {"zh_cn": "漫画库", "en": "Comics"}, "model": "manga", "type": "list", "menu": true},
+        {"slug": "chapters", "title": {"zh_cn": "章节", "en": "Chapters"}, "model": "chapter", "type": "list", "menu": false, "show_tpl": "show.chapter"}
     ]
 }

@@ -1,4 +1,6 @@
 {
     "name": "移动",
-    "description": "手机外观"
+    "description": "手机外观",
+    "i18n": true,
+    "responsive": true
 }

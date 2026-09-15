@@ -36,4 +36,5 @@
             </div>
         @endcmsChannel
     </section>
+    @include('cms.partials.friend-links')
 @endsection

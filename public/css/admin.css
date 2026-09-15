@@ -1527,6 +1527,17 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     border: 1px solid #c9cdd4;
 }
 .redirect-compose .field-hint { margin: 8px 0 0; }
+.friend-link-logo {
+    width: 36px;
+    height: 24px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.friend-link-index tr.is-off .entry-row-title,
+.friend-link-index tr.is-off .entry-row-meta { color: var(--muted); }
 .redirect-arrow {
     color: var(--muted);
     flex-shrink: 0;
@@ -2076,6 +2087,20 @@ hr.soft { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
     color: var(--muted);
     font-size: 13px;
     line-height: 1.45;
+}
+.theme-card-caps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+}
+.theme-card-caps span {
+    padding: 1px 7px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
 }
 .theme-card-actions {
     display: flex;

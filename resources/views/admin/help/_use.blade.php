@@ -39,7 +39,7 @@
         <tr><th>位置</th><th>做什么</th></tr>
     </thead>
     <tbody>
-        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、标签、媒体、留言、评论、回收站。更多里有推荐属性、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}。</td></tr>
+        <tr><td>内容</td><td>{!! $hl('categories', '栏目') !!}、{!! $hl('entries', '文章') !!}、标签、媒体、留言、评论、回收站。更多里有推荐属性、{!! $hl('friendLinks', '友链') !!}、{!! $hl('recommends', '推荐位') !!}、{!! $hl('models', '模型') !!}、{!! $hl('menus', '导航') !!}、{!! $hl('forms', '表单') !!}。</td></tr>
         <tr><td>运营</td><td>{!! $hl('members', '会员') !!}、采集、跳转、统计、{!! $hl('cache', '缓存') !!}（页面缓存和磁盘静态页）。</td></tr>
         <tr><td>系统</td><td>{!! $hl('sites', '站点') !!}、{!! $hl('settings', '设置') !!}、{!! $hl('themes', '主题') !!}、语言、日志、管理员、权限，以及本页说明。</td></tr>
     </tbody>
@@ -53,6 +53,7 @@
 <h3>导航、推荐位、表单</h3>
 <p class="muted">栏目勾「菜单」后，主题里 <code>@@cmsMenu</code> 没配导航时会拿这些栏目当顶栏。要精确控制顺序，用{!! $hl('menus', '导航') !!}建 header 菜单。</p>
 <p class="muted">首页 Banner、最新新闻这类区块用{!! $hl('recommends', '推荐位') !!}，标识要和模板里的 <code>name</code> 对上，例如 <code>home_banner</code>。</p>
+<p class="muted">首页友情链接 / 合作伙伴走侧栏「更多 → {!! $hl('friendLinks', '友链') !!}」，数据存在推荐位 <code>partners</code>（没有则用 <code>friend_links</code>）。这和导航站主题里的「链接」模型不是一回事：那个是网址目录。</p>
 <p class="muted">联系表单在{!! $hl('forms', '表单') !!}里建，前台用 <code>@@cmsForm</code> 按标识输出。提交进「留言」。评论默认待审核，可在{!! $hl('settings', '设置') !!}里开关。</p>
 
 <h3>会员</h3>

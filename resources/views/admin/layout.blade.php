@@ -18,8 +18,8 @@
     $headerInbox = $admin
         ? app(\App\Services\Admin\DashboardService::class)->headerInbox($admin)
         : ['total' => 0, 'hint' => '', 'entries' => 0, 'forms' => 0, 'comments' => 0];
-    $contentMoreOpen = request()->routeIs('admin.flags.*', 'admin.recommends.*', 'admin.models.*', 'admin.menus.*', 'admin.forms.*');
-    $showContentMore = $can('flags') || $can('recommends') || $can('models') || $can('menus') || $can('forms');
+    $contentMoreOpen = request()->routeIs('admin.flags.*', 'admin.friend-links.*', 'admin.recommends.*', 'admin.models.*', 'admin.menus.*', 'admin.forms.*');
+    $showContentMore = $can('flags') || $can('friend_links') || $can('recommends') || $can('models') || $can('menus') || $can('forms');
 @endphp
 <div class="shell">
     <div class="side-backdrop" id="sideBackdrop"></div>
@@ -39,7 +39,7 @@
                 @endif
             @endif
 
-            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('flags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments'))
+            @if($can('entries') || $can('recycle') || $can('categories') || $can('tags') || $can('flags') || $can('recommends') || $can('models') || $can('media') || $can('menus') || $can('forms') || $can('form_submissions') || $can('comments') || $can('friend_links'))
                 <div class="nav-header">{{ admin_t('nav.content') }}</div>
                 @if($can('entries'))
                     <x-side-link :href="route('admin.entries.index')" icon="file-alt" :label="admin_t('nav.entries')" :active="request()->routeIs('admin.entries.*')" :count="$headerInbox['entries'] ?? 0" />
@@ -68,6 +68,9 @@
                         <div class="side-sub">
                             @if($can('flags'))
                                 <x-side-link :href="route('admin.flags.index')" icon="flag" :label="admin_t('nav.flags')" :active="request()->routeIs('admin.flags.*')" />
+                            @endif
+                            @if($can('friend_links'))
+                                <x-side-link :href="route('admin.friend-links.index')" icon="link" :label="admin_t('nav.friend_links')" :active="request()->routeIs('admin.friend-links.*')" />
                             @endif
                             @if($can('recommends'))
                                 <x-side-link :href="route('admin.recommends.index')" icon="th-large" :label="admin_t('nav.recommends')" :active="request()->routeIs('admin.recommends.*')" />

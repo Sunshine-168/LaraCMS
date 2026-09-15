@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntryController;
 use App\Http\Controllers\Admin\FlagController;
+use App\Http\Controllers\Admin\FriendLinkController;
 use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\HelpController;
@@ -115,6 +116,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('comments/batch', [CommentController::class, 'batch'])->name('comments.batch');
             Route::post('comments/{comment}/moderate', [CommentController::class, 'moderate'])->name('comments.moderate');
             Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+        });
+        Route::middleware('admin.perm:friend_links')->group(function () {
+            Route::post('friend-links/{friend_link}/toggle', [FriendLinkController::class, 'toggle'])->name('friend-links.toggle');
+            Route::resource('friend-links', FriendLinkController::class)->except(['show'])->parameters(['friend-links' => 'friend_link']);
         });
         Route::middleware('admin.perm:redirects')->group(function () {
             Route::post('redirects/{redirect}/toggle', [RedirectController::class, 'toggle'])->name('redirects.toggle');

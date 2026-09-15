@@ -17,6 +17,7 @@ class ThemeUi
             'member' => ['label' => '会员', 'zh_cn' => '会员', 'en' => 'Member'],
             'logout' => ['label' => '退出', 'zh_cn' => '退出', 'en' => 'Log out'],
             'home' => ['label' => '首页', 'zh_cn' => '首页', 'en' => 'Home'],
+            'friend_links' => ['label' => '友链', 'zh_cn' => '友情链接', 'en' => 'Friend links'],
             'keywords' => ['label' => '关键词', 'zh_cn' => '关键词', 'en' => 'Keywords'],
             'all_models' => ['label' => '全部模型', 'zh_cn' => '全部模型', 'en' => 'All models'],
             'all_categories' => ['label' => '全部栏目', 'zh_cn' => '全部栏目', 'en' => 'All categories'],

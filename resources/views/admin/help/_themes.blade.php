@@ -55,7 +55,7 @@
         <tr><td>移动</td><td>手机皮肤</td><td>与企业类似，可作手机外观</td></tr>
     </tbody>
 </table>
-<p class="muted">点「用于本站」时按 <code>theme.json</code> 里的 <code>models</code> / <code>categories</code> 补缺。卡片上会列出这套声明的模型；「缺模型」表示本站还没有，应用或补上即可。</p>
+<p class="muted">点「用于本站」时按 <code>theme.json</code> 里的 <code>models</code> / <code>categories</code> 补缺。栏目标题可写成 <code>{"zh_cn":"新闻中心","en":"News"}</code>，点用时会按语言写入。卡片上「多语言」「自适应」表示这套带语言切换和手机宽度（也可在 json 里写 <code>"i18n": true</code>、<code>"responsive": true</code>）。</p>
 
 <h3>站名、Logo、手机外观</h3>
 <p class="muted">{!! $hl('settings', '设置') !!}里改网站名称。{!! $hl('settingsLook', '设置 → 外观') !!}可上传 Logo / Favicon、主色、页脚、ICP。留空则用主题自带配色。</p>

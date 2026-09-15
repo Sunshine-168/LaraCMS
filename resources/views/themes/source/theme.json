@@ -1,8 +1,10 @@
 {
     "name": "源码",
     "description": "源码展示",
+    "i18n": true,
+    "responsive": true,
     "models": ["source"],
     "categories": [
-        {"slug": "sources", "title": "源码市场", "model": "source", "type": "list", "menu": true}
+        {"slug": "sources", "title": {"zh_cn": "源码市场", "en": "Source"}, "model": "source", "type": "list", "menu": true}
     ]
 }

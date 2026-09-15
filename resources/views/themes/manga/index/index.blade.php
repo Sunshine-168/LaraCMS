@@ -25,4 +25,5 @@
         @endcmsContent
     </div>
     @cmsPaginate
+    @include('cms.partials.friend-links')
 @endsection

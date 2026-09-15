@@ -86,6 +86,32 @@ if (! function_exists('admin_t')) {
     }
 }
 
+if (! function_exists('admin_help_view')) {
+    function admin_help_view(string $topic): string
+    {
+        $zh = match ($topic) {
+            'use' => 'admin.help._use',
+            'admin' => 'admin.help._admin',
+            'themes' => 'admin.help._themes',
+            'theme' => 'admin.help._theme',
+            'tags' => 'admin.help._tags',
+            'schedule' => 'admin.help._schedule',
+            'env' => 'install._deploy',
+            'laravel' => 'install._laravel',
+            'docker' => 'install._docker',
+            default => 'admin.help._use',
+        };
+        if (\App\Support\AdminUi::current() === \App\Support\AdminUi::EN) {
+            $en = 'admin.help.en._'.$topic;
+            if (view()->exists($en)) {
+                return $en;
+            }
+        }
+
+        return $zh;
+    }
+}
+
 if (! function_exists('cms_media')) {
     function cms_media(?string $path): string
     {

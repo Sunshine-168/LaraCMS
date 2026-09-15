@@ -28,8 +28,9 @@
         <tr><td>{!! $hl('submissions', '留言') !!}</td><td>前台表单提交的收件箱。可已读、备注、邮件回复。</td></tr>
         <tr><td>{!! $hl('comments', '评论') !!}</td><td>默认待审核，通过后出现在文章下。开关和运营通知邮箱在{!! $hl('settings', '设置') !!}。</td></tr>
         <tr><td>{!! $hl('recycle', '回收站') !!}</td><td>删除的内容先在这里。可还原；彻底删除不能恢复。</td></tr>
+        <tr><td>{!! $hl('friendLinks', '友链') !!}</td><td>首页友情链接 / 合作伙伴。不是导航站的网址目录。数据写在推荐位 <code>partners</code>（没有则用 <code>friend_links</code>），主题用 <code>@@cmsAdv(['name' =&gt; 'partners'])</code> 输出。</td></tr>
         <tr><td>{!! $hl('flags', '推荐') !!}</td><td>写内容时勾的属性（如头条）。模板 <code>@@cmsContent(['flag' =&gt; '属性标识'])</code> 按它筛选。</td></tr>
-        <tr><td>{!! $hl('recommends', '推荐位') !!}</td><td>首页 Banner 这类区块。标识码要和模板 <code>@@cmsAdv(['name' =&gt; 'home_banner'])</code> 一致。可手填条目或按规则取文章。</td></tr>
+        <tr><td>{!! $hl('recommends', '推荐位') !!}</td><td>首页 Banner 这类区块。标识码要和模板 <code>@@cmsAdv(['name' =&gt; 'home_banner'])</code> 一致。可手填条目或按规则取文章。友链不必进这里改，用「更多 → 友链」。</td></tr>
         <tr><td>{!! $hl('models', '模型') !!}</td><td>一类内容的字段（价格、附件等）。可复制、导出/导入 JSON，不删已有文章。勾「允许会员投稿」后前台会员才能写这类稿。</td></tr>
         <tr><td>{!! $hl('menus', '导航') !!}</td><td>顶栏菜单。位置如 <code>header</code> 要和 <code>@@cmsMenu</code> 一致。没建菜单时会用勾了「菜单」的栏目凑。</td></tr>
         <tr><td>{!! $hl('forms', '表单') !!}</td><td>定义联系表单字段。标识码给 <code>@@cmsForm(['slug' =&gt; 'contact'])</code>。提交进留言。</td></tr>

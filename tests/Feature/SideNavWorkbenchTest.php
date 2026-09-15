@@ -33,6 +33,7 @@ class SideNavWorkbenchTest extends TestCase
             ->assertSee('>栏目</span>', false)
             ->assertSee('>留言</span>', false)
             ->assertSee('>更多</summary>', false)
+            ->assertSee('>友链</span>', false)
             ->assertSee('>推荐</span>', false)
             ->assertSee('>统计</span>', false)
             ->assertSee('side-foot-avatar', false)

@@ -1,8 +1,10 @@
 {
     "name": "体育",
     "description": "赛事资讯",
+    "i18n": true,
+    "responsive": true,
     "models": ["signal"],
     "categories": [
-        {"slug": "matches", "title": "赛事信号", "model": "signal", "type": "list", "menu": true}
+        {"slug": "matches", "title": {"zh_cn": "赛事信号", "en": "Matches"}, "model": "signal", "type": "list", "menu": true}
     ]
 }

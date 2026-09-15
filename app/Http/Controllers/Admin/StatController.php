@@ -189,7 +189,7 @@ class StatController extends Controller
     public function logs(Request $request): View
     {
         $filters = $this->logFilters($request);
-        $page = $this->stats->filteredLogs($filters)->paginate(40)->withQueryString();
+        $page = $this->stats->filteredLogs($filters)->paginate(20)->withQueryString();
         $titles = app(PageTitleResolver::class)->forPaths($page->getCollection()->pluck('path'));
         $rows = $page->getCollection()->map(
             fn (StatHit $hit) => $this->stats->presentLog($hit, $titles[$hit->path] ?? null)

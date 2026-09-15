@@ -164,7 +164,9 @@ class FrontGateAndThemeTest extends TestCase
 
         $this->get('/en/search')
             ->assertOk()
-            ->assertSee('Search', false);
+            ->assertSee('Search', false)
+            ->assertSee('width=device-width', false)
+            ->assertSee('max-width:768px', false);
     }
 
     public function test_admin_create_pages_do_not_compile_help_text_as_tags(): void

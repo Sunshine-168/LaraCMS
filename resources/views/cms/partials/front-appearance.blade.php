@@ -2,10 +2,22 @@
     <link rel="icon" href="{{ $site['favicon_url'] }}">
 @endif
 <style>
+    html{-webkit-text-size-adjust:100%}
+    img,video{max-width:100%;height:auto}
     .brand{display:inline-flex;align-items:center;gap:10px}
     .brand img{max-height:36px;width:auto;display:block}
     footer{margin-top:36px;padding:24px 0;font-size:13px}
     .lang a[aria-current="page"]{font-weight:700;text-decoration:none;pointer-events:none;opacity:.88}
+    @media (max-width:768px){
+        .wrap{padding-left:14px;padding-right:14px}
+        header nav{flex-wrap:wrap;gap:10px}
+        .lang{margin-left:0}
+        .hero{min-height:200px}
+        .hero h1{font-size:clamp(22px,6vw,32px)}
+        h1{font-size:clamp(22px,6vw,32px)}
+        .grid{grid-template-columns:1fr}
+        .banner-slide{min-height:180px}
+    }
 </style>
 @if(!empty($site['primary_color']))
     <style>

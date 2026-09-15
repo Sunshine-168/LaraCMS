@@ -38,9 +38,9 @@ class ThemePackInstaller
         $addedCats = [];
         foreach ($this->themes->packCategories($slug) as $spec) {
             $catSlug = (string) ($spec['slug'] ?? '');
-            $title = trim((string) ($spec['title'] ?? ''));
+            $titleBag = $this->localeTextBag($spec['title'] ?? '', $catSlug);
             $modelSlug = (string) ($spec['model'] ?? '');
-            if ($catSlug === '' || $title === '' || $modelSlug === '') {
+            if ($catSlug === '' || $titleBag === [] || $modelSlug === '') {
                 continue;
             }
             if ($this->categoryBySlug($catSlug)) {
@@ -54,10 +54,10 @@ class ThemePackInstaller
                 ? $spec['type']
                 : 'list';
             $max = (int) Category::query()->max('sort_order');
-            $locale = Locale::default();
+            $label = $titleBag[Locale::default()] ?? reset($titleBag);
             Category::query()->create([
-                'title' => [$locale => $title],
-                'slug' => [$locale => $catSlug],
+                'title' => $titleBag,
+                'slug' => $this->localeSlugBag($spec['slug'] ?? $catSlug, $catSlug),
                 'type' => $type,
                 'model_id' => $model->id,
                 'list_tpl' => $spec['list_tpl'] ?? null,
@@ -67,7 +67,7 @@ class ThemePackInstaller
                 'sort_order' => $max + 10,
                 'status' => 'published',
             ]);
-            $addedCats[] = $title;
+            $addedCats[] = $label;
         }
 
         $bits = [];
@@ -98,5 +98,63 @@ class ThemePackInstaller
         }
 
         return null;
+    }
+
+    /** @return array<string, string> */
+    protected function localeTextBag(mixed $value, string $fallback): array
+    {
+        $default = Locale::default();
+        $bag = [];
+        if (is_array($value)) {
+            foreach ($value as $code => $text) {
+                $text = trim((string) $text);
+                if ($text !== '') {
+                    $bag[(string) $code] = $text;
+                }
+            }
+        } else {
+            $text = trim((string) $value);
+            if ($text !== '') {
+                $bag[$default] = $text;
+            }
+        }
+        if ($bag === []) {
+            $bag[$default] = $fallback;
+        }
+        if (! isset($bag[$default])) {
+            $bag[$default] = (string) reset($bag);
+        }
+
+        return $bag;
+    }
+
+    /** @return array<string, string> */
+    protected function localeSlugBag(mixed $value, string $fallback): array
+    {
+        $codes = Locale::configuredCodes();
+        if ($codes === []) {
+            $codes = Locale::codes();
+        }
+        if ($codes === []) {
+            $codes = [Locale::default()];
+        }
+        $default = Locale::default();
+        $bag = [];
+        if (is_array($value)) {
+            foreach ($value as $code => $text) {
+                $slug = trim((string) $text);
+                if ($slug !== '') {
+                    $bag[(string) $code] = $slug;
+                }
+            }
+            $fill = $bag[$default] ?? ((string) reset($bag) ?: $fallback);
+        } else {
+            $fill = trim((string) $value) ?: $fallback;
+        }
+        foreach ($codes as $code) {
+            $bag[$code] = $bag[$code] ?? $fill;
+        }
+
+        return $bag;
     }
 }

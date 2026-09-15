@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', '说明')
+@section('title', admin_t('nav.help'))
 @section('icon', 'book')
 @php
     $topic = $topic ?? 'use';
@@ -11,24 +11,36 @@
         return $url ? '<a href="'.e($url).'">'.e($label).'</a>' : e($label);
     };
     $groups = [
-        '使用' => [
-            'use' => '怎么用',
-            'admin' => '后台',
-            'themes' => '主题',
-            'theme' => '模板',
-            'tags' => '标签',
+        admin_t('guide.group_use') => [
+            'use' => admin_t('guide.topic_use'),
+            'admin' => admin_t('guide.topic_admin'),
+            'themes' => admin_t('guide.topic_themes'),
+            'theme' => admin_t('guide.topic_theme'),
+            'tags' => admin_t('guide.topic_tags'),
         ],
-        '安装' => [
-            'env' => '环境',
-            'schedule' => '定时',
-            'laravel' => '命令行',
-            'docker' => 'Docker',
+        admin_t('guide.group_install') => [
+            'env' => admin_t('guide.topic_env'),
+            'schedule' => admin_t('guide.topic_schedule'),
+            'laravel' => admin_t('guide.topic_laravel'),
+            'docker' => admin_t('guide.topic_docker'),
         ],
     ];
+    $helpData = match ($topic) {
+        'env' => [
+            'siteId' => $siteId,
+            'compact' => false,
+            'scheduleUrl' => route('admin.help', ['topic' => 'schedule']),
+        ],
+        'laravel' => [
+            'deployUrl' => route('admin.help', ['topic' => 'env']),
+            'webInstallUrl' => url('/install?way=web'),
+        ],
+        default => [],
+    };
 @endphp
 @section('content')
-    <div class="help-page">
-        <p class="muted recycle-lead">怎么用、后台每一项、主题和模板标签。装系统、nginx 和定时任务在「安装」里。</p>
+    <div class="help-page" data-copy-label="{{ admin_t('guide.copy') }}" data-copied-label="{{ admin_t('guide.copied') }}">
+        <p class="muted recycle-lead">{{ admin_t('guide.lead') }}</p>
 
         <div class="help-nav">
             @foreach($groups as $group => $items)
@@ -43,62 +55,24 @@
             @endforeach
         </div>
 
-        @if($topic === 'use')
-            <div class="help-body">
-                @include('admin.help._use')
-            </div>
-        @elseif($topic === 'admin')
-            <div class="help-body">
-                @include('admin.help._admin')
-            </div>
-        @elseif($topic === 'themes')
-            <div class="help-body">
-                @include('admin.help._themes')
-            </div>
-        @elseif($topic === 'theme')
-            <div class="help-body">
-                @include('admin.help._theme')
-            </div>
-        @elseif($topic === 'tags')
-            <div class="help-body">
-                @include('admin.help._tags')
-            </div>
-        @elseif($topic === 'env')
-            <div class="help-body deploy-guide">
-                @include('install._deploy', [
-                    'siteId' => $siteId,
-                    'compact' => false,
-                    'scheduleUrl' => route('admin.help', ['topic' => 'schedule']),
-                ])
-            </div>
-        @elseif($topic === 'schedule')
-            <div class="help-body">
-                @include('admin.help._schedule')
-            </div>
-        @elseif($topic === 'laravel')
-            <div class="help-body">
-                @include('install._laravel', [
-                    'deployUrl' => route('admin.help', ['topic' => 'env']),
-                    'webInstallUrl' => url('/install?way=web'),
-                ])
-            </div>
-        @else
-            <div class="help-body">
-                @include('install._docker')
-            </div>
-        @endif
+        <div class="help-body{{ in_array($topic, ['env', 'schedule'], true) ? ' deploy-guide' : '' }}">
+            @include(admin_help_view($topic), $helpData)
+        </div>
     </div>
 @endsection
 @push('scripts')
 <script>
 document.querySelectorAll('[data-copy]').forEach(function (btn) {
     btn.addEventListener('click', function () {
+        var page = btn.closest('.help-page');
+        var copyLabel = (page && page.getAttribute('data-copy-label')) || '复制';
+        var copiedLabel = (page && page.getAttribute('data-copied-label')) || '已复制';
         var code = btn.parentElement && btn.parentElement.querySelector('code');
         if (!code) return;
         var text = code.innerText;
         function done() {
-            btn.textContent = '已复制';
-            setTimeout(function () { btn.textContent = '复制'; }, 1500);
+            btn.textContent = copiedLabel;
+            setTimeout(function () { btn.textContent = copyLabel; }, 1500);
         }
         function fallback() {
             var ta = document.createElement('textarea');

@@ -11,4 +11,5 @@
         </article>
     @endcmsContent
     <div style="margin:24px 0">@cmsPaginate</div>
+    @include('cms.partials.friend-links')
 @endsection

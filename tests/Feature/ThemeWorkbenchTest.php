@@ -51,6 +51,8 @@ class ThemeWorkbenchTest extends TestCase
             ->assertSee('用于本站')
             ->assertSee('当前使用')
             ->assertSee('体育信号')
+            ->assertSee('多语言')
+            ->assertSee('自适应')
             ->assertSee(route('admin.themes.preview', 'enterprise'), false)
             ->assertSee(route('admin.themes.preview', 'sports'), false)
             ->assertDontSee('缺模型')
@@ -249,6 +251,8 @@ BLADE
         $meta = json_decode((string) File::get(resource_path('views/themes/tpack/theme.json')), true);
         $this->assertContains('signal', $meta['models'] ?? []);
         $this->assertNotEmpty($meta['categories'] ?? []);
+        $this->assertTrue($meta['i18n'] ?? false);
+        $this->assertTrue($meta['responsive'] ?? false);
     }
 
     public function test_apply_installs_pack_models_once(): void
@@ -279,6 +283,21 @@ BLADE
             ->assertSessionHas('status');
         $this->assertSame(1, ContentModel::query()->where('slug', 'tpackitem')->count());
         $this->assertSame(1, Category::query()->get()->filter(fn ($c) => ($c->slug['zh_cn'] ?? '') === 'tpack-cat')->count());
+    }
+
+    public function test_apply_writes_category_locale_titles(): void
+    {
+        $this->writePackTheme();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.themes.apply', 'tpack'))
+            ->assertRedirect(route('admin.themes.index'));
+
+        $cat = Category::query()->get()->first(fn ($c) => ($c->slug['zh_cn'] ?? '') === 'tpack-cat');
+        $this->assertNotNull($cat);
+        $this->assertSame('模型栏目', $cat->translation('title', 'zh_cn'));
+        $this->assertSame('Pack channel', $cat->translation('title', 'en'));
+        $this->assertSame('tpack-cat', $cat->translation('slug', 'en'));
     }
 
     public function test_apply_does_not_overwrite_existing_model(): void
@@ -355,7 +374,7 @@ BLADE
             'description' => '自带模型包',
             'models' => ['tpackitem'],
             'categories' => [
-                ['slug' => 'tpack-cat', 'title' => '模型栏目', 'model' => 'tpackitem', 'type' => 'list', 'menu' => true],
+                ['slug' => 'tpack-cat', 'title' => ['zh_cn' => '模型栏目', 'en' => 'Pack channel'], 'model' => 'tpackitem', 'type' => 'list', 'menu' => true],
             ],
         ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)."\n");
         File::put($dir.DIRECTORY_SEPARATOR.'models'.DIRECTORY_SEPARATOR.'tpackitem.json', json_encode([

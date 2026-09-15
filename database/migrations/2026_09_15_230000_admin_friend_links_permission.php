@@ -1,0 +1,55 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable('admin_permissions')) {
+            return;
+        }
+
+        $now = now();
+        $exists = DB::table('admin_permissions')->where('key', 'friend_links')->exists();
+        if (! $exists) {
+            DB::table('admin_permissions')->insert([
+                'key' => 'friend_links',
+                'name' => '友链',
+                'group' => '内容',
+                'sort' => 126,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $permId = DB::table('admin_permissions')->where('key', 'friend_links')->value('id');
+        $editorId = DB::table('admin_roles')->where('slug', 'editor')->value('id');
+        if ($permId && $editorId && Schema::hasTable('admin_role_permission')) {
+            $linked = DB::table('admin_role_permission')
+                ->where('role_id', $editorId)
+                ->where('permission_id', $permId)
+                ->exists();
+            if (! $linked) {
+                DB::table('admin_role_permission')->insert([
+                    'role_id' => $editorId,
+                    'permission_id' => $permId,
+                ]);
+            }
+        }
+    }
+
+    public function down(): void
+    {
+        if (! Schema::hasTable('admin_permissions')) {
+            return;
+        }
+        $permId = DB::table('admin_permissions')->where('key', 'friend_links')->value('id');
+        if ($permId && Schema::hasTable('admin_role_permission')) {
+            DB::table('admin_role_permission')->where('permission_id', $permId)->delete();
+        }
+        DB::table('admin_permissions')->where('key', 'friend_links')->delete();
+    }
+};

@@ -46,6 +46,7 @@ class HelpController extends Controller
             'submissions' => $to('form_submissions', 'admin.form-submissions.index'),
             'comments' => $to('comments', 'admin.comments.index'),
             'recycle' => $to('recycle', 'admin.recycle.index'),
+            'friendLinks' => $to('friend_links', 'admin.friend-links.index'),
             'flags' => $to('flags', 'admin.flags.index'),
             'models' => $to('models', 'admin.models.index'),
             'menus' => $to('menus', 'admin.menus.index'),

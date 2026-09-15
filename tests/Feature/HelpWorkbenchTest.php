@@ -90,7 +90,9 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('发布内容')
             ->assertSee(route('admin.collectors.index'), false)
             ->assertSee(route('admin.stats.index'), false)
-            ->assertSee(route('admin.locales.index'), false);
+            ->assertSee(route('admin.locales.index'), false)
+            ->assertSee(route('admin.friend-links.index'), false)
+            ->assertSee('友链');
     }
 
     public function test_env_laravel_and_docker_topics(): void
@@ -134,5 +136,33 @@ class HelpWorkbenchTest extends TestCase
             ->assertSee('第一次建议按这个顺序')
             ->assertSee('建栏目')
             ->assertDontSee('改站名');
+    }
+
+    public function test_help_follows_admin_ui_locale(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.ui-locale'), ['ui_locale' => 'en'])
+            ->assertRedirect();
+
+        $this->get(route('admin.help'))
+            ->assertOk()
+            ->assertSee('Help')
+            ->assertSee('Getting started')
+            ->assertSee('Suggested first steps')
+            ->assertSee('What the sidebar is for')
+            ->assertDontSee('第一次建议按这个顺序')
+            ->assertDontSee('侧栏对应什么');
+
+        $this->get(route('admin.help', ['topic' => 'admin']))
+            ->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('Languages')
+            ->assertDontSee('按侧栏把后台每一项说一遍');
+
+        $this->get(route('admin.help', ['topic' => 'env']))
+            ->assertOk()
+            ->assertSee('What you need to go live')
+            ->assertDontSee('上线要准备什么');
     }
 }

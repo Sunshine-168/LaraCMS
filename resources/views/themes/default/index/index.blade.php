@@ -11,4 +11,5 @@
             <p class="muted">@cmsSubstr(['name' => $item->t('excerpt') ?: $item->t('content'), 'len' => 140])</p>
         </article>
     @endcmsContent
+    @include('cms.partials.friend-links')
 @endsection

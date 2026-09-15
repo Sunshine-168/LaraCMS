@@ -75,10 +75,12 @@
 <pre><code>{
   "name": "品牌站",
   "description": "公司官网",
+  "i18n": true,
+  "responsive": true,
   "models": ["article", "page", "product"],
   "categories": [
-    {"slug": "news", "title": "新闻中心", "model": "article", "type": "list", "menu": true}
+    {"slug": "news", "title": {"zh_cn": "新闻中心", "en": "News"}, "model": "article", "type": "list", "menu": true}
   ]
 }</code></pre>
 </div>
-<p class="hint">zip 里不要带可执行 PHP。自己主题的模型 JSON 也可放在 <code>models/标识.json</code>，格式和后台「导出模型」一样。</p>
+<p class="hint">zip 里不要带可执行 PHP。自己主题的模型 JSON 也可放在 <code>models/标识.json</code>，格式和后台「导出模型」一样。栏目标题写成对象后，「用于本站」会按语言写入；公共头请留 <code>viewport</code>、语言切换和 <code>cms_ui()</code>。</p>
