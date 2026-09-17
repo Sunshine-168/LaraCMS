@@ -3,7 +3,7 @@
     $hl = $hl ?? fn (string $key, string $label) => e($label);
     $copy = admin_t('guide.copy');
 @endphp
-<p class="muted">How to write Blade inside a theme. Switching, copying, and uploading skins is under <a href="{{ $urls['helpThemes'] ?? '#' }}">Themes</a>. Pull entries with <code>@@cms*</code> — see <a href="{{ $urls['tags'] ?? '#' }}">Tags</a>. Do not query the database from a theme.</p>
+<p class="muted">How to write Blade inside a theme. Switching, copying, and uploading skins is under <a href="{{ $urls['helpThemes'] ?? '#' }}">Themes</a>. You can also open <strong>Edit templates</strong> on a copied theme. Pull entries with <code>@@cms*</code> — see <a href="{{ $urls['tags'] ?? '#' }}">Tags</a>. Do not query the database from a theme.</p>
 
 <h3>Folder layout</h3>
 <div class="code">

@@ -41,6 +41,9 @@ class LogWorkbenchTest extends TestCase
         $this->assertSame('保存了磁盘静态页设置', AdminLogAction::label('PUT', '/admin/html-cache/disk'));
         $this->assertSame('把主题用于本站', AdminLogAction::label('POST', '/admin/themes/blog/use'));
         $this->assertSame('保存了主题配置', AdminLogAction::label('PUT', '/admin/themes/enterprise'));
+        $this->assertSame('保存了主题模板', AdminLogAction::label('POST', '/admin/themes/tcopy/templates/save'));
+        $this->assertSame('备份了主题模板', AdminLogAction::label('POST', '/admin/themes/tcopy/templates/backup'));
+        $this->assertSame('回滚了主题模板', AdminLogAction::label('POST', '/admin/themes/tcopy/templates/rollback'));
         $this->assertSame('从回收站恢复了内容', AdminLogAction::label('POST', '/admin/recycle/1/restore'));
         $this->assertSame('提交了操作', AdminLogAction::label('POST', '/admin/foo-bar'));
         $this->assertSame('关于我们 · 已发布', AdminLogAction::summarize([

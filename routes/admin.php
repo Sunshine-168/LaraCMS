@@ -134,7 +134,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('menus/{menu}/toggle', [MenuController::class, 'toggle'])->name('menus.toggle');
             Route::resource('menus', MenuController::class)->except(['show']);
         });
-        Route::middleware('admin.perm:media,entries')->group(function () {
+        Route::middleware('admin.perm:media,entries,settings')->group(function () {
             Route::get('media/json', [MediaController::class, 'json'])->name('media.json');
             Route::post('media/upload', [MediaController::class, 'upload'])->name('media.upload');
         });
@@ -200,6 +200,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('themes', [ThemeController::class, 'store'])->name('themes.store');
             Route::post('themes/upload', [ThemeController::class, 'upload'])->name('themes.upload');
             Route::get('themes/{theme}/preview', [ThemeController::class, 'preview'])->name('themes.preview')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::get('themes/{theme}/templates', [ThemeController::class, 'templates'])->name('themes.templates')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::get('themes/{theme}/templates/read', [ThemeController::class, 'templateRead'])->name('themes.templates.read')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::post('themes/{theme}/templates/save', [ThemeController::class, 'templateSave'])->name('themes.templates.save')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::post('themes/{theme}/templates/backup', [ThemeController::class, 'templateBackup'])->name('themes.templates.backup')->where('theme', '[a-z][a-z0-9_-]*');
+            Route::post('themes/{theme}/templates/rollback', [ThemeController::class, 'templateRollback'])->name('themes.templates.rollback')->where('theme', '[a-z][a-z0-9_-]*');
             Route::get('themes/{theme}', [ThemeController::class, 'show'])->name('themes.show')->where('theme', '[a-z][a-z0-9_-]*');
             Route::put('themes/{theme}', [ThemeController::class, 'update'])->name('themes.update')->where('theme', '[a-z][a-z0-9_-]*');
             Route::post('themes/{theme}/use', [ThemeController::class, 'apply'])->name('themes.apply')->where('theme', '[a-z][a-z0-9_-]*');

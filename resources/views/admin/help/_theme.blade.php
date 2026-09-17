@@ -2,7 +2,7 @@
     $urls = $urls ?? [];
     $hl = $hl ?? fn (string $key, string $label) => e($label);
 @endphp
-<p class="muted">这里是主题里的 Blade 怎么写。在后台换哪一套、复制、上传，见「<a href="{{ $urls['helpThemes'] ?? '#' }}">主题</a>」。取文章和栏目用 <code>@@cms*</code>，见「<a href="{{ $urls['tags'] ?? '#' }}">标签</a>」。不要在主题里写数据库查询。</p>
+<p class="muted">这里是主题里的 Blade 怎么写。在后台换哪一套、复制、上传，见「<a href="{{ $urls['helpThemes'] ?? '#' }}">主题</a>」。也可以在主题页点「编辑模板」直接改（自带主题请先复制一套）。取文章和栏目用 <code>@@cms*</code>，见「<a href="{{ $urls['tags'] ?? '#' }}">标签</a>」。不要在主题里写数据库查询。</p>
 
 <h3>目录长什么样</h3>
 <div class="code">

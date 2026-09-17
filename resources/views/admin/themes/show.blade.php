@@ -14,11 +14,12 @@
     $group = null;
 @endphp
 @section('header_actions')
+    <a class="btn btn-muted btn-sm" href="{{ route('admin.themes.templates', $theme['slug']) }}">编辑模板</a>
     <a class="btn btn-muted btn-sm" href="{{ route('admin.themes.index') }}">{{ admin_back('themes') }}</a>
 @endsection
 @section('content')
     <div class="theme-setup">
-        <p class="muted recycle-lead">这一页只改「{{ $theme['name'] }}」这一套。多语言开关和模板短句、要补的模型、自定义参数都在这里。全站共用的搜索/登录文案在「<a href="{{ route('admin.locales.index', ['tab' => 'theme']) }}">语言 → 主题文案</a>」，Logo 和主色在「<a href="{{ route('admin.settings.edit', ['tab' => 'look']) }}">设置 → 外观</a>」。</p>
+        <p class="muted recycle-lead">这一页只改「{{ $theme['name'] }}」这一套。多语言开关和模板短句、要补的模型、自定义参数都在这里。要改 Blade 点「编辑模板」。全站共用的搜索/登录文案在「<a href="{{ route('admin.locales.index', ['tab' => 'theme']) }}">语言 → 主题文案</a>」，Logo 和主色在「<a href="{{ route('admin.settings.edit', ['tab' => 'look']) }}">设置 → 外观</a>」。</p>
 
         <div class="theme-setup-hero html-cache-card">
             <a class="theme-setup-shot" href="{{ $theme['preview_url'] }}" target="_blank" rel="noopener">

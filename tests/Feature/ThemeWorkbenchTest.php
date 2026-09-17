@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Admin\AdminUser;
+use App\Models\Cms\AdminLog;
 use App\Models\Cms\Category;
 use App\Models\Cms\ContentModel;
 use App\Models\Cms\Setting;
@@ -20,7 +21,7 @@ class ThemeWorkbenchTest extends TestCase
     use RefreshDatabase;
 
     /** @var list<string> */
-    protected array $scratch = ['tdrop', 'tcopy', 'tcli', 'tzip', 'tpack'];
+    protected array $scratch = ['tdrop', 'tcopy', 'tcli', 'tzip', 'tpack', 'troot', 'tasset', 'tdup', 'tform', 'tmiss', 'tapply'];
 
     protected function setUp(): void
     {
@@ -50,6 +51,7 @@ class ThemeWorkbenchTest extends TestCase
             ->assertSee('默认')
             ->assertSee('用于本站')
             ->assertSee('配置')
+            ->assertSee('编辑模板')
             ->assertSee('当前使用')
             ->assertSee('体育信号')
             ->assertSee('多语言')
@@ -236,6 +238,258 @@ BLADE
         $this->assertStringNotContainsString('压缩主题首页标记', File::get(resource_path('views/themes/enterprise/index/index.blade.php')));
     }
 
+    public function test_upload_zip_rejects_missing_home_template(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $pack = $this->makeThemeZip('tmiss-home.zip', [
+            'tmiss/theme.json' => json_encode(['name' => '缺首页'], JSON_UNESCAPED_UNICODE),
+            'tmiss/list/list.blade.php' => '<p>list</p>',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $pack, 'slug' => 'tmiss'])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', 'zip 里要有 index/index.blade.php，可以放在根目录或一层文件夹里');
+        $this->assertDirectoryDoesNotExist(resource_path('views/themes/tmiss'));
+    }
+
+    public function test_upload_zip_rejects_empty_or_junk_only(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+
+        $emptyPath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'tzip-empty.zip';
+        file_put_contents($emptyPath, "PK\x05\x06".str_repeat("\x00", 18));
+        $empty = new UploadedFile($emptyPath, 'tzip-empty.zip', 'application/zip', null, true);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $empty])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', 'zip 是空的');
+
+        $junk = $this->makeThemeZip('tzip-junk.zip', [
+            '__MACOSX/._theme.json' => 'junk',
+            '.DS_Store' => 'junk',
+            'folder/.DS_Store' => 'junk',
+        ]);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $junk])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', 'zip 里没有可用的主题文件');
+        $this->assertDirectoryDoesNotExist(resource_path('views/themes/macosx'));
+    }
+
+    public function test_upload_zip_rejects_invalid_or_taken_slug(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+
+        $pack = $this->makeThemeZip('tdup-pack.zip', [
+            'tdup/index/index.blade.php' => $this->themeHomeBlade('重复标识首页'),
+        ]);
+
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $pack, 'slug' => '1bad'])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', '标识用小写英文开头，可含数字和短横线，如 brand');
+        $this->assertDirectoryDoesNotExist(resource_path('views/themes/1bad'));
+
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $pack, 'name' => '第一套'])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+        $home = resource_path('views/themes/tdup/index/index.blade.php');
+        $this->assertFileExists($home);
+        $original = File::get($home);
+
+        $again = $this->makeThemeZip('tdup-again.zip', [
+            'tdup/index/index.blade.php' => $this->themeHomeBlade('不该覆盖'),
+        ]);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $again, 'slug' => 'tdup'])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', '这个标识已经有主题了，换一个');
+        $this->assertSame($original, File::get($home));
+        $this->assertStringNotContainsString('不该覆盖', File::get($home));
+    }
+
+    public function test_upload_rejects_missing_or_non_zip_file(): void
+    {
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), [])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', '请选择 zip 文件');
+
+        $path = sys_get_temp_dir().DIRECTORY_SEPARATOR.'theme-not-zip.txt';
+        file_put_contents($path, 'not a zip');
+        $txt = new UploadedFile($path, 'theme.txt', 'text/plain', null, true);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $txt])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', '请上传 zip');
+    }
+
+    public function test_upload_zip_root_layout_uses_filename_or_form_slug(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+
+        $root = $this->makeThemeZip('troot.zip', [
+            'theme.json' => json_encode(['name' => '根目录主题'], JSON_UNESCAPED_UNICODE),
+            'index/index.blade.php' => $this->themeHomeBlade('根目录主题首页'),
+        ]);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $root])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+        $this->assertFileExists(resource_path('views/themes/troot/index/index.blade.php'));
+        $this->get(route('admin.themes.index'))
+            ->assertOk()
+            ->assertSee('根目录主题')
+            ->assertSee('troot');
+
+        $named = $this->makeThemeZip('whatever.zip', [
+            'index/index.blade.php' => $this->themeHomeBlade('表单标识首页'),
+        ]);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), [
+                'pack' => $named,
+                'slug' => 'tform',
+                'name' => '表单标识',
+            ])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+        $this->assertFileExists(resource_path('views/themes/tform/index/index.blade.php'));
+        $this->assertDirectoryDoesNotExist(resource_path('views/themes/whatever'));
+    }
+
+    public function test_upload_zip_keeps_assets_and_strips_php(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+        $pack = $this->makeThemeZip('tasset-pack.zip', [
+            'tasset/theme.json' => json_encode(['name' => '资源主题'], JSON_UNESCAPED_UNICODE),
+            'tasset/index/index.blade.php' => $this->themeHomeBlade('资源主题首页'),
+            'tasset/css/app.css' => 'body{color:#111}',
+            'tasset/js/app.js' => 'window.tasset=1;',
+            'tasset/preview.png' => $png,
+            'tasset/shell.php' => '<?php echo 1;',
+            'tasset/bin/hack.exe' => 'MZ',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $pack])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+
+        $dir = resource_path('views/themes/tasset');
+        $this->assertFileExists($dir.DIRECTORY_SEPARATOR.'index'.DIRECTORY_SEPARATOR.'index.blade.php');
+        $this->assertFileExists($dir.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'app.css');
+        $this->assertFileExists($dir.DIRECTORY_SEPARATOR.'js'.DIRECTORY_SEPARATOR.'app.js');
+        $this->assertFileExists($dir.DIRECTORY_SEPARATOR.'preview.png');
+        $this->assertFileDoesNotExist($dir.DIRECTORY_SEPARATOR.'shell.php');
+        $this->assertFileDoesNotExist($dir.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.'hack.exe');
+        $this->assertSame('body{color:#111}', File::get($dir.DIRECTORY_SEPARATOR.'css'.DIRECTORY_SEPARATOR.'app.css'));
+    }
+
+    public function test_upload_zip_rejects_oversize_and_too_many_files(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $this->actingAs($admin, 'admin');
+
+        $tooBig = sys_get_temp_dir().DIRECTORY_SEPARATOR.'tzip-oversize.zip';
+        file_put_contents($tooBig, str_repeat('a', 8 * 1024 * 1024 + 1));
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), [
+                'pack' => new UploadedFile($tooBig, 'tzip-oversize.zip', 'application/zip', null, true),
+            ])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', 'zip 不要超过 8MB');
+
+        $heavy = $this->makeThemeZip('tzip-heavy.zip', [
+            'index/index.blade.php' => $this->themeHomeBlade('太大'),
+            'pad.txt' => str_repeat('x', 20 * 1024 * 1024 + 1),
+        ]);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $heavy])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', '解压后太大');
+
+        $many = [];
+        for ($i = 0; $i < 401; $i++) {
+            $many['n'.$i.'.txt'] = 'x';
+        }
+        $packed = $this->makeThemeZip('tzip-many.zip', $many);
+        $this->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $packed])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('error', 'zip 里文件太多');
+    }
+
+    public function test_upload_zip_keeps_manifest_then_apply(): void
+    {
+        $this->requireZip();
+        $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
+        $pack = $this->makeThemeZip('tapply-pack.zip', [
+            'tapply/theme.json' => json_encode([
+                'name' => '上传即用',
+                'description' => '带模型',
+                'models' => ['tapplyitem'],
+                'categories' => [
+                    ['slug' => 'tapply-cat', 'title' => ['zh_cn' => '上传栏目'], 'model' => 'tapplyitem', 'type' => 'list', 'menu' => true],
+                ],
+            ], JSON_UNESCAPED_UNICODE),
+            'tapply/models/tapplyitem.json' => json_encode([
+                'version' => 1,
+                'model' => [
+                    'slug' => 'tapplyitem',
+                    'name' => '上传条目',
+                    'kind' => 'list',
+                    'list_tpl' => 'list.list',
+                    'show_tpl' => 'show.show',
+                    'sort_order' => 0,
+                    'is_active' => true,
+                    'is_searchable' => true,
+                    'allow_contribute' => false,
+                ],
+                'fields' => [],
+            ], JSON_UNESCAPED_UNICODE),
+            'tapply/index/index.blade.php' => $this->themeHomeBlade('上传即用首页标记'),
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('admin.themes.index'))
+            ->post(route('admin.themes.upload'), ['pack' => $pack])
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+
+        $meta = json_decode((string) File::get(resource_path('views/themes/tapply/theme.json')), true);
+        $this->assertSame('上传即用', $meta['name'] ?? null);
+        $this->assertContains('tapplyitem', $meta['models'] ?? []);
+        $this->assertNotEmpty($meta['categories'] ?? []);
+
+        $this->assertTrue(AdminLog::query()->where('path', 'like', '%/admin/themes/upload')->exists());
+
+        $this->post(route('admin.themes.apply', 'tapply'))
+            ->assertRedirect(route('admin.themes.index'))
+            ->assertSessionHas('status');
+        $this->assertSame('tapply', Setting::getValue('theme'));
+        $this->assertNotNull(ContentModel::query()->where('slug', 'tapplyitem')->first());
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('上传即用首页标记');
+    }
+
     public function test_copy_keeps_declared_models(): void
     {
         $admin = AdminUser::query()->where('email', 'admin@example.com')->first();
@@ -334,6 +588,8 @@ BLADE
             ->assertForbidden();
         $this->get(route('admin.themes.show', 'enterprise'))
             ->assertForbidden();
+        $this->get(route('admin.themes.templates', 'enterprise'))
+            ->assertForbidden();
     }
 
     public function test_missing_preview_file_falls_back_to_svg(): void
@@ -379,6 +635,23 @@ BLADE
             ->assertOk()
             ->assertSee('主题公告标记')
             ->assertSee('搜本套');
+    }
+
+    protected function requireZip(): void
+    {
+        if (! class_exists(ZipArchive::class)) {
+            $this->markTestSkipped('ZipArchive 不可用');
+        }
+    }
+
+    protected function themeHomeBlade(string $mark): string
+    {
+        return <<<BLADE
+@extends('themes.enterprise.partials.layout')
+@section('content')
+<p>{$mark}</p>
+@endsection
+BLADE;
     }
 
     protected function writeDropIn(): void
@@ -465,15 +738,22 @@ BLADE
             if (is_dir($dir)) {
                 File::deleteDirectory($dir);
             }
+            $bak = storage_path('app/theme-backups'.DIRECTORY_SEPARATOR.$slug);
+            if (is_dir($bak)) {
+                File::deleteDirectory($bak);
+            }
         }
-        $model = ContentModel::query()->where('slug', 'tpackitem')->first();
-        if ($model) {
-            Category::query()->where('model_id', $model->id)->delete();
-            $model->fields()->delete();
-            $model->delete();
+        foreach (['tpackitem', 'tapplyitem'] as $modelSlug) {
+            $model = ContentModel::query()->where('slug', $modelSlug)->first();
+            if ($model) {
+                Category::query()->where('model_id', $model->id)->delete();
+                $model->fields()->delete();
+                $model->delete();
+            }
         }
         foreach (Category::query()->get() as $cat) {
-            if (in_array('tpack-cat', (array) $cat->slug, true)) {
+            $slugs = (array) $cat->slug;
+            if (in_array('tpack-cat', $slugs, true) || in_array('tapply-cat', $slugs, true)) {
                 $cat->delete();
             }
         }

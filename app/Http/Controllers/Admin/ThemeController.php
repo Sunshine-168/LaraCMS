@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\Cms\HtmlCacheService;
 use App\Services\Cms\ThemeCatalog;
 use App\Services\Cms\ThemePackInstaller;
+use App\Services\Cms\ThemeTemplateService;
 use App\Support\Locale;
 use App\Support\ThemeUi;
 use App\Support\ThemeVars;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +21,7 @@ class ThemeController extends Controller
         private readonly ThemeCatalog $themes,
         private readonly HtmlCacheService $htmlCache,
         private readonly ThemePackInstaller $packs,
+        private readonly ThemeTemplateService $templates,
     ) {}
 
     public function index(Request $request): View
@@ -163,6 +166,60 @@ class ThemeController extends Controller
             'Content-Type' => 'image/svg+xml; charset=utf-8',
             'Cache-Control' => 'private, max-age=3600',
         ]);
+    }
+
+    public function templates(string $theme): View
+    {
+        $item = $this->themes->get($theme);
+        if (! $item) {
+            abort(404);
+        }
+
+        return view('admin.themes.templates', [
+            'theme' => $item,
+            'groups' => $this->templates->groups($theme),
+            'writable' => $this->templates->writable($theme),
+        ]);
+    }
+
+    public function templateRead(Request $request, string $theme): JsonResponse
+    {
+        if (! $this->themes->get($theme)) {
+            abort(404);
+        }
+
+        return response()->json($this->templates->read($theme, (string) $request->input('path', '')));
+    }
+
+    public function templateSave(Request $request, string $theme): JsonResponse
+    {
+        if (! $this->themes->get($theme)) {
+            abort(404);
+        }
+
+        return response()->json($this->templates->save(
+            $theme,
+            (string) $request->input('path', ''),
+            (string) $request->input('content', ''),
+        ));
+    }
+
+    public function templateBackup(Request $request, string $theme): JsonResponse
+    {
+        if (! $this->themes->get($theme)) {
+            abort(404);
+        }
+
+        return response()->json($this->templates->backup($theme, (string) $request->input('path', '')));
+    }
+
+    public function templateRollback(Request $request, string $theme): JsonResponse
+    {
+        if (! $this->themes->get($theme)) {
+            abort(404);
+        }
+
+        return response()->json($this->templates->rollback($theme, (string) $request->input('path', '')));
     }
 
     public function apply(string $theme): RedirectResponse

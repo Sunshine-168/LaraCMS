@@ -66,7 +66,7 @@ class AdminLogAction
     public static function pathSubject(string $path): ?string
     {
         $joined = implode('/', self::segments($path));
-        if (preg_match('#^themes/(?!upload$)([^/]+)(?:/use)?$#', $joined, $m)) {
+        if (preg_match('#^themes/(?!upload$)([^/]+)(?:/use|/templates(?:/.*)?)?$#', $joined, $m)) {
             return $m[1];
         }
 
@@ -131,6 +131,9 @@ class AdminLogAction
             (bool) preg_match('#^collectors/\d+/run$#', $joined) => '运行了采集',
             (bool) preg_match('#^models/\d+/copy$#', $joined) => '复制了内容模型',
             (bool) preg_match('#^themes/[^/]+/use$#', $joined) => '把主题用于本站',
+            (bool) preg_match('#^themes/[^/]+/templates/save$#', $joined) => '保存了主题模板',
+            (bool) preg_match('#^themes/[^/]+/templates/backup$#', $joined) => '备份了主题模板',
+            (bool) preg_match('#^themes/[^/]+/templates/rollback$#', $joined) => '回滚了主题模板',
             $method === 'PUT' && (bool) preg_match('#^themes/[^/]+$#', $joined) => '保存了主题配置',
             $method === 'DELETE' && (bool) preg_match('#^themes/[^/]+$#', $joined) => '删除了主题',
             default => null,
