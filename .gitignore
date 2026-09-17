@@ -24,6 +24,8 @@
 /storage/pail
 /storage/framework/sessions/*
 !/storage/framework/sessions/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
 /vendor
 _ide_helper.php
 Homestead.json
