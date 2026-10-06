@@ -22,7 +22,7 @@ post_max_size = 32M
 max_execution_time = 60
 date.timezone = Asia/Shanghai</code></pre>
     </div>
-    <p class="hint">改完后重启 php-fpm 或网站服务。目录 <code>storage</code> 和 <code>bootstrap/cache</code> 必须可写，并执行过 <code>php artisan storage:link</code>。</p>
+    <p class="hint">改完后重启 php-fpm 或网站服务。目录 <code>storage</code> 和 <code>bootstrap/cache</code> 必须可写。宝塔若禁用了 <code>exec</code> / <code>symlink</code>，不必再跑 <code>php artisan storage:link</code>，上传文件由站点自己从 <code>/storage</code> 读出。要做成真正软链（图片不走 PHP），在宝塔终端执行 <code>ln -s 站点目录/storage/app/public 站点目录/public/storage</code>。</p>
 
     <h3>MySQL</h3>
     <p class="muted">正式站点建议 MySQL 5.7 / 8.0 或 MariaDB 10.3+，字符集用 <code>utf8mb4</code>。先建空库，再把账号写进 <code>.env</code>。</p>
@@ -86,7 +86,7 @@ Disallow: /drafts</code></pre>
     <p class="hint">不要写 HTML 标签。大约最多 40 行、每行 200 字。改完打开前台 <code>/robots.txt</code> 核对。这和页面里的 <code>&lt;meta name="robots"&gt;</code> 不是一回事。收录范围装好后在后台「运营 → 更多 → 地图」（站点地图）。</p>
 
     <h3>图片放到对象存储</h3>
-    <p class="muted">默认传到本机 <code>storage/app/public</code>，前台用 <code>php artisan storage:link</code>。只换访问域名时，在{!! $hl('settingsMore', '设置 → 更多') !!}填「图片走这个域名」，不必改盘。</p>
+    <p class="muted">默认传到本机 <code>storage/app/public</code>。有软链时 nginx 直接吐文件；没有软链时走站点 <code>/storage</code> 路由，不依赖宝塔放开 <code>exec</code>。只换访问域名时，在{!! $hl('settingsMore', '设置 → 更多') !!}填「图片走这个域名」，不必改盘。</p>
     <p class="muted">要用阿里云 OSS / 腾讯云 COS / AWS S3 存文件：先 <code>composer require league/flysystem-aws-s3-v3</code>，再在 <code>.env</code> 写：</p>
     <div class="code">
         <button type="button" class="copy" data-copy>复制</button>

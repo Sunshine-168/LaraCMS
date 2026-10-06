@@ -183,7 +183,7 @@ class InstallService
 
     public function finish(bool $demo): void
     {
-        Artisan::call('storage:link', ['--force' => true]);
+        $this->ensurePublicStorageLink();
         if (! $demo) {
             $theme = (string) (Setting::getValue('theme', 'enterprise') ?: 'enterprise');
             app(ThemePackInstaller::class)->ensure($theme);
@@ -192,6 +192,61 @@ class InstallService
             $this->lockPath(),
             'installed_at='.now()->toDateTimeString()."\nseed_demo=".($demo ? '1' : '0')."\n"
         );
+    }
+
+    /** 宝塔常禁 exec；symlink 失败也不阻断安装，前台由 /storage 路由回源。 */
+    public function ensurePublicStorageLink(): void
+    {
+        $target = storage_path('app/public');
+        $link = public_path('storage');
+        if (! is_dir($target)) {
+            @mkdir($target, 0775, true);
+        }
+        if (is_link($link)) {
+            return;
+        }
+        if (is_dir($link) && count(array_diff(@scandir($link) ?: [], ['.', '..'])) === 0) {
+            @rmdir($link);
+        }
+        if (file_exists($link)) {
+            return;
+        }
+        if (! $this->phpFunctionEnabled('symlink')) {
+            return;
+        }
+        foreach ([$target, $this->relativeStorageTarget($link, $target)] as $to) {
+            try {
+                if (@symlink($to, $link) && is_link($link)) {
+                    return;
+                }
+            } catch (\Throwable) {
+            }
+            if (is_link($link) || file_exists($link)) {
+                return;
+            }
+        }
+    }
+
+    protected function relativeStorageTarget(string $link, string $target): string
+    {
+        $from = explode(DIRECTORY_SEPARATOR, rtrim(dirname($link), DIRECTORY_SEPARATOR));
+        $to = explode(DIRECTORY_SEPARATOR, rtrim($target, DIRECTORY_SEPARATOR));
+        while ($from !== [] && $to !== [] && $from[0] === $to[0]) {
+            array_shift($from);
+            array_shift($to);
+        }
+
+        return implode('/', array_merge(array_fill(0, count($from), '..'), $to)) ?: '.';
+    }
+
+    protected function phpFunctionEnabled(string $name): bool
+    {
+        if (! function_exists($name)) {
+            return false;
+        }
+        $disabled = array_map('trim', explode(',', strtolower((string) ini_get('disable_functions'))));
+
+        return ! in_array(strtolower($name), $disabled, true);
     }
 
     /** @param array<string, mixed> $input */

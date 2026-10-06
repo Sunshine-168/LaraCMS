@@ -31,7 +31,7 @@
             @if(session('error'))<div class="flash">{{ session('error') }}</div>@endif
             @if($errors->any())<div class="flash">{{ $errors->first() }}</div>@endif
 
-            <form method="post" action="{{ route('install.run') }}" id="installForm">
+            <form method="post" action="/install" id="installForm">
                 @csrf
                 <input type="hidden" name="app_url" value="{{ rtrim(request()->getSchemeAndHttpHost(), '/') }}">
 
@@ -212,8 +212,9 @@
                 db_username: form.db_username.value,
                 db_password: form.db_password.value
             };
-            var res = await fetch(@json(route('install.probe')), {
+            var res = await fetch('/install/probe', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': csrf,
                     'Accept': 'application/json',
@@ -246,8 +247,9 @@
                 mark(phases[i], 'on');
                 if (bar) bar.style.width = Math.round((i / phases.length) * 100) + '%';
                 fd.set('phase', phases[i]);
-                var res = await fetch(@json(route('install.task')), {
+                var res = await fetch('/install/task', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'X-CSRF-TOKEN': csrf,
                         'Accept': 'application/json',
@@ -256,13 +258,16 @@
                     body: fd
                 });
                 var data = await res.json().catch(function () { return {}; });
+                if (res.status === 419) {
+                    throw new Error('页面已过期，请刷新后再点开始安装');
+                }
                 if (!res.ok || data.ok === false) {
                     throw new Error(data.message || '这一步没有完成');
                 }
                 mark(phases[i], 'ok');
                 if (bar) bar.style.width = Math.round(((i + 1) / phases.length) * 100) + '%';
             }
-            window.location.href = @json(route('install.done'));
+            window.location.href = '/install/done';
         } catch (e) {
             mark(currentOn(), 'bad');
             alert(e.message || '安装失败');

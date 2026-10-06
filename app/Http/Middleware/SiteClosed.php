@@ -27,6 +27,8 @@ class SiteClosed
             || $request->is('*/robots.txt')
             || $request->is('sitemap.xml')
             || $request->is('*/sitemap.xml')
+            || $request->is('storage')
+            || $request->is('storage/*')
         ) {
             return $next($request);
         }

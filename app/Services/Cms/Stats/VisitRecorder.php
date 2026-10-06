@@ -22,7 +22,7 @@ class VisitRecorder
         }
 
         // 后台 / 健康检查 / 静态资源
-        if (str_starts_with($path, '/admin') || $path === '/up' || str_starts_with($path, '/preview/') || str_contains($path, '/preview/')) {
+        if (str_starts_with($path, '/admin') || $path === '/up' || str_starts_with($path, '/storage/') || str_starts_with($path, '/preview/') || str_contains($path, '/preview/')) {
             return false;
         }
         if (preg_match('#\.(css|js|map|ico|png|jpe?g|gif|webp|svg|woff2?|ttf|eot|txt|xml|json)$#i', $path)) {

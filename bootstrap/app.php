@@ -70,6 +70,11 @@ return Application::configure(basePath: dirname(__DIR__))
             CheckInstalled::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'install',
+            'install/*',
+        ]);
+
         // ResolveSite 需在 StartSession 之后；重定向依赖当前站
         $middleware->web(append: [
             ResolveSite::class,

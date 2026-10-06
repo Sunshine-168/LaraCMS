@@ -24,7 +24,7 @@
         <tr><td>{!! $hl('entries', '内容') !!}</td><td>写文章。有「发布内容」权限才能发布；编辑默认存草稿或待审。可定时发布、生成预览链接、还原上一稿。一篇有一个主栏目（决定网址），可勾附加栏目。</td></tr>
         <tr><td>{!! $hl('categories', '栏目') !!}</td><td>频道结构。列表出文档、单页只显示一篇、外链跳到别的网址。栏目要绑模型。可设列表/详情模板。</td></tr>
         <tr><td>{!! $hl('entryTags', '标签') !!}</td><td>给文章打标签，前台 <code>/tag/标识</code> 聚合。和「说明 → 标签」（模板指令）不是一回事。</td></tr>
-        <tr><td>{!! $hl('media', '媒体') !!}</td><td>上传图片和文件。正文插图、推荐位封面也从这里选。打不开时先执行 <code>php artisan storage:link</code>。只换访问域名在{!! $hl('settingsMore', '设置 → 更多') !!}填 CDN；文件改存 OSS / S3 用 <code>CMS_MEDIA_DISK</code>，见「<a href="{{ $urls['env'] ?? '#' }}">环境</a>」。水印只对本地盘有效。</td></tr>
+        <tr><td>{!! $hl('media', '媒体') !!}</td><td>上传图片和文件。正文插图、推荐位封面也从这里选。没有 <code>public/storage</code> 软链时站点会自己回源，不必强求 <code>php artisan storage:link</code>。只换访问域名在{!! $hl('settingsMore', '设置 → 更多') !!}填 CDN；文件改存 OSS / S3 用 <code>CMS_MEDIA_DISK</code>，见「<a href="{{ $urls['env'] ?? '#' }}">环境</a>」。水印只对本地盘有效。</td></tr>
         <tr><td>{!! $hl('submissions', '留言') !!}</td><td>前台表单提交的收件箱。可已读、备注、邮件回复。</td></tr>
         <tr><td>{!! $hl('comments', '评论') !!}</td><td>默认待审核，通过后出现在文章下。开关和运营通知邮箱在{!! $hl('settings', '设置') !!}。</td></tr>
         <tr><td>{!! $hl('recycle', '回收站') !!}</td><td>删除的内容先在这里。可还原；彻底删除不能恢复。侧栏在内容「更多」里，内容页右上角也能进。</td></tr>

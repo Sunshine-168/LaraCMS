@@ -407,14 +407,14 @@ class ThemeCatalog
             $rel = str_replace('\\', '/', $json['preview']);
             if (! str_contains($rel, '..') && ! str_starts_with($rel, '/') && ! preg_match('#^[a-zA-Z]:#', $rel)) {
                 $file = $dir.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $rel);
-                if (is_file($file) && $this->isPreviewImage($file)) {
+                if (is_file($file) && $this->isUsablePreview($file)) {
                     return $file;
                 }
             }
         }
         foreach (['preview.png', 'preview.jpg', 'preview.jpeg', 'preview.webp', 'preview.svg', 'preview.gif', 'screenshot.png'] as $name) {
             $file = $dir.DIRECTORY_SEPARATOR.$name;
-            if (is_file($file) && $this->isPreviewImage($file)) {
+            if (is_file($file) && $this->isUsablePreview($file)) {
                 return $file;
             }
         }
@@ -508,6 +508,25 @@ SVG;
     protected function isPreviewImage(string $path): bool
     {
         return $this->previewMime($path) !== null;
+    }
+
+    protected function isUsablePreview(string $path): bool
+    {
+        if (! $this->isPreviewImage($path)) {
+            return false;
+        }
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'svg') {
+            return true;
+        }
+        $raw = @file_get_contents($path);
+        if (! is_string($raw) || $raw === '' || ! str_contains($raw, '<svg')) {
+            return false;
+        }
+        if (function_exists('mb_check_encoding') && ! mb_check_encoding($raw, 'UTF-8')) {
+            return false;
+        }
+
+        return ! preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $raw);
     }
 
     /**

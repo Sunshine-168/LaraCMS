@@ -156,6 +156,15 @@ class ThemeController extends Controller
         $path = $this->themes->previewPath($theme);
         $mime = $this->themes->previewMime($path);
         if ($path && $mime) {
+            if ($mime === 'image/svg+xml') {
+                $raw = (string) file_get_contents($path);
+
+                return response($raw, 200, [
+                    'Content-Type' => 'image/svg+xml; charset=utf-8',
+                    'Cache-Control' => 'private, max-age=3600',
+                ]);
+            }
+
             return response()->file($path, [
                 'Content-Type' => $mime,
                 'Cache-Control' => 'private, max-age=86400',
