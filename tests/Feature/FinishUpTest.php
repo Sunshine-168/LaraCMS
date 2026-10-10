@@ -44,7 +44,7 @@ class FinishUpTest extends TestCase
 
             $this->get('/install/done')
                 ->assertOk()
-                ->assertSee('已经装好')
+                ->assertSee('安装完毕')
                 ->assertSee('owner@example.com');
 
             $this->post('/admin/login', [

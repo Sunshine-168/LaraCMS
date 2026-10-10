@@ -13,10 +13,12 @@ class CheckInstalled
     public function handle(Request $request, Closure $next): Response
     {
         $installing = ! is_file(storage_path('app/install.lock'));
-        if ($installing || $request->is('install') || $request->is('install/*')) {
+        $onInstall = $request->is('install') || $request->is('install/*');
+        if ($installing || $onInstall) {
             URL::forceRootUrl($request->getSchemeAndHttpHost());
         }
-        if ($installing && config('session.driver') !== 'array') {
+        // 最后一步会写入安装锁。完成页若改回正式会话，就读不到刚保存的结果，重试也会变成「已经安装过了」。
+        if (($installing || $onInstall) && config('session.driver') !== 'array') {
             config([
                 'session.driver' => 'file',
                 'session.encrypt' => false,

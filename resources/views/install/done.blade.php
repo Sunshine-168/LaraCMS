@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>安装完成</title>
+    <title>安装完毕</title>
     <link rel="stylesheet" href="{{ asset('css/install.css') }}?v=1">
 </head>
 <body>
@@ -12,8 +12,8 @@
     <div class="card" style="display:block">
         <div class="done">
             <div class="mark">✓</div>
-            <h1>{{ $siteName }} 已经装好</h1>
-            <p class="muted">用 <strong>{{ $email }}</strong> 和刚才的密码登录后台。</p>
+            <h1>安装完毕</h1>
+            <p class="muted"><strong>{{ $siteName }}</strong> 可以使用了。请用 <strong>{{ $email }}</strong> 和刚才设置的密码登录后台。</p>
             @if($demo)
                 <p class="hint">示例栏目和文章已经导入。上线前请改掉演示账号，不要把默认密码留在公网。</p>
             @endif

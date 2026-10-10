@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\CheckInstalled;
 use App\Models\Admin\AdminUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class InstallWizardTest extends TestCase
@@ -130,8 +132,68 @@ class InstallWizardTest extends TestCase
 
         $this->get('/install/done')
             ->assertOk()
+            ->assertSee('安装完毕')
             ->assertSee('向导站')
             ->assertSee('wizard@example.com');
+    }
+
+    public function test_demo_does_not_lock_before_the_last_step(): void
+    {
+        $payload = [
+            'site_name' => '示例站',
+            'admin_name' => '站长',
+            'admin_email' => 'demo-wizard@example.com',
+            'admin_password' => 'Secret#123',
+            'admin_password_confirmation' => 'Secret#123',
+            'seed_demo' => '1',
+        ];
+
+        $this->postJson('/install/task', $payload + ['phase' => 'prepare'])->assertOk();
+        $this->postJson('/install/task', $payload + ['phase' => 'migrate'])->assertOk();
+        $this->postJson('/install/task', $payload + ['phase' => 'demo'])->assertOk();
+        $this->assertFileDoesNotExist(storage_path('app/install.lock'));
+
+        $this->postJson('/install/task', $payload + ['phase' => 'account'])->assertOk()
+            ->assertJsonMissing(['message' => '已经安装过了']);
+        $this->postJson('/install/task', $payload + ['phase' => 'finish'])->assertOk();
+
+        $this->assertFileExists(storage_path('app/install.lock'));
+        $this->get('/install/done')
+            ->assertOk()
+            ->assertSee('安装完毕')
+            ->assertSee('demo-wizard@example.com');
+    }
+
+    public function test_install_routes_keep_session_after_lock(): void
+    {
+        file_put_contents(storage_path('app/install.lock'), "installed_at=now\n");
+        config([
+            'session.driver' => 'file',
+            'session.cookie' => 'laravel_session',
+            'session.encrypt' => true,
+        ]);
+
+        $done = Request::create('/install/done', 'GET');
+        app(CheckInstalled::class)->handle($done, function () {
+            $this->assertSame('cms_install_session', config('session.cookie'));
+            $this->assertFalse((bool) config('session.encrypt'));
+            $this->assertSame('file', config('session.driver'));
+
+            return response('ok');
+        });
+
+        config([
+            'session.driver' => 'file',
+            'session.cookie' => 'laravel_session',
+            'session.encrypt' => true,
+        ]);
+        $login = Request::create('/admin/login', 'GET');
+        app(CheckInstalled::class)->handle($login, function () {
+            $this->assertSame('laravel_session', config('session.cookie'));
+            $this->assertTrue((bool) config('session.encrypt'));
+
+            return response('ok');
+        });
     }
 
     public function test_done_without_session_goes_elsewhere(): void

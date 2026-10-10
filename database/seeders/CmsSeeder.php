@@ -26,6 +26,9 @@ use Illuminate\Database\Seeder;
 
 class CmsSeeder extends Seeder
 {
+    /** 网页安装先建表再写锁。这里提前写锁会让下一步被当成已经安装。 */
+    public static bool $writeLock = true;
+
     public function run(): void
     {
         AdminBootstrapSeeder::$siteName = '综合 CMS 演示';
@@ -111,7 +114,7 @@ class CmsSeeder extends Seeder
         $this->seedMenus($cats);
         $this->refreshSearchText();
 
-        if (! is_file(storage_path('app/install.lock'))) {
+        if (self::$writeLock && ! is_file(storage_path('app/install.lock'))) {
             file_put_contents(storage_path('app/install.lock'), 'installed_at='.now()->toDateTimeString()."\nseed_demo=1\n");
         }
     }

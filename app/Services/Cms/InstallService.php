@@ -177,8 +177,14 @@ class InstallService
 
     public function seedDemo(): void
     {
-        Artisan::call('db:seed', ['--class' => CmsSeeder::class, '--force' => true]);
-        Artisan::call('db:seed', ['--class' => DemoDataSeeder::class, '--force' => true]);
+        $writeLock = CmsSeeder::$writeLock;
+        CmsSeeder::$writeLock = false;
+        try {
+            Artisan::call('db:seed', ['--class' => CmsSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => DemoDataSeeder::class, '--force' => true]);
+        } finally {
+            CmsSeeder::$writeLock = $writeLock;
+        }
     }
 
     public function finish(bool $demo): void
