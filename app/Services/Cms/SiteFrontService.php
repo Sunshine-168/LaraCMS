@@ -26,7 +26,7 @@ class SiteFrontService
         $theme = $pcTheme;
         try {
             $isMobile = MobileDetect::shouldUseMobile(request());
-            if ($isMobile && ($m = MobileDetect::mobileTheme())) {
+            if ($isMobile && $pcTheme !== 'official' && ($m = MobileDetect::mobileTheme())) {
                 $theme = $m;
             }
         } catch (\Throwable) {

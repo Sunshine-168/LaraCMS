@@ -39,7 +39,7 @@ CMS_STAT_PRUNE_MODE=schedule</code></pre>
 </div>
 <div class="code">
     <button type="button" class="copy" data-copy>复制</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan schedule:run >> /dev/null 2>&amp;1</code></pre>
+<pre><code>* * * * * cd /var/www/leafcms && php artisan schedule:run >> /dev/null 2>&amp;1</code></pre>
 </div>
 <p class="hint">把路径换成你的项目根。Linux 用 crontab；Windows 用任务计划程序，每分钟执行同一条 <code>php artisan schedule:run</code>。</p>
 
@@ -56,7 +56,7 @@ QUEUE_CONNECTION=database</code></pre>
 <p class="muted"><code>QUEUE_CONNECTION</code> 不要用 <code>sync</code>，否则还是当场执行，等于没队列。可用 <code>database</code> 或 Redis。</p>
 <div class="code">
     <button type="button" class="copy" data-copy>复制</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan schedule:run >> /dev/null 2>&amp;1
+<pre><code>* * * * * cd /var/www/leafcms && php artisan schedule:run >> /dev/null 2>&amp;1
 php artisan queue:work --queue=cms --sleep=1 --tries=1</code></pre>
 </div>
 <p class="hint">第二行要常驻（systemd / supervisor）。挂了采集和清理都不会跑。</p>
@@ -68,8 +68,8 @@ php artisan queue:work --queue=cms --sleep=1 --tries=1</code></pre>
 </div>
 <div class="code">
     <button type="button" class="copy" data-copy>复制</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan cms:collect --sync
-20 3 * * * cd /var/www/laracms && php artisan cms:stat-prune --days=90 --sync</code></pre>
+<pre><code>* * * * * cd /var/www/leafcms && php artisan cms:collect --sync
+20 3 * * * cd /var/www/leafcms && php artisan cms:stat-prune --days=90 --sync</code></pre>
 </div>
 <p class="muted">队列版把 <code>--sync</code> 换成 <code>--queue</code>，并同样要 <code>queue:work --queue=cms</code>。</p>
 

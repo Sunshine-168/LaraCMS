@@ -46,13 +46,13 @@ DB_PASSWORD=use-a-strong-password</code></pre>
     <p class="hint">Trying locally can stay on SQLite (<code>DB_CONNECTION=sqlite</code>). After editing <code>.env</code>, run <code>php artisan config:clear</code>.</p>
 
     <h3>nginx</h3>
-    <p class="muted">The document root must be <code>public</code>, not the project root. Replace <code>/var/www/laracms</code> and the PHP-FPM socket.</p>
+    <p class="muted">The document root must be <code>public</code>, not the project root. Replace <code>/var/www/leafcms</code> and the PHP-FPM socket.</p>
     <div class="code">
         <button type="button" class="copy" data-copy>{{ $copy }}</button>
         <pre><code>server {
     listen 80;
     server_name www.example.com;
-    root /var/www/laracms/public;
+    root /var/www/leafcms/public;
     index index.php;
     charset utf-8;
     client_max_body_size 32m;

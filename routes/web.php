@@ -24,6 +24,12 @@ $catExclude = $slugExclude;
 
 $registerContent = function (string $nameSuffix = '') use ($slugExclude, $catExclude) {
     Route::get('/', [SiteController::class, 'index'])->name('home'.$nameSuffix);
+    Route::get('/themes', [SiteController::class, 'officialPage'])->defaults('page', 'themes')->name('site.themes'.$nameSuffix);
+    Route::get('/guide', [SiteController::class, 'officialPage'])->defaults('page', 'guide')->name('site.guide'.$nameSuffix);
+    Route::get('/docs', [SiteController::class, 'officialPage'])->defaults('page', 'docs')->name('site.docs'.$nameSuffix);
+    Route::get('/open', [SiteController::class, 'officialPage'])->defaults('page', 'open')->name('site.open'.$nameSuffix);
+    Route::get('/news/{slug}', [SiteController::class, 'officialNews'])->where('slug', '[a-z0-9\-]+')->name('site.news.show'.$nameSuffix);
+    Route::get('/news', [SiteController::class, 'officialPage'])->defaults('page', 'news')->name('site.news'.$nameSuffix);
     Route::get('/search', [SiteController::class, 'search'])->name('search'.$nameSuffix);
     Route::get('/tag/{slug}', [SiteController::class, 'tag'])->name('tag'.$nameSuffix);
     Route::get('/sitemap.xml', [SiteController::class, 'sitemap'])->name('sitemap'.$nameSuffix);

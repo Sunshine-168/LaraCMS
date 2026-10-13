@@ -40,7 +40,7 @@ CMS_STAT_PRUNE_MODE=schedule</code></pre>
 </div>
 <div class="code">
     <button type="button" class="copy" data-copy>{{ $copy }}</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan schedule:run >> /dev/null 2>&amp;1</code></pre>
+<pre><code>* * * * * cd /var/www/leafcms && php artisan schedule:run >> /dev/null 2>&amp;1</code></pre>
 </div>
 <p class="hint">Replace the path with your project root. Linux: crontab. Windows: Task Scheduler, the same <code>php artisan schedule:run</code> every minute.</p>
 
@@ -57,7 +57,7 @@ QUEUE_CONNECTION=database</code></pre>
 <p class="muted">Do not use <code>QUEUE_CONNECTION=sync</code> or it still runs inline. Use <code>database</code> or Redis.</p>
 <div class="code">
     <button type="button" class="copy" data-copy>{{ $copy }}</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan schedule:run >> /dev/null 2>&amp;1
+<pre><code>* * * * * cd /var/www/leafcms && php artisan schedule:run >> /dev/null 2>&amp;1
 php artisan queue:work --queue=cms --sleep=1 --tries=1</code></pre>
 </div>
 <p class="hint">The second line must stay up (systemd / supervisor). If it dies, collect and prune stop.</p>
@@ -69,8 +69,8 @@ php artisan queue:work --queue=cms --sleep=1 --tries=1</code></pre>
 </div>
 <div class="code">
     <button type="button" class="copy" data-copy>{{ $copy }}</button>
-<pre><code>* * * * * cd /var/www/laracms && php artisan cms:collect --sync
-20 3 * * * cd /var/www/laracms && php artisan cms:stat-prune --days=90 --sync</code></pre>
+<pre><code>* * * * * cd /var/www/leafcms && php artisan cms:collect --sync
+20 3 * * * cd /var/www/leafcms && php artisan cms:stat-prune --days=90 --sync</code></pre>
 </div>
 <p class="muted">Queue mode: replace <code>--sync</code> with <code>--queue</code> and keep <code>queue:work --queue=cms</code>.</p>
 

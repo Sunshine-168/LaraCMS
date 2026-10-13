@@ -45,13 +45,13 @@ DB_PASSWORD=请换成强密码</code></pre>
     <p class="hint">试用可以继续用 SQLite（<code>DB_CONNECTION=sqlite</code>），不用另装数据库。改完 <code>.env</code> 后执行 <code>php artisan config:clear</code>。</p>
 
     <h3>nginx</h3>
-    <p class="muted">网站根目录必须是项目里的 <code>public</code>，不要指到项目根。下面把 <code>/var/www/laracms</code> 换成你的路径，<code>php8.3-fpm.sock</code> 换成本机 PHP-FPM 套接字。</p>
+    <p class="muted">网站根目录必须是项目里的 <code>public</code>，不要指到项目根。下面把 <code>/var/www/leafcms</code> 换成你的路径，<code>php8.3-fpm.sock</code> 换成本机 PHP-FPM 套接字。</p>
     <div class="code">
         <button type="button" class="copy" data-copy>复制</button>
         <pre><code>server {
     listen 80;
     server_name www.example.com;
-    root /var/www/laracms/public;
+    root /var/www/leafcms/public;
     index index.php;
     charset utf-8;
     client_max_body_size 32m;

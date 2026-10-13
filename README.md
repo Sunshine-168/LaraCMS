@@ -1,4 +1,4 @@
-# LaraCMS
+# LeafCMS
 
 Laravel 13 建站 CMS：栏目、动态模型、推荐位、多站、会员、采集、静态化。前台只用 Blade **`@cms*`** 标签，不依赖 Filament，没有应用市场。
 

@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laracms/cms",
+    "name": "leafcms/cms",
     "type": "project",
     "description": "Laravel CMS with dynamic models, Blade @cms tags, multisite, membership and HTML cache.",
     "keywords": ["laravel", "cms", "multisite", "multilingual", "blade"],

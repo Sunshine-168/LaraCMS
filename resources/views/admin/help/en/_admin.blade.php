@@ -2,7 +2,7 @@
     $urls = $urls ?? [];
     $hl = $hl ?? fn (string $key, string $label) => e($label);
 @endphp
-<p class="muted">This walks through every admin screen. Each module also has a one-line hint at the top. Start with <a href="{{ route('admin.help') }}">Getting started</a>; skins are under <a href="{{ $urls['helpThemes'] ?? '#' }}">Themes</a>.</p>
+<p class="muted">This walks through every admin screen. Each module also has a one-line hint at the top. Start with <a href="{{ $urls['helpUse'] ?? route('admin.help') }}">Getting started</a>; skins are under <a href="{{ $urls['helpThemes'] ?? '#' }}">Themes</a>.</p>
 
 <h3>Overview</h3>
 <table class="help-doc">

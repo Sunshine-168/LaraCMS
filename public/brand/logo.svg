@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="LeafCMS">
+  <rect width="32" height="32" rx="8" fill="#143f34"/>
+  <path fill="#f4f7f5" d="M7 6h6v14h12v6H7V6z"/>
+  <rect x="16" y="8" width="9" height="2.4" rx="1.2" fill="#b7d7c8"/>
+  <rect x="16" y="12.6" width="6" height="2.4" rx="1.2" fill="#8fbfa8"/>
+</svg>

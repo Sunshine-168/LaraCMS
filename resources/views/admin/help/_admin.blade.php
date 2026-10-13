@@ -2,7 +2,7 @@
     $urls = $urls ?? [];
     $hl = $hl ?? fn (string $key, string $label) => e($label);
 @endphp
-<p class="muted">按侧栏把后台每一项说一遍。各功能页顶部也有一句说明。先上手看「<a href="{{ route('admin.help') }}">怎么用</a>」，换皮看「<a href="{{ $urls['helpThemes'] ?? '#' }}">主题</a>」。</p>
+<p class="muted">按侧栏把后台每一项说一遍。各功能页顶部也有一句说明。先上手看「<a href="{{ $urls['helpUse'] ?? route('admin.help') }}">怎么用</a>」，换皮看「<a href="{{ $urls['helpThemes'] ?? '#' }}">主题</a>」。</p>
 
 <h3>概览</h3>
 <table class="help-doc">

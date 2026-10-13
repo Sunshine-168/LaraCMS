@@ -1,0 +1,7 @@
+{
+    "name": "官网",
+    "description": "LeafCMS 产品官网",
+    "i18n": true,
+    "responsive": true,
+    "models": ["page"]
+}

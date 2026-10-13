@@ -20,6 +20,7 @@ class ThemeCatalog
     public function bundled(): array
     {
         return [
+            'official' => ['name' => '官网', 'description' => 'LeafCMS 产品官网'],
             'enterprise' => ['name' => '企业', 'description' => '公司官网'],
             'mobile' => ['name' => '移动', 'description' => '手机外观'],
             'download' => ['name' => '下载站', 'description' => '资料下载'],

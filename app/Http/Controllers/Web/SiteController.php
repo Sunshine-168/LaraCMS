@@ -14,6 +14,7 @@ use App\Services\Cms\SiteFrontService;
 use App\Services\Cms\TagAutoLinkService;
 use App\Support\Cdn;
 use App\Support\Locale;
+use App\Support\OfficialNews;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -39,6 +40,24 @@ class SiteController extends Controller
         $this->context->setSeo($site['title'], $site['keyword'], $site['description']);
 
         return view($this->site->themeView('index.index'), compact('site'));
+    }
+
+    /** 产品官网：主题、安装说明、文档（/install 仍是安装向导） */
+    public function officialPage(string $page): View
+    {
+        abort_unless(in_array($page, ['themes', 'guide', 'docs', 'open', 'news'], true), 404);
+        $site = $this->site->bootSite();
+
+        return view($this->site->themeView('pages.'.$page), compact('site'));
+    }
+
+    public function officialNews(string $slug): View
+    {
+        $post = OfficialNews::find($slug);
+        abort_unless($post !== null, 404);
+        $site = $this->site->bootSite();
+
+        return view($this->site->themeView('pages.news-show'), compact('site', 'post'));
     }
 
     /** 搜索（仅 is_searchable 模型；可按模型/栏目过滤） */
