@@ -333,7 +333,5 @@ th { background: #f7f8f6; font-size: 13px; color: var(--muted); font-weight: 650
   .dock-item { width: 48px; min-width: 48px; height: 48px; }
   h2 { font-size: 26px; }
   .foot { padding-bottom: 88px; }
-}
-@media (max-width: 480px) {
-  .card { max-width: 350px !important; background: #d7e6f5; }
+  .card p, .lead, .note, .foot-brand p { overflow-wrap: anywhere; }
 }

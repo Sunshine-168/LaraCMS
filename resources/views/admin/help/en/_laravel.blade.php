@@ -6,7 +6,7 @@
             $copy = admin_t('guide.copy');
         @endphp
         <h2>Install with the Laravel CLI</h2>
-        <p class="muted">Use this when PHP 8.2+ and Composer are already on the machine. SQLite is the default — no extra database required.</p>
+        <p class="muted">Use this when PHP 8.4+ and Composer are already on the machine. SQLite is the default — no extra database required.</p>
 
         <h3>1. Prepare the code</h3>
         <div class="code">

@@ -12,7 +12,7 @@
     @endunless
 
     <h3>PHP</h3>
-    <p class="muted">PHP <strong>8.2+</strong> with <code>pdo</code>, <code>mbstring</code>, <code>openssl</code>, <code>tokenizer</code>, <code>xml</code>, <code>ctype</code>, <code>json</code>, <code>fileinfo</code>, <code>curl</code>. Add <code>pdo_mysql</code> for MySQL or <code>pdo_sqlite</code> for SQLite.</p>
+    <p class="muted">PHP <strong>8.4+</strong> with <code>pdo</code>, <code>mbstring</code>, <code>openssl</code>, <code>tokenizer</code>, <code>xml</code>, <code>ctype</code>, <code>json</code>, <code>fileinfo</code>, <code>curl</code>. Add <code>pdo_mysql</code> for MySQL or <code>pdo_sqlite</code> for SQLite.</p>
     <p class="muted">Watermarks and thumbs need <code>gd</code> or <code>imagick</code>. The rest still installs without them.</p>
     <p class="muted">Suggested <code>php.ini</code>:</p>
     <div class="code">
@@ -63,7 +63,7 @@ DB_PASSWORD=use-a-strong-password</code></pre>
 
     location ~ \.php$ {
         include fastcgi_params;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
     }

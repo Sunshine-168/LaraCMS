@@ -13,7 +13,7 @@
     <meta name="description" content="@yield('description', cms_t('LeafCMS 是可商用的开源建站系统，用来做企业官网、博客和多站点。', 'LeafCMS is an open-source, commercial-use site builder for company sites, blogs, and multiple sites.'))">
     <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="32x32">
     <link rel="icon" href="{{ asset('brand/logo.svg') }}" type="image/svg+xml">
-    <link rel="stylesheet" href="{{ asset('brand/site.css') }}?v=22">
+    <link rel="stylesheet" href="{{ asset('brand/site.css') }}?v=23">
 </head>
 <body>
 <header class="top">
@@ -80,7 +80,7 @@
         </div>
         <div class="foot-end">
             <span>© {{ date('Y') }} LeafCMS · MIT</span>
-            <span>PHP 8.3+ · Laravel 13</span>
+            <span>PHP 8.4+ · Laravel 13</span>
         </div>
     </div>
 </footer>

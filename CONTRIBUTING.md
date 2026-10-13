@@ -4,7 +4,7 @@ This is a Laravel 13 CMS. The admin UI is Chinese-first. Pull requests that add 
 
 ## Setup
 
-PHP 8.3+, Composer, SQLite (or MySQL).
+PHP 8.4+, Composer, SQLite (or MySQL).
 
 ```bash
 composer install

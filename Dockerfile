@@ -1,4 +1,4 @@
-FROM php:8.3-cli-bookworm
+FROM php:8.4-cli-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev libsqlite3-dev \

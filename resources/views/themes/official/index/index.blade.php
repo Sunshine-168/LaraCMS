@@ -15,7 +15,7 @@
                     <a class="btn btn-line" href="https://github.com/Sunshine-168/LeafCMS" target="_blank" rel="noopener">GitHub</a>
                     <a class="btn btn-gold" href="{{ cms_route('site.docs') }}">{{ cms_t('系统说明', 'Docs') }}</a>
                 </div>
-                <p class="fine">{{ cms_t('需要 PHP 8.3 及以上。装好后就能打开网站前台和后台，上线前请先更换初始账号。', 'PHP 8.3 or newer. After install you can open the site and the admin. Change the initial account before going live.') }}</p>
+                <p class="fine">{{ cms_t('需要 PHP 8.4 及以上。装好后就能打开网站前台和后台，上线前请先更换初始账号。', 'PHP 8.4 or newer. After install you can open the site and the admin. Change the initial account before going live.') }}</p>
             </div>
             <div class="preview" aria-hidden="true">
                 <div class="preview-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="preview-url">leafcms / {{ cms_t('官网主题', 'official theme') }}</span></div>
@@ -47,7 +47,7 @@
 
     <div class="band">
         <div class="wrap facts">
-            <div class="fact"><strong>PHP 8.3+</strong><span>{{ cms_t('一套程序即可建站，数据库可用 SQLite 或 MySQL', 'One program. SQLite or MySQL.') }}</span></div>
+            <div class="fact"><strong>PHP 8.4+</strong><span>{{ cms_t('一套程序即可建站，数据库可用 SQLite 或 MySQL', 'One program. SQLite or MySQL.') }}</span></div>
             <div class="fact"><strong>MIT</strong><span>{{ cms_t('开源可商用，不需要单独购买授权', 'Open source and commercial use. No separate license to buy.') }}</span></div>
             <div class="fact"><strong>{{ cms_t('9 套主题', '9 themes') }}</strong><span>{{ cms_t('企业站、博客、下载站和导航站可以随时切换', 'Company, blog, download, and directory skins can be switched any time.') }}</span></div>
             <div class="fact"><strong>@@cms*</strong><span>{{ cms_t('前台取栏目、文章和轮播，都用这一套标签', 'Sections, entries, and banners all use this one tag set.') }}</span></div>
@@ -170,7 +170,7 @@
                 <h2>{{ cms_t('装好就能打开前后台', 'Install, then open both sides') }}</h2>
                 <p class="lead">{{ cms_t('可以用 Docker、命令行或网页向导安装。三条路装完，都能进入网站前台和后台。', 'Install with Docker, the command line, or the web wizard. All three open the site and the admin.') }}</p>
                 <div class="steps">
-                    <div class="step"><div class="num">1</div><div><strong>{{ cms_t('准备环境', 'Prepare') }}</strong><p class="note">{{ cms_t('准备 PHP 8.3 和 Composer。用 Docker 启动时，会一并准备好演示内容。', 'Have PHP 8.3 and Composer. Docker also loads the demo content on first start.') }}</p></div></div>
+                    <div class="step"><div class="num">1</div><div><strong>{{ cms_t('准备环境', 'Prepare') }}</strong><p class="note">{{ cms_t('准备 PHP 8.4 和 Composer。用 Docker 启动时，会一并准备好演示内容。', 'Have PHP 8.4 and Composer. Docker also loads the demo content on first start.') }}</p></div></div>
                     <div class="step"><div class="num">2</div><div><strong>{{ cms_t('执行安装', 'Install') }}</strong><p class="note">{{ cms_t('命令行执行安装即可。如果希望先看到示例栏目和文章，安装时带上演示数据。', 'Run the installer. Add the demo flag if you want sample sections and entries.') }}</p></div></div>
                     <div class="step"><div class="num">3</div><div><strong>{{ cms_t('进入站点', 'Open the site') }}</strong><p class="note">{{ cms_t('前台是访客看到的网站，后台用来发内容和改设置。站点对外发布前，请更换初始账号。', 'The front is what visitors see. The admin is where you publish and change settings. Replace the initial account before going live.') }}</p></div></div>
                 </div>

@@ -83,7 +83,7 @@ class InstallWizardTest extends TestCase
             ->assertSee('CREATE DATABASE cms')
             ->assertSee('DB_CONNECTION=mysql')
             ->assertSee('try_files')
-            ->assertSee('php8.3-fpm.sock')
+            ->assertSee('php8.4-fpm.sock')
             ->assertSee('APP_DEBUG=false')
             ->assertSee('对象存储')
             ->assertSee('robots.txt 补充规则');

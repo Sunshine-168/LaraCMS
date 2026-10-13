@@ -18,7 +18,7 @@ docker compose up --build
 
 ### Laravel 命令行
 
-需要 PHP 8.2+ 和 Composer。默认 SQLite。
+需要 PHP 8.4+ 和 Composer。默认 SQLite。
 
 ```bash
 composer install

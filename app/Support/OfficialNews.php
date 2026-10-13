@@ -15,9 +15,9 @@ class OfficialNews
                 'title_en' => 'LeafCMS source is public',
                 'excerpt_zh' => '仓库在 Sunshine-168/LeafCMS，MIT 许可，默认分支 main。',
                 'excerpt_en' => 'The repo is Sunshine-168/LeafCMS, MIT, default branch main.',
-                'body_zh' => '<p>开源仓库是 <a href="https://github.com/Sunshine-168/LeafCMS" target="_blank" rel="noopener">Sunshine-168/LeafCMS</a>。MIT 许可，可以商用和二次开发。</p><p>需要 PHP 8.3 及以上，内核是 Laravel 13。试用可以用 SQLite，也可以改成 MySQL。</p><pre><code>git clone https://github.com/Sunshine-168/LeafCMS.git
+                'body_zh' => '<p>开源仓库是 <a href="https://github.com/Sunshine-168/LeafCMS" target="_blank" rel="noopener">Sunshine-168/LeafCMS</a>。MIT 许可，可以商用和二次开发。</p><p>需要 PHP 8.4 及以上，内核是 Laravel 13。试用可以用 SQLite，也可以改成 MySQL。</p><pre><code>git clone https://github.com/Sunshine-168/LeafCMS.git
 cd LeafCMS</code></pre>',
-                'body_en' => '<p>The public repo is <a href="https://github.com/Sunshine-168/LeafCMS" target="_blank" rel="noopener">Sunshine-168/LeafCMS</a>. MIT, including commercial use and forks.</p><p>It needs PHP 8.3 or newer and runs on Laravel 13. SQLite is enough to try it; MySQL works too.</p><pre><code>git clone https://github.com/Sunshine-168/LeafCMS.git
+                'body_en' => '<p>The public repo is <a href="https://github.com/Sunshine-168/LeafCMS" target="_blank" rel="noopener">Sunshine-168/LeafCMS</a>. MIT, including commercial use and forks.</p><p>It needs PHP 8.4 or newer and runs on Laravel 13. SQLite is enough to try it; MySQL works too.</p><pre><code>git clone https://github.com/Sunshine-168/LeafCMS.git
 cd LeafCMS</code></pre>',
             ],
             [

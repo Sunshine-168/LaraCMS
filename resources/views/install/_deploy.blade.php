@@ -11,7 +11,7 @@
     @endunless
 
     <h3>PHP 环境</h3>
-    <p class="muted">需要 PHP <strong>8.2 或更高</strong>，并打开这些扩展：<code>pdo</code>、<code>mbstring</code>、<code>openssl</code>、<code>tokenizer</code>、<code>xml</code>、<code>ctype</code>、<code>json</code>、<code>fileinfo</code>、<code>curl</code>。用 MySQL 再开 <code>pdo_mysql</code>；用 SQLite 再开 <code>pdo_sqlite</code>。</p>
+    <p class="muted">需要 PHP <strong>8.4 或更高</strong>，并打开这些扩展：<code>pdo</code>、<code>mbstring</code>、<code>openssl</code>、<code>tokenizer</code>、<code>xml</code>、<code>ctype</code>、<code>json</code>、<code>fileinfo</code>、<code>curl</code>。用 MySQL 再开 <code>pdo_mysql</code>；用 SQLite 再开 <code>pdo_sqlite</code>。</p>
     <p class="muted">图片水印和缩略图需要 <code>gd</code> 或 <code>imagick</code>，没有也能装，只是这两项不可用。</p>
     <p class="muted">建议在 <code>php.ini</code> 里：</p>
     <div class="code">
@@ -45,7 +45,7 @@ DB_PASSWORD=请换成强密码</code></pre>
     <p class="hint">试用可以继续用 SQLite（<code>DB_CONNECTION=sqlite</code>），不用另装数据库。改完 <code>.env</code> 后执行 <code>php artisan config:clear</code>。</p>
 
     <h3>nginx</h3>
-    <p class="muted">网站根目录必须是项目里的 <code>public</code>，不要指到项目根。下面把 <code>/var/www/leafcms</code> 换成你的路径，<code>php8.3-fpm.sock</code> 换成本机 PHP-FPM 套接字。</p>
+    <p class="muted">网站根目录必须是项目里的 <code>public</code>，不要指到项目根。下面把 <code>/var/www/leafcms</code> 换成你的路径，<code>php8.4-fpm.sock</code> 换成本机 PHP-FPM 套接字。</p>
     <div class="code">
         <button type="button" class="copy" data-copy>复制</button>
         <pre><code>server {
@@ -62,7 +62,7 @@ DB_PASSWORD=请换成强密码</code></pre>
 
     location ~ \.php$ {
         include fastcgi_params;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
     }

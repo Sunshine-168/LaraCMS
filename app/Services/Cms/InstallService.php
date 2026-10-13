@@ -34,8 +34,8 @@ class InstallService
         return [
             [
                 'key' => 'php',
-                'label' => 'PHP 8.2 或更高',
-                'ok' => version_compare(PHP_VERSION, '8.2.0', '>='),
+                'label' => 'PHP 8.4 或更高',
+                'ok' => version_compare(PHP_VERSION, '8.4.0', '>='),
                 'detail' => PHP_VERSION,
                 'required' => true,
             ],

@@ -5,7 +5,7 @@
             $webInstallUrl = $webInstallUrl ?? route('install', ['way' => 'web']);
         @endphp
         <h2>用 Laravel 命令行安装</h2>
-        <p class="muted">适合本机已有 PHP 8.2+ 和 Composer 的情况。默认用 SQLite，不用另装数据库。</p>
+        <p class="muted">适合本机已有 PHP 8.4+ 和 Composer 的情况。默认用 SQLite，不用另装数据库。</p>
 
         <h3>1. 准备代码</h3>
         <div class="code">

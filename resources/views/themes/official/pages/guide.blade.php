@@ -2,7 +2,7 @@
 
 @section('title', cms_t('安装 — LeafCMS', 'Install — LeafCMS'))
 @section('description', cms_t('LeafCMS 可以用 Docker、命令行或网页向导安装。装完即可进入网站前台和后台。', 'Install LeafCMS with Docker, the command line, or the web wizard. Then open the site and the admin.'))
-@section('foot', 'LeafCMS · PHP 8.3+ · Laravel 13')
+@section('foot', 'LeafCMS · PHP 8.4+ · Laravel 13')
 
 @section('content')
     <div class="page-hero">
@@ -21,11 +21,13 @@
             </article>
             <article class="card">
                 <h3>{{ cms_t('命令行', 'Command line') }}</h3>
-                <p>{{ cms_t('需要 PHP 8.3 和 Composer。默认使用 SQLite。如果改用 MySQL，先填好数据库配置再安装。', 'Needs PHP 8.3 and Composer. SQLite is the default. For MySQL, set the database config first.') }}</p>
+                <p>{{ cms_t('需要 PHP 8.4 和 Composer。默认使用 SQLite。如果改用 MySQL，先填好数据库配置再安装。', 'Needs PHP 8.4 and Composer. SQLite is the default. For MySQL, set the database config first.') }}</p>
                 <pre><code>composer install
 cp .env.example .env
 php artisan key:generate
-php artisan cms:install --email=you@example.com --password=YourPass#1
+php artisan cms:install \
+  --email=you@example.com \
+  --password=YourPass#1
 php artisan serve</code></pre>
                 <p class="note">{{ cms_t('Windows 下复制配置文件用', 'On Windows copy the env file with') }} <code>copy .env.example .env</code>{{ cms_t('。加上', '. Add') }} <code>--demo</code> {{ cms_t('会带上示例栏目和文章。', 'to load sample sections and entries.') }}</p>
             </article>
