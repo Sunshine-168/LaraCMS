@@ -1,0 +1,21 @@
+{
+    "name": "GW 包网",
+    "description": "包网招商官网。方案、接口、市场和咨询表单。",
+    "i18n": true,
+    "responsive": true,
+    "models": ["article", "page", "product"],
+    "config": {
+        "telegram": {"title": "Telegram 链接", "type": "text", "tips": "完整链接，例如 https://t.me/xxx。留空则不显示按钮。", "value": "https://t.me/sanpang"},
+        "email": {"title": "商务邮箱", "type": "text", "tips": "留空则页脚不显示邮箱。", "value": ""}
+    },
+    "categories": [
+        {"slug": "gw-solutions", "title": {"zh_cn": "包网方案", "en": "Packages"}, "model": "product", "type": "list", "menu": true, "list_tpl": "list.list_product", "show_tpl": "show.show_product"},
+        {"slug": "gw-api", "title": {"zh_cn": "游戏 API", "en": "Game API"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "gw-platform", "title": {"zh_cn": "系统能力", "en": "Platform"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "gw-markets", "title": {"zh_cn": "目标市场", "en": "Markets"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "gw-insights", "title": {"zh_cn": "资讯", "en": "Insights"}, "model": "article", "type": "list", "menu": true},
+        {"slug": "gw-faq", "title": {"zh_cn": "常见问题", "en": "FAQ"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "gw-about", "title": {"zh_cn": "关于我们", "en": "About"}, "model": "page", "type": "single", "menu": true},
+        {"slug": "gw-contact", "title": {"zh_cn": "联系我们", "en": "Contact"}, "model": "page", "type": "single", "menu": true, "show_tpl": "show.show_contact"}
+    ]
+}

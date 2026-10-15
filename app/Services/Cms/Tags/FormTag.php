@@ -4,6 +4,7 @@ namespace App\Services\Cms\Tags;
 
 use App\Models\Cms\CmsForm;
 use App\Support\Captcha;
+use App\Support\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 
@@ -70,7 +71,8 @@ class FormTag
 
         if ($captcha) {
             $q = Captcha::generate();
-            $html .= '<div class="cms-form-item"><label>'.e(cms_ui('captcha')).'：'.e($q['question']).'</label>';
+            $mark = Locale::isEnglish() ? ': ' : '：';
+            $html .= '<div class="cms-form-item"><label>'.e(cms_ui('captcha')).$mark.e($q['question']).'</label>';
             $html .= '<input type="text" name="captcha" required autocomplete="off"></div>';
         }
 
@@ -98,21 +100,24 @@ class FormTag
             $html .= '<select name="'.$name.'"'.$required.'>';
             $html .= '<option value="">'.e(cms_ui('please_select')).'</option>';
             foreach ($choices as $c) {
-                $sel = is_scalar($old) && (string) $old === (string) $c ? ' selected' : '';
-                $html .= '<option value="'.e($c).'"'.$sel.'>'.e($c).'</option>';
+                [$value, $text] = $this->choicePair($c);
+                $sel = is_scalar($old) && (string) $old === $value ? ' selected' : '';
+                $html .= '<option value="'.e($value).'"'.$sel.'>'.e($text).'</option>';
             }
             $html .= '</select>';
         } elseif ($type === 'radio') {
             foreach ($choices as $c) {
-                $chk = is_scalar($old) && (string) $old === (string) $c ? ' checked' : '';
-                $html .= '<label class="inline"><input type="radio" name="'.$name.'" value="'.e($c).'"'.$required.$chk.'> '.e($c).'</label> ';
+                [$value, $text] = $this->choicePair($c);
+                $chk = is_scalar($old) && (string) $old === $value ? ' checked' : '';
+                $html .= '<label class="inline"><input type="radio" name="'.$name.'" value="'.e($value).'"'.$required.$chk.'> '.e($text).'</label> ';
             }
         } elseif ($type === 'checkbox') {
             $olds = is_array($old) ? $old : (is_scalar($old) && $old !== '' && $old !== null ? [$old] : []);
             $olds = array_map(fn ($v) => (string) $v, $olds);
             foreach ($choices as $c) {
-                $chk = in_array((string) $c, $olds, true) ? ' checked' : '';
-                $html .= '<label class="inline"><input type="checkbox" name="'.$name.'[]" value="'.e($c).'"'.$chk.'> '.e($c).'</label> ';
+                [$value, $text] = $this->choicePair($c);
+                $chk = in_array($value, $olds, true) ? ' checked' : '';
+                $html .= '<label class="inline"><input type="checkbox" name="'.$name.'[]" value="'.e($value).'"'.$chk.'> '.e($text).'</label> ';
             }
         } else {
             $inputType = in_array($type, ['email', 'number', 'tel'], true) ? $type : 'text';
@@ -131,6 +136,43 @@ class FormTag
         }
 
         return CmsForm::query()->where('slug', (string) $slug)->where('is_active', true)->first();
+    }
+
+    /** @return array{0: string, 1: string} */
+    protected function choicePair(mixed $choice): array
+    {
+        if (is_array($choice)) {
+            $value = (string) ($choice['value'] ?? $choice['en'] ?? $choice['zh_cn'] ?? '');
+            $locale = \App\Support\Locale::current();
+            $text = '';
+            foreach ([$locale, \App\Support\Locale::default(), 'en', 'zh_cn'] as $code) {
+                if (! empty($choice[$code]) && is_string($choice[$code])) {
+                    $text = $choice[$code];
+                    break;
+                }
+            }
+
+            return [$value, $text !== '' ? $text : $value];
+        }
+
+        $value = (string) $choice;
+        if (! \App\Support\Locale::isEnglish()) {
+            return [$value, $value];
+        }
+
+        $text = [
+            '东南亚 SEA' => 'Southeast Asia',
+            '东亚 East Asia' => 'East Asia',
+            '南亚 South Asia' => 'South Asia',
+            '拉美 Latin America' => 'Latin America',
+            '其他 Other' => 'Other',
+            '标准包网 Standard' => 'Standard',
+            '定制包网 Custom' => 'Custom',
+            '游戏 API' => 'Game API',
+            '还没定 Not sure' => 'Not sure',
+        ][$value] ?? $value;
+
+        return [$value, $text];
     }
 
     protected function fieldLabel(object $field): string

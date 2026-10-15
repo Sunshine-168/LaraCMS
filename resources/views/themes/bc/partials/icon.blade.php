@@ -1,0 +1,33 @@
+@php
+    $draw = match ($name ?? '') {
+        'grid' => '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
+        'refresh' => '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+        'globe' => '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.2 2.4 3.3 5.1 3.3 8s-1.1 5.6-3.3 8c-2.2-2.4-3.3-5.1-3.3-8s1.1-5.6 3.3-8z"/>',
+        'desk' => '<rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M8 4v14M3 9h5"/>',
+        'users' => '<circle cx="9" cy="9" r="2.2"/><circle cx="16" cy="10" r="1.8"/><path d="M4.5 18c.6-2.2 2.4-3.4 4.5-3.4s3.9 1.2 4.5 3.4M14 14.8c1.2-.5 2.6-.4 3.6.5 1 .8 1.5 1.8 1.7 2.7"/>',
+        'screen' => '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+        'card' => '<rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 10h18"/>',
+        'gift' => '<rect x="4" y="10" width="16" height="9"/><path d="M4 14h16M12 10v9M12 10c-2 0-4-2-3-3.5S12 8 12 10c0-2 2.5-3.2 3.5-1.5S14 10 12 10z"/>',
+        'return' => '<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/>',
+        'shield' => '<path d="M12 3l7 3v6c0 4.2-2.8 7-7 9-4.2-2-7-4.8-7-9V6l7-3z"/>',
+        'chart' => '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',
+        'lang' => '<path d="M4 6h9M8.5 6c0 5-2 8-5 9M7 10c1 2 3 3.5 5.5 4"/><path d="M13 18l3.2-8L19.5 18M14.2 15.5h4.2"/>',
+        'pen' => '<path d="M4 20l1.2-4.2L16.5 4.5l3 3L8.2 18.8 4 20z"/>',
+        'link' => '<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/>',
+        'check' => '<circle cx="12" cy="12" r="8"/><path d="M8.5 12.2l2.3 2.3 4.7-5"/>',
+        'ball' => '<circle cx="12" cy="12" r="8"/><path d="M12 4c2 2.2 3 4.8 3 8s-1 5.8-3 8c-2-2.2-3-4.8-3-8s1-5.8 3-8zM4.8 8.5h14.4M4.8 15.5h14.4"/>',
+        'table' => '<rect x="3" y="7" width="18" height="10" rx="5"/><path d="M8 7v10M16 7v10"/>',
+        'slots' => '<circle cx="7" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="17" cy="12" r="2"/>',
+        'cards' => '<rect x="7" y="4" width="12" height="14" rx="1.5"/><rect x="4" y="7" width="12" height="14" rx="1.5"/>',
+        'waves' => '<path d="M3 15c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M3 10c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/>',
+        'sun' => '<circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18"/>',
+        'peak' => '<path d="M3 18l6.2-10L12 13l3-5 6 10H3z"/>',
+        'pin' => '<path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z"/><circle cx="12" cy="11" r="1.8"/>',
+        'layers' => '<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/>',
+        'split' => '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M12 4v16"/>',
+        'clip' => '<path d="M8 7h8v12H8z"/><path d="M8 7V5h8v2M10 11h4M10 14h4"/>',
+        'tag' => '<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="8" cy="8" r="1.2"/>',
+        default => '<circle cx="12" cy="12" r="8"/>',
+    };
+@endphp
+<svg class="ig-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $draw !!}</svg>

@@ -33,10 +33,18 @@ class SiteFrontService
             // console / 无 request
         }
 
+        $title = (string) Setting::getValue('site_name', config('app.name'));
+        $keyword = (string) Setting::getValue('site_keywords', '');
+        $description = (string) Setting::getValue('site_description', '');
+        if (Locale::isEnglish() && $title === 'IG包网') {
+            $title = 'IG';
+            $keyword = 'IG, white-label, game API';
+            $description = 'IG. Standard, custom, and the game API.';
+        }
         $site = array_merge([
-            'title' => (string) Setting::getValue('site_name', config('app.name')),
-            'keyword' => (string) Setting::getValue('site_keywords', ''),
-            'description' => (string) Setting::getValue('site_description', ''),
+            'title' => $title,
+            'keyword' => $keyword,
+            'description' => $description,
             'theme' => $theme,
             'pc_theme' => $pcTheme,
             'is_mobile' => $isMobile,

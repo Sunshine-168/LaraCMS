@@ -113,12 +113,24 @@ class ThemeVars
         if ($slug !== '') {
             return $slug;
         }
-        $fromConfig = trim((string) config('cms.theme', ''));
-        if ($fromConfig !== '') {
-            return $fromConfig;
+
+        $siteSlug = app(ThemeCatalog::class)->currentSlug();
+        $rendered = trim((string) config('cms.theme', ''));
+        if ($rendered === '' || $rendered === $siteSlug) {
+            return $siteSlug;
         }
 
-        return app(ThemeCatalog::class)->currentSlug();
+        $mobile = '';
+        try {
+            $mobile = trim((string) Setting::getValue('mobile_theme', ''));
+        } catch (\Throwable) {
+            // 迁移前忽略
+        }
+        if ($mobile !== '' && $rendered === $mobile) {
+            return $rendered;
+        }
+
+        return $siteSlug;
     }
 
     /**
